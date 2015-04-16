@@ -9,11 +9,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.TextView;
-
 import com.squareup.picasso.Picasso;
-
-import org.fedorahosted.freeotp.edit.DeleteActivity;
-import org.fedorahosted.freeotp.edit.EditActivity;
 
 public class TokenLayout extends FrameLayout implements View.OnClickListener, Runnable {
     private ProgressCircle mProgressInner;
@@ -84,7 +80,7 @@ public class TokenLayout extends FrameLayout implements View.OnClickListener, Ru
         // Show the image.
         Picasso.with(getContext())
                 .load(token.getImage())
-                .placeholder(R.drawable.logo)
+                .placeholder(R.drawable.forgerock_logo)
                 .into(mImage);
 
         // Set the labels.

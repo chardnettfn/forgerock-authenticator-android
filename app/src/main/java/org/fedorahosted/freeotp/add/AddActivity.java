@@ -20,13 +20,6 @@
 
 package org.fedorahosted.freeotp.add;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.util.Locale;
-
-import org.fedorahosted.freeotp.R;
-import org.fedorahosted.freeotp.TokenPersistence;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
@@ -38,8 +31,13 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.RadioButton;
 import android.widget.Spinner;
-
 import com.squareup.picasso.Picasso;
+import org.fedorahosted.freeotp.R;
+import org.fedorahosted.freeotp.TokenPersistence;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.Locale;
 
 public class AddActivity extends Activity implements View.OnClickListener, CompoundButton.OnCheckedChangeListener {
     private final int SHA1_OFFSET = 1;
@@ -150,7 +148,7 @@ public class AddActivity extends Activity implements View.OnClickListener, Compo
             mImageURL = data.getData();
             Picasso.with(this)
                     .load(mImageURL)
-                    .placeholder(R.drawable.logo)
+                    .placeholder(R.drawable.forgerock_logo)
                     .into(mImage);
         }
     }

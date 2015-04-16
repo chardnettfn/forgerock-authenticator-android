@@ -56,7 +56,7 @@ public class EditActivity extends BaseActivity implements TextWatcher, View.OnCl
         onTextChanged(null, 0, 0, 0);
         Picasso.with(this)
                 .load(uri)
-                .placeholder(R.drawable.logo)
+                .placeholder(R.drawable.forgerock_logo)
                 .into(mImage);
     }
 
