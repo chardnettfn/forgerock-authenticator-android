@@ -1,14 +1,13 @@
-package org.fedorahosted.freeotp;
+package org.forgerock.authenticator;
 
 import java.lang.reflect.Type;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.fedorahosted.freeotp.Token.TokenUriInvalidException;
+import org.forgerock.authenticator.Token.TokenUriInvalidException;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.net.Uri;
 import android.widget.Toast;
 
 import com.google.gson.Gson;

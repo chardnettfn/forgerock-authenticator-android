@@ -18,11 +18,11 @@
  * limitations under the License.
  */
 
-package org.fedorahosted.freeotp.edit;
+package org.forgerock.authenticator.edit;
 
-import org.fedorahosted.freeotp.R;
-import org.fedorahosted.freeotp.Token;
-import org.fedorahosted.freeotp.TokenPersistence;
+import org.forgerock.authenticator.R;
+import org.forgerock.authenticator.Token;
+import org.forgerock.authenticator.TokenPersistence;
 
 import android.content.Intent;
 import android.net.Uri;
@@ -56,7 +56,7 @@ public class EditActivity extends BaseActivity implements TextWatcher, View.OnCl
         onTextChanged(null, 0, 0, 0);
         Picasso.with(this)
                 .load(uri)
-                .placeholder(R.drawable.logo)
+                .placeholder(R.drawable.forgerock_logo)
                 .into(mImage);
     }
 

@@ -1,4 +1,4 @@
-package org.fedorahosted.freeotp.edit;
+package org.forgerock.authenticator.edit;
 
 import android.app.Activity;
 import android.os.Bundle;

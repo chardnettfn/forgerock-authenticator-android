@@ -27,7 +27,7 @@
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:scaleType="fitCenter"
-                android:src="@drawable/logo" />
+                android:src="@drawable/forgerock_logo" />
 
             <LinearLayout
                 android:layout_width="match_parent"

@@ -18,7 +18,7 @@
  * limitations under the License.
  */
 
-package org.fedorahosted.freeotp;
+package org.forgerock.authenticator;
 
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -32,8 +32,8 @@ import android.view.ViewGroup;
 import android.widget.PopupMenu;
 import android.widget.Toast;
 
-import org.fedorahosted.freeotp.edit.DeleteActivity;
-import org.fedorahosted.freeotp.edit.EditActivity;
+import org.forgerock.authenticator.edit.DeleteActivity;
+import org.forgerock.authenticator.edit.EditActivity;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -1,8 +1,8 @@
-package org.fedorahosted.freeotp.edit;
+package org.forgerock.authenticator.edit;
 
-import org.fedorahosted.freeotp.R;
-import org.fedorahosted.freeotp.Token;
-import org.fedorahosted.freeotp.TokenPersistence;
+import org.forgerock.authenticator.R;
+import org.forgerock.authenticator.Token;
+import org.forgerock.authenticator.TokenPersistence;
 
 import android.os.Bundle;
 import android.view.View;
@@ -22,7 +22,7 @@ public class DeleteActivity extends BaseActivity {
         ((TextView) findViewById(R.id.label)).setText(token.getLabel());
         Picasso.with(this)
                 .load(token.getImage())
-                .placeholder(R.drawable.logo)
+                .placeholder(R.drawable.forgerock_logo)
                 .into((ImageView) findViewById(R.id.image));
 
         findViewById(R.id.cancel).setOnClickListener(new View.OnClickListener() {

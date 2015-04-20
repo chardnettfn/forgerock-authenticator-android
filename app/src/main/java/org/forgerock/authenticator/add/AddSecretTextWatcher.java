@@ -18,7 +18,7 @@
  * limitations under the License.
  */
 
-package org.fedorahosted.freeotp.add;
+package org.forgerock.authenticator.add;
 
 import android.app.Activity;
 import android.text.Editable;

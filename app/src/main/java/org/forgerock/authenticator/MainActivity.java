@@ -34,10 +34,12 @@
  * limitations under the License.
  */
 
-package org.fedorahosted.freeotp;
+/* Portions Copyrighted 2015 ForgeRock AS. */
 
-import org.fedorahosted.freeotp.add.AddActivity;
-import org.fedorahosted.freeotp.add.ScanActivity;
+package org.forgerock.authenticator;
+
+import org.forgerock.authenticator.add.AddActivity;
+import org.forgerock.authenticator.add.ScanActivity;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -104,7 +106,6 @@ public class MainActivity extends Activity implements OnMenuItemClickListener {
         menu.findItem(R.id.action_scan).setVisible(ScanActivity.haveCamera());
         menu.findItem(R.id.action_scan).setOnMenuItemClickListener(this);
         menu.findItem(R.id.action_add).setOnMenuItemClickListener(this);
-        menu.findItem(R.id.action_about).setOnMenuItemClickListener(this);
         return true;
     }
 
@@ -118,10 +119,6 @@ public class MainActivity extends Activity implements OnMenuItemClickListener {
 
         case R.id.action_add:
             startActivity(new Intent(this, AddActivity.class));
-            return true;
-
-        case R.id.action_about:
-            startActivity(new Intent(this, AboutActivity.class));
             return true;
         }
 
