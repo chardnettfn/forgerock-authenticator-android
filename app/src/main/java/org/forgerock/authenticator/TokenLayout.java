@@ -1,4 +1,4 @@
-package org.fedorahosted.freeotp;
+package org.forgerock.authenticator;
 
 import android.content.Context;
 import android.util.AttributeSet;

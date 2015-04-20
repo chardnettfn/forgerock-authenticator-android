@@ -18,7 +18,9 @@
  * limitations under the License.
  */
 
-package org.fedorahosted.freeotp.add;
+/* Portions Copyrighted 2015 ForgeRock AS. */
+
+package org.forgerock.authenticator.add;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -26,14 +28,15 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextWatcher;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.RadioButton;
 import android.widget.Spinner;
 import com.squareup.picasso.Picasso;
-import org.fedorahosted.freeotp.R;
-import org.fedorahosted.freeotp.TokenPersistence;
+import org.forgerock.authenticator.R;
+import org.forgerock.authenticator.TokenPersistence;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -84,6 +87,9 @@ public class AddActivity extends Activity implements View.OnClickListener, Compo
         mLabel.addTextChangedListener(tw);
         mSecret.addTextChangedListener(new AddSecretTextWatcher(this));
         mInterval.addTextChangedListener(tw);
+
+        // Don't permit screenshots since these might contain Base 32 encoded keys.
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);
     }
 
     @Override

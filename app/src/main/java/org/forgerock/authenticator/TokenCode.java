@@ -18,7 +18,7 @@
  * limitations under the License.
  */
 
-package org.fedorahosted.freeotp;
+package org.forgerock.authenticator;
 
 public class TokenCode {
     private final String mCode;

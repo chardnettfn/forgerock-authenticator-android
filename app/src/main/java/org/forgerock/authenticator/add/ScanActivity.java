@@ -18,13 +18,13 @@
  * limitations under the License.
  */
 
-package org.fedorahosted.freeotp.add;
+package org.forgerock.authenticator.add;
 
 import java.util.List;
 
-import org.fedorahosted.freeotp.R;
-import org.fedorahosted.freeotp.Token;
-import org.fedorahosted.freeotp.TokenPersistence;
+import org.forgerock.authenticator.R;
+import org.forgerock.authenticator.Token;
+import org.forgerock.authenticator.TokenPersistence;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
@@ -39,7 +39,6 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;

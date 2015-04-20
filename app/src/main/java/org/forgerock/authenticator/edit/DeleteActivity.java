@@ -1,8 +1,8 @@
-package org.fedorahosted.freeotp.edit;
+package org.forgerock.authenticator.edit;
 
-import org.fedorahosted.freeotp.R;
-import org.fedorahosted.freeotp.Token;
-import org.fedorahosted.freeotp.TokenPersistence;
+import org.forgerock.authenticator.R;
+import org.forgerock.authenticator.Token;
+import org.forgerock.authenticator.TokenPersistence;
 
 import android.os.Bundle;
 import android.view.View;
