@@ -117,7 +117,7 @@ public class Token {
                 String c = uri.getQueryParameter("counter");
                 if (c == null)
                     c = "0";
-                counter = Long.parseLong(c) - 1;
+                counter = Long.parseLong(c);
             } catch (NumberFormatException e) {
                 throw new TokenUriInvalidException();
             }
@@ -238,7 +238,9 @@ public class Token {
 
         switch (type) {
         case HOTP:
-            return new TokenCode(getHOTP(counter++), cur, cur + (period * 1000));
+            counter++;
+            TokenCode tokenCode = new TokenCode(getHOTP(counter), cur, cur + (period * 1000));
+            return tokenCode;
 
         case TOTP:
             long counter = cur / 1000 / period;
