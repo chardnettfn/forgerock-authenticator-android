@@ -1,0 +1,26 @@
+This project uses three third party libraries:
+
+ZXing Core (com.google.zxing)
+-----------------------------
+
+project: https://github.com/zxing/zxing/
+jar: http://search.maven.org/#browse|-115907821
+License: Apache License 2.0
+
+Using version 2.3.0, but compatible with later versions.
+
+
+Gson (com.google)
+-----------------
+
+project: https://github.com/google/gson
+jar: http://search.maven.org/#artifactdetails|com.google.code.gson|gson|2.3.1|jar
+license: Apache License 2.0
+
+
+Picasso (com.squareup.picasso)
+------------------------------
+
+project: https://github.com/square/picasso
+jar: http://search.maven.org/#artifactdetails|com.squareup.picasso|picasso|2.4.0|jar
+license: Apache License 2.0
