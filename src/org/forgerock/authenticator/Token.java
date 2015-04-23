@@ -239,8 +239,7 @@ public class Token {
         switch (type) {
         case HOTP:
             counter++;
-            TokenCode tokenCode = new TokenCode(getHOTP(counter), cur, cur + (period * 1000));
-            return tokenCode;
+            return new TokenCode(getHOTP(counter), cur, cur + (period * 1000));
 
         case TOTP:
             long counter = cur / 1000 / period;
