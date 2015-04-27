@@ -18,6 +18,10 @@
  * limitations under the License.
  */
 
+/*
+* Portions Copyrighted 2015 ForgeRock AS.
+ */
+
 package org.forgerock.authenticator;
 
 import java.nio.ByteBuffer;
@@ -115,9 +119,10 @@ public class Token {
         if (type == TokenType.HOTP) {
             try {
                 String c = uri.getQueryParameter("counter");
-                if (c == null)
+                if (c == null) {
                     c = "0";
-                counter = Long.parseLong(c) - 1;
+                }
+                counter = Long.parseLong(c);
             } catch (NumberFormatException e) {
                 throw new TokenUriInvalidException();
             }
@@ -238,7 +243,8 @@ public class Token {
 
         switch (type) {
         case HOTP:
-            return new TokenCode(getHOTP(counter++), cur, cur + (period * 1000));
+            counter++;
+            return new TokenCode(getHOTP(counter), cur, cur + (period * 1000));
 
         case TOTP:
             long counter = cur / 1000 / period;
