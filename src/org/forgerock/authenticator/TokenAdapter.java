@@ -18,6 +18,10 @@
  * limitations under the License.
  */
 
+/*
+* Portions Copyrighted 2015 ForgeRock AS.
+ */
+
 package org.forgerock.authenticator;
 
 import android.content.ClipData;
@@ -121,12 +125,6 @@ public class TokenAdapter extends BaseReorderableAdapter {
                 Token token = tp.get(position);
                 TokenCode codes = token.generateCodes();
                 tp.save(token);
-
-                // Copy code to clipboard.
-                mClipMan.setPrimaryClip(ClipData.newPlainText(null, codes.getCurrentCode()));
-                Toast.makeText(v.getContext().getApplicationContext(),
-                        R.string.code_copied,
-                        Toast.LENGTH_SHORT).show();
 
                 mTokenCodes.put(token.getID(), codes);
                 ((TokenLayout) v).start(token.getType(), codes, true);
