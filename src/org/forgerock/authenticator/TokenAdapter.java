@@ -45,13 +45,11 @@ import java.util.Map;
 public class TokenAdapter extends BaseReorderableAdapter {
     private final TokenPersistence mTokenPersistence;
     private final LayoutInflater mLayoutInflater;
-    private final ClipboardManager mClipMan;
     private final Map<String, TokenCode> mTokenCodes;
 
     public TokenAdapter(Context ctx) {
         mTokenPersistence = new TokenPersistence(ctx);
         mLayoutInflater = (LayoutInflater) ctx.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        mClipMan = (ClipboardManager) ctx.getSystemService(Context.CLIPBOARD_SERVICE);
         mTokenCodes = new HashMap<String, TokenCode>();
         registerDataSetObserver(new DataSetObserver() {
             @Override
