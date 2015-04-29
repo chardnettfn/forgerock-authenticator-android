@@ -19,7 +19,7 @@
  */
 
 /*
-* Portions Copyrighted 2015 ForgeRock AS.
+ * Portions Copyrighted 2015 ForgeRock AS.
  */
 
 package org.forgerock.authenticator;
