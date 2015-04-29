@@ -18,6 +18,10 @@
  * limitations under the License.
  */
 
+/*
+ * Portions Copyrighted 2015 ForgeRock AS.
+ */
+
 package org.forgerock.authenticator;
 
 import android.content.ClipData;
@@ -41,13 +45,11 @@ import java.util.Map;
 public class TokenAdapter extends BaseReorderableAdapter {
     private final TokenPersistence mTokenPersistence;
     private final LayoutInflater mLayoutInflater;
-    private final ClipboardManager mClipMan;
     private final Map<String, TokenCode> mTokenCodes;
 
     public TokenAdapter(Context ctx) {
         mTokenPersistence = new TokenPersistence(ctx);
         mLayoutInflater = (LayoutInflater) ctx.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        mClipMan = (ClipboardManager) ctx.getSystemService(Context.CLIPBOARD_SERVICE);
         mTokenCodes = new HashMap<String, TokenCode>();
         registerDataSetObserver(new DataSetObserver() {
             @Override
@@ -121,12 +123,6 @@ public class TokenAdapter extends BaseReorderableAdapter {
                 Token token = tp.get(position);
                 TokenCode codes = token.generateCodes();
                 tp.save(token);
-
-                // Copy code to clipboard.
-                mClipMan.setPrimaryClip(ClipData.newPlainText(null, codes.getCurrentCode()));
-                Toast.makeText(v.getContext().getApplicationContext(),
-                        R.string.code_copied,
-                        Toast.LENGTH_SHORT).show();
 
                 mTokenCodes.put(token.getID(), codes);
                 ((TokenLayout) v).start(token.getType(), codes, true);
