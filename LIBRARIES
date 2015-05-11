@@ -24,3 +24,13 @@ Picasso (com.squareup.picasso)
 project: https://github.com/square/picasso
 jar: http://search.maven.org/#artifactdetails|com.squareup.picasso|picasso|2.4.0|jar
 license: Apache License 2.0
+
+TestNG (org.testng)
+-------------------
+
+project: http://testng.org/doc/index.html
+jar: http://search.maven.org/remotecontent?filepath=org/testng/testng/6.8.5/testng-6.8.5.jar
+license: Apache License 2.0
+
+Using version 6.8.5 as this is inline with OpenAM. No other reason for this version.
+
