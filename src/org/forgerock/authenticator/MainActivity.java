@@ -38,9 +38,6 @@
 
 package org.forgerock.authenticator;
 
-import org.forgerock.authenticator.add.AddActivity;
-import org.forgerock.authenticator.add.ScanActivity;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.database.DataSetObserver;
@@ -52,6 +49,10 @@ import android.view.MenuItem.OnMenuItemClickListener;
 import android.view.View;
 import android.view.WindowManager.LayoutParams;
 import android.widget.GridView;
+import android.widget.Toast;
+import org.forgerock.authenticator.add.AddActivity;
+import org.forgerock.authenticator.add.ScanActivity;
+import org.forgerock.authenticator.utils.TestNGCheck;
 
 public class MainActivity extends Activity implements OnMenuItemClickListener {
     private TokenAdapter mTokenAdapter;
@@ -80,6 +81,11 @@ public class MainActivity extends Activity implements OnMenuItemClickListener {
             }
         };
         mTokenAdapter.registerDataSetObserver(mDataSetObserver);
+
+        // Notify developer that they have included TestNG on classpath.
+        if (TestNGCheck.isTestNGOnClassPath()) {
+            Toast.makeText(getApplicationContext(), "Compiled with test libraries", Toast.LENGTH_LONG).show();
+        }
     }
 
     @Override
