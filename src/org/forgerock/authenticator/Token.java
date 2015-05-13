@@ -24,31 +24,41 @@
 
 package org.forgerock.authenticator;
 
+import android.net.Uri;
+import com.google.android.apps.authenticator.Base32String;
+import com.google.android.apps.authenticator.Base32String.DecodingException;
+import org.forgerock.authenticator.utils.OTPAuthMapper;
+import org.forgerock.authenticator.utils.URIMappingException;
+
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 import java.nio.ByteBuffer;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Locale;
+import java.util.Map;
 
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
-
-import android.net.Uri;
-
-import com.google.android.apps.authenticator.Base32String;
-import com.google.android.apps.authenticator.Base32String.DecodingException;
-
+/**
+ * Responsible for representing a Token in the authenticator application. Combines a
+ * number of responsibilities into the same class.
+ *
+ * - Configuring based on configuration URI
+ * - Generate new OTP codes
+ * - Value object for display purposes
+ */
 public class Token {
     public static class TokenUriInvalidException extends Exception {
         private static final long serialVersionUID = -1108624734612362345L;
     }
 
+    private final OTPAuthMapper mapper = new OTPAuthMapper();
+
     public static enum TokenType {
         HOTP, TOTP
     }
 
-    private String issuerInt;
-    private String issuerExt;
     private String issuerAlt;
+    private String issuer;
     private String label;
     private String labelAlt;
     private String image;
@@ -60,57 +70,56 @@ public class Token {
     private long counter;
     private int period;
 
-    private Token(Uri uri, boolean internal) throws TokenUriInvalidException {
-        if (!uri.getScheme().equals("otpauth"))
+    /**
+     * Intialise the Token based on the configuration URI.
+     *
+     * @param uri Non null
+     * @param internal True will attempt to parse extra parameters from the URI
+     * @throws TokenUriInvalidException If there was any error in parsing the URI
+     */
+    public Token(String uri, boolean internal) throws TokenUriInvalidException {
+        Map<String, String> values;
+        try {
+            values = mapper.map(uri);
+        } catch (URIMappingException e) {
             throw new TokenUriInvalidException();
+        }
 
-        if (uri.getAuthority().equals("totp"))
+        if (!"otpauth".equals(values.get(OTPAuthMapper.SCHEME))) {
+            throw new TokenUriInvalidException();
+        }
+
+        if ("totp".equals(values.get(OTPAuthMapper.TYPE))) {
             type = TokenType.TOTP;
-        else if (uri.getAuthority().equals("hotp"))
+        } else if ("hotp".equals(values.get(OTPAuthMapper.TYPE))) {
             type = TokenType.HOTP;
-        else
+        } else {
             throw new TokenUriInvalidException();
+        }
 
-        String path = uri.getPath();
-        if (path == null)
-            throw new TokenUriInvalidException();
+        issuer = get(values, OTPAuthMapper.ISSUER, "");
+        label = get(values, OTPAuthMapper.LABEL, "");
 
-        // Strip the path of its leading '/'
-        for (int i = 0; path.charAt(i) == '/'; i++)
-            path = path.substring(1);
-        if (path.length() == 0)
-            throw new TokenUriInvalidException();
 
-        int i = path.indexOf(':');
-        issuerExt = i < 0 ? "" : path.substring(0, i);
-        issuerInt = uri.getQueryParameter("issuer");
-        label = path.substring(i >= 0 ? i + 1 : 0);
-
-        algo = uri.getQueryParameter("algorithm");
-        if (algo == null)
-            algo = "sha1";
-        algo = algo.toUpperCase(Locale.US);
+        algo = get(values, OTPAuthMapper.ALGORITHM, "sha1").toUpperCase(Locale.US);
         try {
             Mac.getInstance("Hmac" + algo);
         } catch (NoSuchAlgorithmException e1) {
             throw new TokenUriInvalidException();
         }
 
+        String d = get(values, OTPAuthMapper.DIGITS, "6");
         try {
-            String d = uri.getQueryParameter("digits");
-            if (d == null)
-                d = "6";
             digits = Integer.parseInt(d);
-            if (digits != 6 && digits != 8)
+            if (digits != 6 && digits != 8) {
                 throw new TokenUriInvalidException();
+            }
         } catch (NumberFormatException e) {
             throw new TokenUriInvalidException();
         }
 
         try {
-            String p = uri.getQueryParameter("period");
-            if (p == null)
-                p = "30";
+            String p = get(values, OTPAuthMapper.PERIOD, "30");
             period = Integer.parseInt(p);
         } catch (NumberFormatException e) {
             throw new TokenUriInvalidException();
@@ -118,10 +127,7 @@ public class Token {
 
         if (type == TokenType.HOTP) {
             try {
-                String c = uri.getQueryParameter("counter");
-                if (c == null) {
-                    c = "0";
-                }
+                String c = get(values, OTPAuthMapper.COUNTER, "0");
                 counter = Long.parseLong(c);
             } catch (NumberFormatException e) {
                 throw new TokenUriInvalidException();
@@ -129,7 +135,7 @@ public class Token {
         }
 
         try {
-            String s = uri.getQueryParameter("secret");
+            String s = get(values, OTPAuthMapper.SECRET, "");
             secret = Base32String.decode(s);
         } catch (DecodingException e) {
             throw new TokenUriInvalidException();
@@ -137,11 +143,11 @@ public class Token {
             throw new TokenUriInvalidException();
         }
 
-        image = uri.getQueryParameter("image");
+        image = values.get("image");
 
         if (internal) {
-            setIssuer(uri.getQueryParameter("issueralt"));
-            setLabel(uri.getQueryParameter("labelalt"));
+            setIssuer(values.get("issueralt"));
+            setLabel(values.get("labelalt"));
         }
     }
 
@@ -187,39 +193,33 @@ public class Token {
         return "";
     }
 
-    public Token(String uri, boolean internal) throws TokenUriInvalidException {
-        this(Uri.parse(uri), internal);
-    }
-
     public Token(Uri uri) throws TokenUriInvalidException {
-        this(uri, false);
+        this(uri.toString(), false);
     }
 
     public Token(String uri) throws TokenUriInvalidException {
-        this(Uri.parse(uri));
+        this(uri, false);
     }
 
     public String getID() {
-        String id;
-        if (issuerInt != null && !issuerInt.equals(""))
-            id = issuerInt + ":" + label;
-        else if (issuerExt != null && !issuerExt.equals(""))
-            id = issuerExt + ":" + label;
-        else
-            id = label;
-
-        return id;
+        if (!issuer.isEmpty()) {
+            return issuer + ":" + label;
+        }
+        return label;
     }
 
     // NOTE: This changes internal data. You MUST save the token immediately.
-    public void setIssuer(String issuer) {
-        issuerAlt = (issuer == null || issuer.equals(this.issuerExt)) ? null : issuer;
+    public void setIssuer(String updatedIssuer) {
+        if (updatedIssuer != null && !issuer.equals(updatedIssuer)) {
+            issuerAlt = updatedIssuer;
+        }
     }
 
     public String getIssuer() {
-        if (issuerAlt != null)
+        if (issuerAlt != null) {
             return issuerAlt;
-        return issuerExt != null ? issuerExt : "";
+        }
+        return issuer;
     }
 
     // NOTE: This changes internal data. You MUST save the token immediately.
@@ -264,11 +264,11 @@ public class Token {
     }
 
     public Uri toUri() {
-        String issuerLabel = !issuerExt.equals("") ? issuerExt + ":" + label : label;
+        String issuerLabel = getID();
 
         Uri.Builder builder = new Uri.Builder().scheme("otpauth").path(issuerLabel)
                 .appendQueryParameter("secret", Base32String.encode(secret))
-                .appendQueryParameter("issuer", issuerInt == null ? issuerExt : issuerInt)
+                .appendQueryParameter("issuer", issuer)
                 .appendQueryParameter("algorithm", algo)
                 .appendQueryParameter("digits", Integer.toString(digits))
                 .appendQueryParameter("period", Integer.toString(period));
@@ -308,5 +308,10 @@ public class Token {
             return Uri.parse(image);
 
         return null;
+    }
+
+    private static String get(Map<String, String> m, String name, String def) {
+        String r = m.get(name);
+        return r == null ? def : r;
     }
 }
