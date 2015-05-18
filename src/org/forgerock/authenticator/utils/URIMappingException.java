@@ -15,14 +15,12 @@
  */
 package org.forgerock.authenticator.utils;
 
-import java.net.URISyntaxException;
-
 /**
  * Represents an error in parsing a Configuration URI, or in creating a Configuration
  * URI from a set of attributes.
  */
 public class URIMappingException extends Exception {
-    public URIMappingException(String s, URISyntaxException e) {
+    public URIMappingException(String s, Throwable e) {
         super(s, e);
     }
 

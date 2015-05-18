@@ -18,6 +18,10 @@
  * limitations under the License.
  */
 
+/**
+ * Portions Copyrighted 2015 ForgeRock AS.
+ */
+
 package org.forgerock.authenticator.edit;
 
 import org.forgerock.authenticator.R;
