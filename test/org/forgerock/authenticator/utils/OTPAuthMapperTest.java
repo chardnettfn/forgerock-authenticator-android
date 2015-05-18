@@ -72,4 +72,11 @@ public class OTPAuthMapperTest {
         Map<String, String> result = mapper.map("otpauth://totp/Example:alice@google.com?secret=JBSWY3DPEHPK3PXP&badger=ferret");
         assertEquals(result.get("badger"), "ferret");
     }
+
+    @Test
+    public void shouldParseURLEncodedImagePathFromParameter() throws URIMappingException {
+        Map<String, String> result = mapper.map("otpauth://totp/Example:alice@google.com?image=" +
+                "http%3A%2F%2Fupload.wikimedia.org%2Fwikipedia%2Fcommons%2F1%2F10%2FBadger-badger.jpg");
+        assertEquals(result.get("image"), "http://upload.wikimedia.org/wikipedia/commons/1/10/Badger-badger.jpg");
+    }
 }
