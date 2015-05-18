@@ -18,8 +18,8 @@
  * limitations under the License.
  */
 
-/*
-* Portions Copyrighted 2015 ForgeRock AS.
+/**
+ * Portions Copyrighted 2015 ForgeRock AS.
  */
 
 package org.forgerock.authenticator;
@@ -27,7 +27,6 @@ package org.forgerock.authenticator;
 import android.net.Uri;
 import com.google.android.apps.authenticator.Base32String;
 import com.google.android.apps.authenticator.Base32String.DecodingException;
-import org.forgerock.authenticator.utils.OTPAuthMapper;
 import org.forgerock.authenticator.utils.URIMappingException;
 
 import javax.crypto.Mac;
@@ -36,120 +35,28 @@ import java.nio.ByteBuffer;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Locale;
-import java.util.Map;
 
 /**
  * Responsible for representing a Token in the authenticator application. Combines a
  * number of responsibilities into the same class.
  *
- * - Configuring based on configuration URI
  * - Generate new OTP codes
  * - Value object for display purposes
  */
 public class Token {
-    public static class TokenUriInvalidException extends Exception {
-        private static final long serialVersionUID = -1108624734612362345L;
-    }
-
-    private final OTPAuthMapper mapper = new OTPAuthMapper();
-
-    public static enum TokenType {
+    public enum TokenType {
         HOTP, TOTP
     }
 
-    private String issuerAlt;
     private String issuer;
     private String label;
-    private String labelAlt;
     private String image;
-    private String imageAlt;
     private TokenType type;
     private String algo;
     private byte[] secret;
     private int digits;
     private long counter;
     private int period;
-
-    /**
-     * Intialise the Token based on the configuration URI.
-     *
-     * @param uri Non null
-     * @param internal True will attempt to parse extra parameters from the URI
-     * @throws TokenUriInvalidException If there was any error in parsing the URI
-     */
-    public Token(String uri, boolean internal) throws TokenUriInvalidException {
-        Map<String, String> values;
-        try {
-            values = mapper.map(uri);
-        } catch (URIMappingException e) {
-            throw new TokenUriInvalidException();
-        }
-
-        if (!"otpauth".equals(values.get(OTPAuthMapper.SCHEME))) {
-            throw new TokenUriInvalidException();
-        }
-
-        if ("totp".equals(values.get(OTPAuthMapper.TYPE))) {
-            type = TokenType.TOTP;
-        } else if ("hotp".equals(values.get(OTPAuthMapper.TYPE))) {
-            type = TokenType.HOTP;
-        } else {
-            throw new TokenUriInvalidException();
-        }
-
-        issuer = get(values, OTPAuthMapper.ISSUER, "");
-        label = get(values, OTPAuthMapper.LABEL, "");
-
-
-        algo = get(values, OTPAuthMapper.ALGORITHM, "sha1").toUpperCase(Locale.US);
-        try {
-            Mac.getInstance("Hmac" + algo);
-        } catch (NoSuchAlgorithmException e1) {
-            throw new TokenUriInvalidException();
-        }
-
-        String d = get(values, OTPAuthMapper.DIGITS, "6");
-        try {
-            digits = Integer.parseInt(d);
-            if (digits != 6 && digits != 8) {
-                throw new TokenUriInvalidException();
-            }
-        } catch (NumberFormatException e) {
-            throw new TokenUriInvalidException();
-        }
-
-        try {
-            String p = get(values, OTPAuthMapper.PERIOD, "30");
-            period = Integer.parseInt(p);
-        } catch (NumberFormatException e) {
-            throw new TokenUriInvalidException();
-        }
-
-        if (type == TokenType.HOTP) {
-            try {
-                String c = get(values, OTPAuthMapper.COUNTER, "0");
-                counter = Long.parseLong(c);
-            } catch (NumberFormatException e) {
-                throw new TokenUriInvalidException();
-            }
-        }
-
-        try {
-            String s = get(values, OTPAuthMapper.SECRET, "");
-            secret = Base32String.decode(s);
-        } catch (DecodingException e) {
-            throw new TokenUriInvalidException();
-        } catch (NullPointerException e) {
-            throw new TokenUriInvalidException();
-        }
-
-        image = values.get("image");
-
-        if (internal) {
-            setIssuer(values.get("issueralt"));
-            setLabel(values.get("labelalt"));
-        }
-    }
 
     private String getHOTP(long counter) {
         // Encode counter in network byte order
@@ -193,14 +100,6 @@ public class Token {
         return "";
     }
 
-    public Token(Uri uri) throws TokenUriInvalidException {
-        this(uri.toString(), false);
-    }
-
-    public Token(String uri) throws TokenUriInvalidException {
-        this(uri, false);
-    }
-
     public String getID() {
         if (!issuer.isEmpty()) {
             return issuer + ":" + label;
@@ -208,29 +107,25 @@ public class Token {
         return label;
     }
 
-    // NOTE: This changes internal data. You MUST save the token immediately.
-    public void setIssuer(String updatedIssuer) {
-        if (updatedIssuer != null && !issuer.equals(updatedIssuer)) {
-            issuerAlt = updatedIssuer;
-        }
-    }
-
     public String getIssuer() {
-        if (issuerAlt != null) {
-            return issuerAlt;
-        }
         return issuer;
     }
 
     // NOTE: This changes internal data. You MUST save the token immediately.
-    public void setLabel(String label) {
-        labelAlt = (label == null || label.equals(this.label)) ? null : label;
+    public void setIssuer(String updatedIssuer) {
+        this.issuer = updatedIssuer;
     }
 
+    /**
+     * @return The label if it has been assigned or an empty String.
+     */
     public String getLabel() {
-        if (labelAlt != null)
-            return labelAlt;
         return label != null ? label : "";
+    }
+
+    // NOTE: This changes internal data. You MUST save the token immediately.
+    public void setLabel(String label) {
+        this.label = label;
     }
 
     public int getDigits() {
@@ -263,55 +158,100 @@ public class Token {
         return type;
     }
 
-    public Uri toUri() {
-        String issuerLabel = getID();
-
-        Uri.Builder builder = new Uri.Builder().scheme("otpauth").path(issuerLabel)
-                .appendQueryParameter("secret", Base32String.encode(secret))
-                .appendQueryParameter("issuer", issuer)
-                .appendQueryParameter("algorithm", algo)
-                .appendQueryParameter("digits", Integer.toString(digits))
-                .appendQueryParameter("period", Integer.toString(period));
-
-        switch (type) {
-        case HOTP:
-            builder.authority("hotp");
-            builder.appendQueryParameter("counter", Long.toString(counter + 1));
-            break;
-        case TOTP:
-            builder.authority("totp");
-            break;
+    /**
+     * @param type Type must be 'totp' or 'hotp'.
+     * @throws URIMappingException If the value was not permitted.
+     */
+    public void setType(String type) throws URIMappingException {
+        if ("totp".equals(type)) {
+            this.type = TokenType.TOTP;
+        } else if ("hotp".equals(type)) {
+            this.type = TokenType.HOTP;
+        } else {
+            throw new URIMappingException("Invalid type: " + type);
         }
-
-        return builder.build();
     }
 
-    @Override
-    public String toString() {
-        return toUri().toString();
+    /**
+     * Assumption: algorithm name is valid if a corresponding algorithm can be loaded.
+     *
+     * @param algorithm Non null algorithm to assign.
+     * @throws URIMappingException If the value was not a supported algorithm.
+     */
+    public void setAlgorithm(String algorithm) throws URIMappingException {
+        String algoUpperCase = algorithm.toUpperCase(Locale.US);
+        try {
+            Mac.getInstance("Hmac" + algoUpperCase);
+            algo = algoUpperCase;
+        } catch (NoSuchAlgorithmException e1) {
+            throw new URIMappingException("Invalid algrithm: " + algorithm);
+        }
     }
 
-    public void setImage(Uri image) {
-        imageAlt = null;
-        if (image == null)
-            return;
-
-        if (this.image == null || !Uri.parse(this.image).equals(image))
-            imageAlt = image.toString();
+    /**
+     * @param digitStr Non null digits string, either 6 or 8.
+     * @throws URIMappingException If the value did not match allowed values.
+     */
+    public void setDigits(String digitStr) throws URIMappingException {
+        try {
+            this.digits = Integer.parseInt(digitStr);
+            if (digits != 6 && digits != 8) {
+                throw new URIMappingException("Digits must be 6 or 8: " + digitStr);
+            }
+        } catch (NumberFormatException e) {
+            throw new URIMappingException("Digits was not a number: " + digitStr);
+        }
     }
 
+    /**
+     * @param periodStr Non null period in seconds.
+     * @throws URIMappingException If the value was not a number.
+     */
+    public void setPeriod(String periodStr) throws URIMappingException {
+        try {
+            this.period = Integer.parseInt(periodStr);
+        } catch (NumberFormatException e) {
+            throw new URIMappingException("Period was not a number: " + periodStr);
+        }
+    }
+
+    /**
+     * Base32 encodeding based on: http://tools.ietf.org/html/rfc4648#page-8
+     *
+     * @param secretStr A non null Base32 encoded secret key.
+     * @throws URIMappingException If the value was not Base32 encoded.
+     */
+    public void setSecret(String secretStr) throws URIMappingException {
+        try {
+
+            secret = Base32String.decode(secretStr);
+        } catch (DecodingException e) {
+            throw new URIMappingException("Could not decode secret: " + secretStr, e);
+        } catch (NullPointerException e) {
+            throw new URIMappingException("Unexpected null whilst parsing secret: " + secretStr, e);
+        }
+    }
+
+    /**
+     * @param counterStr Non null counter as an integer.
+     * @throws URIMappingException If the counter string was not a number.
+     */
+    public void setCounter(String counterStr) throws URIMappingException {
+        try {
+            counter = Long.parseLong(counterStr);
+        } catch (NumberFormatException e) {
+            throw new URIMappingException("Failed to parse counter: " + counterStr, e);
+        }
+    }
+
+    /**
+     * @return Non null {@link Uri} representing the path to the image, or null if not assigned.
+     */
     public Uri getImage() {
-        if (imageAlt != null)
-            return Uri.parse(imageAlt);
-
-        if (image != null)
-            return Uri.parse(image);
-
-        return null;
+        return image == null ? null : Uri.parse(image);
     }
 
-    private static String get(Map<String, String> m, String name, String def) {
-        String r = m.get(name);
-        return r == null ? def : r;
+    public void setImage(String image) {
+        this.image = image;
     }
 }

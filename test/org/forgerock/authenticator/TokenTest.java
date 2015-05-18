@@ -15,55 +15,45 @@
  */
 package org.forgerock.authenticator;
 
+import org.forgerock.authenticator.utils.URIMappingException;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import static org.testng.Assert.assertEquals;
-
 public class TokenTest {
-    @Test
-    public void shouldParseIssuer() throws Token.TokenUriInvalidException {
-        String token = "otpauth://hotp/Forgerock:user.0?secret=ONSWG4TFOQ=====&counter=1";
-        assertEquals(new Token(token).getIssuer(), "Forgerock");
+    private Token token;
+
+    @BeforeMethod
+    public void setUp() {
+        token = new Token();
     }
 
-    @Test
-    public void shouldParseIssuerFromParameter() throws Token.TokenUriInvalidException {
-        String token = "otpauth://hotp/user.0?secret=ONSWG4TFOQ=====&issuer=Forgerock&counter=1";
-        assertEquals(new Token(token).getIssuer(), "Forgerock");
+    @Test (expectedExceptions = URIMappingException.class)
+    public void shouldValidateInvalidType() throws URIMappingException {
+        token.setType("badger");
     }
 
-    @Test
-    public void shouldNotParseIssuerIfMissing() throws Token.TokenUriInvalidException {
-        String token = "otpauth://hotp/user.0?secret=ONSWG4TFOQ=====&counter=1";
-        assertEquals(new Token(token).getIssuer(), "");
+    @Test (expectedExceptions = URIMappingException.class)
+    public void shouldValidateInvalidAlgorithm() throws URIMappingException {
+        token.setAlgorithm("badger");
     }
 
-    @Test
-    public void shouldParseLabel() throws Token.TokenUriInvalidException {
-        String token = "otpauth://totp/user.0?secret=ABC";
-        assertEquals(new Token(token).getLabel(), "user.0");
+    @Test (expectedExceptions = URIMappingException.class)
+    public void shouldValidateInvalidDigits() throws URIMappingException {
+        token.setDigits("badger");
     }
 
-    @Test
-    public void shouldParseType()  throws Token.TokenUriInvalidException {
-        String token = "otpauth://totp/user.0?secret=ABC";
-        assertEquals(new Token(token).getType(), Token.TokenType.TOTP);
+    @Test (expectedExceptions = URIMappingException.class)
+    public void shouldValidateInvalidPeriod() throws URIMappingException {
+        token.setPeriod("badger");
     }
 
-    @Test (expectedExceptions = Token.TokenUriInvalidException.class)
-    public void shouldErrorOnMissingType() throws Token.TokenUriInvalidException {
-        new Token("otpauth://Forgerock:user.0");
+    @Test (expectedExceptions = URIMappingException.class)
+    public void shouldValidateInvalidSecretDecode() throws URIMappingException {
+        token.setSecret("11111");
     }
 
-    @Test
-    public void shouldParseDigitsDefault()  throws Token.TokenUriInvalidException {
-        String token = "otpauth://totp/user.0?secret=ABC";
-        assertEquals(new Token(token).getDigits(), 6);
-    }
-
-    @Test
-    public void shouldParseDigits() throws Token.TokenUriInvalidException {
-        String token = "otpauth://totp/Forgerock:user.0?secret=ABC&digits=8";
-        assertEquals(new Token(token).getDigits(), 8);
+    @Test (expectedExceptions = URIMappingException.class)
+    public void shouldValidateInvalidCounter() throws URIMappingException {
+        token.setCounter("badger");
     }
 }
