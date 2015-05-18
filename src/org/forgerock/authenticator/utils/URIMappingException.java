@@ -25,4 +25,8 @@ public class URIMappingException extends Exception {
     public URIMappingException(String s, URISyntaxException e) {
         super(s, e);
     }
+
+    public URIMappingException(String s) {
+        super(s);
+    }
 }

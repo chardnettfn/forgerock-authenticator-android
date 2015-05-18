@@ -33,31 +33,31 @@ public class OTPAuthMapperTest {
 
     @Test
     public void shouldParseType() throws URIMappingException {
-        Map<String, String> result = mapper.map("otpauth://hotp/Example:alice@gmail.com");
+        Map<String, String> result = mapper.map("otpauth://hotp/Example:alice@gmail.com?secret=ABC&counter=0");
         assertEquals(result.get(OTPAuthMapper.TYPE), "hotp");
     }
 
     @Test
     public void shouldParseAccountName() throws URIMappingException {
-        Map<String, String> result = mapper.map("otpauth://hotp/example");
+        Map<String, String> result = mapper.map("otpauth://totp/example?secret=ABC");
         assertEquals(result.get(OTPAuthMapper.LABEL), "example");
     }
 
     @Test
     public void shouldParseIssuerFromPath() throws URIMappingException {
-        Map<String, String> result = mapper.map("otpauth://hotp/Badger:ferret");
+        Map<String, String> result = mapper.map("otpauth://totp/Badger:ferret?secret=ABC");
         assertEquals(result.get(OTPAuthMapper.ISSUER), "Badger");
     }
 
     @Test
     public void shouldOverwriteIssuerFromParamters() throws URIMappingException {
-        Map<String, String> result = mapper.map("otpauth://hotp/Badger:ferret?issuer=Stoat");
+        Map<String, String> result = mapper.map("otpauth://totp/Badger:ferret?issuer=Stoat&secret=ABC");
         assertEquals(result.get(OTPAuthMapper.ISSUER), "Stoat");
     }
 
     @Test
     public void shouldHandleMissingQueryParameters() throws URIMappingException {
-        Map<String, String> result = mapper.map("otpauth://totp/Example:alice@google.com");
+        Map<String, String> result = mapper.map("otpauth://totp/Example:alice@google.com?secret=ABC");
         assertEquals(result.get("missing"), null);
     }
 
@@ -75,8 +75,23 @@ public class OTPAuthMapperTest {
 
     @Test
     public void shouldParseURLEncodedImagePathFromParameter() throws URIMappingException {
-        Map<String, String> result = mapper.map("otpauth://totp/Example:alice@google.com?image=" +
+        Map<String, String> result = mapper.map("otpauth://totp/Example:alice@google.com?secret=ABC&image=" +
                 "http%3A%2F%2Fupload.wikimedia.org%2Fwikipedia%2Fcommons%2F1%2F10%2FBadger-badger.jpg");
         assertEquals(result.get("image"), "http://upload.wikimedia.org/wikipedia/commons/1/10/Badger-badger.jpg");
+    }
+
+    @Test (expectedExceptions = URIMappingException.class)
+    public void shouldValidateMissingSecret() throws URIMappingException {
+        mapper.map("otpauth://totp/Example:alice@google.com");
+    }
+
+    @Test (expectedExceptions = URIMappingException.class)
+    public void shouldValidateMissingCounterInHOTPMode() throws URIMappingException {
+        mapper.map("otpauth://hotp/Example:alice@google.com?secret=ABC");
+    }
+
+    @Test (expectedExceptions = URIMappingException.class)
+    public void shouldValidateIncorrectAuthorityType() throws URIMappingException {
+        mapper.map("otpauth://badger/Example:alice@google.com?secret=ABC");
     }
 }

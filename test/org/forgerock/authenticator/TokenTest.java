@@ -40,14 +40,14 @@ public class TokenTest {
 
     @Test
     public void shouldParseLabel() throws Token.TokenUriInvalidException {
-        String token = "otpauth://hotp/user.0";
+        String token = "otpauth://totp/user.0?secret=ABC";
         assertEquals(new Token(token).getLabel(), "user.0");
     }
 
     @Test
     public void shouldParseType()  throws Token.TokenUriInvalidException {
-        String token = "otpauth://hotp/user.0";
-        assertEquals(new Token(token).getType(), Token.TokenType.HOTP);
+        String token = "otpauth://totp/user.0?secret=ABC";
+        assertEquals(new Token(token).getType(), Token.TokenType.TOTP);
     }
 
     @Test (expectedExceptions = Token.TokenUriInvalidException.class)
@@ -57,13 +57,13 @@ public class TokenTest {
 
     @Test
     public void shouldParseDigitsDefault()  throws Token.TokenUriInvalidException {
-        String token = "otpauth://hotp/user.0";
+        String token = "otpauth://totp/user.0?secret=ABC";
         assertEquals(new Token(token).getDigits(), 6);
     }
 
     @Test
     public void shouldParseDigits() throws Token.TokenUriInvalidException {
-        String token = "otpauth://hotp/Forgerock:user.0?&digits=8";
+        String token = "otpauth://totp/Forgerock:user.0?secret=ABC&digits=8";
         assertEquals(new Token(token).getDigits(), 8);
     }
 }
