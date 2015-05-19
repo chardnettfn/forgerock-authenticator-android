@@ -51,6 +51,9 @@ public class OTPAuthMapper {
 
     public static final String SLASH = "/";
 
+    // URI API Version
+    public static final String VERSION = "version";
+
     /**
      * Call through to {@link OTPAuthMapper#map(URI)}
      *

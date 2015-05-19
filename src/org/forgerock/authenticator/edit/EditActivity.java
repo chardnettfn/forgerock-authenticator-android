@@ -18,6 +18,10 @@
  * limitations under the License.
  */
 
+/**
+ * Portions Copyrighted 2015 ForgeRock AS.
+ */
+
 package org.forgerock.authenticator.edit;
 
 import org.forgerock.authenticator.R;
@@ -154,7 +158,7 @@ public class EditActivity extends BaseActivity implements TextWatcher, View.OnCl
                 Token token = tp.get(getPosition());
                 token.setIssuer(mIssuer.getText().toString());
                 token.setLabel(mLabel.getText().toString());
-                token.setImage(mImageDisplay);
+                token.setImage(mImageDisplay.toString());
                 tp.save(token);
 
             case R.id.cancel:
