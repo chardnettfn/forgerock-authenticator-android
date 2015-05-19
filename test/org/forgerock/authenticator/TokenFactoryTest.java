@@ -31,8 +31,16 @@ public class TokenFactoryTest {
     }
 
     @Test
-    public void shouldParseOnVersionGreaterThanOne() throws URIMappingException {
-        String uri = "otpauth://totp/Forgerock:user.0?secret=ONSWG4TFOQ=====&version=2";
+    public void shouldParseVersionOne() throws URIMappingException {
+        String uri = "otpauth://totp/Forgerock:user.0?secret=ONSWG4TFOQ=====&version=1";
+        Token token = factory.get(uri);
+        assertEquals(token.getType(), Token.TokenType.TOTP);
+        assertEquals(token.getLabel(), "user.0");
+    }
+
+    @Test
+    public void shouldHandleDefaultVersion() throws URIMappingException {
+        String uri = "otpauth://totp/Forgerock:user.0?secret=ONSWG4TFOQ=====";
         Token token = factory.get(uri);
         assertEquals(token.getType(), Token.TokenType.TOTP);
         assertEquals(token.getLabel(), "user.0");

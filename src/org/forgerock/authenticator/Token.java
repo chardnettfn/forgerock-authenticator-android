@@ -163,11 +163,9 @@ public class Token {
      * @throws URIMappingException If the value was not permitted.
      */
     public void setType(String type) throws URIMappingException {
-        if ("totp".equals(type)) {
-            this.type = TokenType.TOTP;
-        } else if ("hotp".equals(type)) {
-            this.type = TokenType.HOTP;
-        } else {
+        try {
+            this.type = TokenType.valueOf(type.toUpperCase());
+        } catch (IllegalArgumentException e) {
             throw new URIMappingException("Invalid type: " + type);
         }
     }
@@ -184,7 +182,7 @@ public class Token {
             Mac.getInstance("Hmac" + algoUpperCase);
             algo = algoUpperCase;
         } catch (NoSuchAlgorithmException e1) {
-            throw new URIMappingException("Invalid algrithm: " + algorithm);
+            throw new URIMappingException("Invalid algorithm: " + algorithm);
         }
     }
 

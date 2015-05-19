@@ -39,7 +39,7 @@ public class TokenFactory {
 
         Map<String, String> values = mapper.map(uri);
         int version = Integer.parseInt(get(values, OTPAuthMapper.VERSION, "1"));
-        if (version >= 1) {
+        if (version == 1) {
             token.setType(values.get(OTPAuthMapper.TYPE));
             token.setIssuer(get(values, OTPAuthMapper.ISSUER, ""));
             token.setLabel(get(values, OTPAuthMapper.LABEL, ""));
@@ -51,6 +51,8 @@ public class TokenFactory {
                 token.setCounter(get(values, OTPAuthMapper.COUNTER, "0"));
             }
             token.setImage(get(values, "image", null));
+        } else {
+            throw new URIMappingException("Unknown version: " + version);
         }
 
         return token;
