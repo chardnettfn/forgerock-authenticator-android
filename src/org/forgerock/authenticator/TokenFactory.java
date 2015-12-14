@@ -13,10 +13,10 @@
  *
  * Copyright 2015 ForgeRock AS.
  */
-package org.forgerock.authenticator;
+package com.forgerock.authenticator;
 
-import org.forgerock.authenticator.utils.OTPAuthMapper;
-import org.forgerock.authenticator.utils.URIMappingException;
+import com.forgerock.authenticator.utils.OTPAuthMapper;
+import com.forgerock.authenticator.utils.URIMappingException;
 
 import java.util.Map;
 

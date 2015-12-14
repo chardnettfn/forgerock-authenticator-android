@@ -18,7 +18,7 @@
  * limitations under the License.
  */
 
-package org.forgerock.authenticator.add;
+package com.forgerock.authenticator.add;
 
 import android.app.Activity;
 import android.text.Editable;

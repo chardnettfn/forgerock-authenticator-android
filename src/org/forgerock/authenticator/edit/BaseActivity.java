@@ -1,4 +1,4 @@
-package org.forgerock.authenticator.edit;
+package com.forgerock.authenticator.edit;
 
 import android.app.Activity;
 import android.os.Bundle;

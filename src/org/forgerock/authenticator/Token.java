@@ -22,12 +22,12 @@
  * Portions Copyrighted 2015 ForgeRock AS.
  */
 
-package org.forgerock.authenticator;
+package com.forgerock.authenticator;
 
 import android.net.Uri;
 import com.google.android.apps.authenticator.Base32String;
 import com.google.android.apps.authenticator.Base32String.DecodingException;
-import org.forgerock.authenticator.utils.URIMappingException;
+import com.forgerock.authenticator.utils.URIMappingException;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;

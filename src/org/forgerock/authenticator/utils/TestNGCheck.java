@@ -13,7 +13,7 @@
  *
  * Copyright 2015 ForgeRock AS.
  */
-package org.forgerock.authenticator.utils;
+package com.forgerock.authenticator.utils;
 
 /**
  * A simplistic way to verify that TestNG has not been included in the

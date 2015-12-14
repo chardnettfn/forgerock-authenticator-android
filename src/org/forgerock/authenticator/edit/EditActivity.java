@@ -22,11 +22,11 @@
  * Portions Copyrighted 2015 ForgeRock AS.
  */
 
-package org.forgerock.authenticator.edit;
+package com.forgerock.authenticator.edit;
 
-import org.forgerock.authenticator.R;
-import org.forgerock.authenticator.Token;
-import org.forgerock.authenticator.TokenPersistence;
+import com.forgerock.authenticator.R;
+import com.forgerock.authenticator.Token;
+import com.forgerock.authenticator.TokenPersistence;
 
 import android.content.Intent;
 import android.net.Uri;

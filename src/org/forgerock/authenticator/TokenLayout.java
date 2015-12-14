@@ -1,4 +1,4 @@
-package org.forgerock.authenticator;
+package com.forgerock.authenticator;
 
 import android.content.Context;
 import android.util.AttributeSet;

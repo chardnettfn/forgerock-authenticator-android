@@ -18,7 +18,7 @@
  * limitations under the License.
  */
 
-package org.forgerock.authenticator;
+package com.forgerock.authenticator;
 
 import android.content.Context;
 import android.content.res.Resources.Theme;

@@ -13,7 +13,7 @@
  *
  * Copyright 2015 ForgeRock AS.
  */
-package org.forgerock.authenticator.utils;
+package com.forgerock.authenticator.utils;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -26,7 +26,7 @@ import java.util.Map;
 
 /**
  * Provides the ability to parse URI scheme into a convenient format
- * to use with with configuring a {@link org.forgerock.authenticator.Token}
+ * to use with with configuring a {@link com.forgerock.authenticator.Token}
  * to generate OTP codes.
  *
  * The configuration URI is based on the format defined by the original

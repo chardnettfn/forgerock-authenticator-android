@@ -18,13 +18,13 @@
  * limitations under the License.
  */
 
-package org.forgerock.authenticator.add;
+package com.forgerock.authenticator.add;
 
 import java.util.List;
 
-import org.forgerock.authenticator.R;
-import org.forgerock.authenticator.Token;
-import org.forgerock.authenticator.TokenPersistence;
+import com.forgerock.authenticator.R;
+import com.forgerock.authenticator.Token;
+import com.forgerock.authenticator.TokenPersistence;
 
 import android.annotation.TargetApi;
 import android.app.Activity;

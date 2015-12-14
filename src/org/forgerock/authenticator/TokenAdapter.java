@@ -22,7 +22,7 @@
  * Portions Copyrighted 2015 ForgeRock AS.
  */
 
-package org.forgerock.authenticator;
+package com.forgerock.authenticator;
 
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -36,8 +36,8 @@ import android.view.ViewGroup;
 import android.widget.PopupMenu;
 import android.widget.Toast;
 
-import org.forgerock.authenticator.edit.DeleteActivity;
-import org.forgerock.authenticator.edit.EditActivity;
+import com.forgerock.authenticator.edit.DeleteActivity;
+import com.forgerock.authenticator.edit.EditActivity;
 
 import java.util.HashMap;
 import java.util.Map;

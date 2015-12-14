@@ -18,7 +18,7 @@
  * limitations under the License.
  */
 
-package org.forgerock.authenticator.add;
+package com.forgerock.authenticator.add;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;

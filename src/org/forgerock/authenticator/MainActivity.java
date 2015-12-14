@@ -36,7 +36,7 @@
 
 /* Portions Copyrighted 2015 ForgeRock AS. */
 
-package org.forgerock.authenticator;
+package com.forgerock.authenticator;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -50,9 +50,9 @@ import android.view.View;
 import android.view.WindowManager.LayoutParams;
 import android.widget.GridView;
 import android.widget.Toast;
-import org.forgerock.authenticator.add.AddActivity;
-import org.forgerock.authenticator.add.ScanActivity;
-import org.forgerock.authenticator.utils.TestNGCheck;
+import com.forgerock.authenticator.add.AddActivity;
+import com.forgerock.authenticator.add.ScanActivity;
+import com.forgerock.authenticator.utils.TestNGCheck;
 
 public class MainActivity extends Activity implements OnMenuItemClickListener {
     private TokenAdapter mTokenAdapter;

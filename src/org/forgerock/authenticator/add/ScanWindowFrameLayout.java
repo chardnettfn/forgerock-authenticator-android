@@ -18,7 +18,7 @@
  * limitations under the License.
  */
 
-package org.forgerock.authenticator.add;
+package com.forgerock.authenticator.add;
 
 import android.content.Context;
 import android.util.AttributeSet;

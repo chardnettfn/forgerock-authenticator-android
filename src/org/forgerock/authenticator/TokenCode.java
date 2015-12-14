@@ -18,7 +18,7 @@
  * limitations under the License.
  */
 
-package org.forgerock.authenticator;
+package com.forgerock.authenticator;
 
 public class TokenCode {
     private final String mCode;

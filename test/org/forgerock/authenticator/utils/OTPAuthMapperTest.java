@@ -13,7 +13,7 @@
  *
  * Copyright 2015 ForgeRock AS.
  */
-package org.forgerock.authenticator.utils;
+package com.forgerock.authenticator.utils;
 
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;

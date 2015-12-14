@@ -20,7 +20,7 @@
 
 /* Portions Copyrighted 2015 ForgeRock AS. */
 
-package org.forgerock.authenticator.add;
+package com.forgerock.authenticator.add;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -35,8 +35,8 @@ import android.widget.ImageButton;
 import android.widget.RadioButton;
 import android.widget.Spinner;
 import com.squareup.picasso.Picasso;
-import org.forgerock.authenticator.R;
-import org.forgerock.authenticator.TokenPersistence;
+import com.forgerock.authenticator.R;
+import com.forgerock.authenticator.TokenPersistence;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;

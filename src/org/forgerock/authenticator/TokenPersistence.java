@@ -22,7 +22,7 @@
  * Portions Copyrighted 2015 ForgeRock AS.
  */
 
-package org.forgerock.authenticator;
+package com.forgerock.authenticator;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -30,7 +30,7 @@ import android.widget.Toast;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
-import org.forgerock.authenticator.utils.URIMappingException;
+import com.forgerock.authenticator.utils.URIMappingException;
 
 import java.lang.reflect.Type;
 import java.util.LinkedList;
