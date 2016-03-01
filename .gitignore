@@ -2,3 +2,6 @@
 .idea
 gen
 out
+.gradle
+build
+local.properties
