@@ -14,9 +14,12 @@ public abstract class BaseActivity extends Activity {
         // Get the position of the token. This MUST exist.
         mPosition = getIntent().getIntExtra(EXTRA_POSITION, -1);
         assert mPosition >= 0;
+
     }
 
     protected int getPosition() {
         return mPosition;
     }
+
+
 }

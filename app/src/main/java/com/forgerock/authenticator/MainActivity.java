@@ -39,10 +39,18 @@
 package com.forgerock.authenticator;
 
 import android.app.Activity;
+import android.app.Notification;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.database.DataSetObserver;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MenuItem.OnMenuItemClickListener;
@@ -50,19 +58,41 @@ import android.view.View;
 import android.view.WindowManager.LayoutParams;
 import android.widget.GridView;
 import android.widget.Toast;
+import com.forgerock.authenticator.servcies.GCMRegistrationService;
 import com.forgerock.authenticator.add.AddActivity;
 import com.forgerock.authenticator.add.ScanActivity;
+import com.forgerock.authenticator.servcies.MessageConstants;
 import com.forgerock.authenticator.utils.TestNGCheck;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
 
 public class MainActivity extends Activity implements OnMenuItemClickListener {
     private TokenAdapter mTokenAdapter;
     private DataSetObserver mDataSetObserver;
+    private BroadcastReceiver mRegistrationBroadcastReceiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         onNewIntent(getIntent());
         setContentView(R.layout.main);
+
+        mRegistrationBroadcastReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+//                mRegistrationProgressBar.setVisibility(ProgressBar.GONE);
+                SharedPreferences sharedPreferences =
+                        PreferenceManager.getDefaultSharedPreferences(context);
+                boolean sentToken = sharedPreferences
+                        .getBoolean(MessageConstants.TOKEN_SENT_TO_SERVER, false);
+
+//                if (sentToken) {
+//                    mInformationTextView.setText(getString(R.string.gcm_send_message));
+//                } else {
+//                    mInformationTextView.setText(getString(R.string.token_error_message));
+//                }
+            }
+        };
 
         mTokenAdapter = new TokenAdapter(this);
         ((GridView) findViewById(R.id.grid)).setAdapter(mTokenAdapter);
@@ -74,13 +104,19 @@ public class MainActivity extends Activity implements OnMenuItemClickListener {
             @Override
             public void onChanged() {
                 super.onChanged();
-                if (mTokenAdapter.getCount() == 0)
+                if (mTokenAdapter.getCount() == 0) {
                     findViewById(android.R.id.empty).setVisibility(View.VISIBLE);
-                else
+                } else {
                     findViewById(android.R.id.empty).setVisibility(View.GONE);
+                }
             }
         };
         mTokenAdapter.registerDataSetObserver(mDataSetObserver);
+
+
+        if (checkPlayServices()) {
+            startService(new Intent(this, GCMRegistrationService.class));
+        }
 
         // Notify developer that they have included TestNG on classpath.
         if (TestNGCheck.isTestNGOnClassPath()) {
@@ -91,11 +127,14 @@ public class MainActivity extends Activity implements OnMenuItemClickListener {
     @Override
     protected void onResume() {
         super.onResume();
+        LocalBroadcastManager.getInstance(this).registerReceiver(mRegistrationBroadcastReceiver,
+                new IntentFilter(MessageConstants.REGISTRATION_COMPLETE));
         mTokenAdapter.notifyDataSetChanged();
     }
 
     @Override
     protected void onPause() {
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mRegistrationBroadcastReceiver);
         super.onPause();
         mTokenAdapter.notifyDataSetChanged();
     }
@@ -138,5 +177,19 @@ public class MainActivity extends Activity implements OnMenuItemClickListener {
         Uri uri = intent.getData();
         if (uri != null)
             TokenPersistence.addWithToast(this, uri.toString());
+    }
+
+    private boolean checkPlayServices() {
+        GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
+        int resultCode = apiAvailability.isGooglePlayServicesAvailable(this);
+        if (resultCode != ConnectionResult.SUCCESS) {
+            if (apiAvailability.isUserResolvableError(resultCode)) {
+                apiAvailability.getErrorDialog(this, resultCode, 9000).show();
+            } else {
+                finish();
+            }
+            return false;
+        }
+        return true;
     }
 }
