@@ -58,6 +58,7 @@ public class GCMRegistrationService extends IntentService {
             String token = getToken();
             Log.i(TAG, "GCM Registration Token: " + token);
 
+//            GcmPubSub.getInstance(this).subscribe(token, "/topics/global", null);
             GcmPubSub.getInstance(this).subscribe(token, "/topics/global", null);
             sharedPreferences.edit().putBoolean(MessageConstants.TOKEN_SENT_TO_SERVER, true).apply();
             handleToken(token);
@@ -79,14 +80,14 @@ public class GCMRegistrationService extends IntentService {
 
     private void handleToken(String token) {
 
-        // TODO: work out how toget content into the NewMessageActivity window
-        Intent intent = new Intent(this, NewMessageActivity.class);
-        intent.putExtra("title", "New Token Recieved");
-        intent.putExtra("message", token);
+        Intent intent = new Intent(Intent.ACTION_SEND);
+        intent.setType("text/html");
+        intent.putExtra(Intent.EXTRA_SUBJECT, "Token");
+        intent.putExtra(Intent.EXTRA_TEXT, token);
+        intent.setType("text/plain");
 
-        intent.addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
-
-        PendingIntent pendIntent = PendingIntent.getActivity(this, 1, intent,
+        PendingIntent pendIntent = PendingIntent.getActivity(
+                this, 1, Intent.createChooser(intent, "Send Email"),
                 PendingIntent.FLAG_ONE_SHOT);
 
         Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
