@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Portions Copyrighted 2015 ForgeRock AS. -->
+<?xml version="1.0" encoding="utf-8"?><!-- Portions Copyrighted 2015 ForgeRock AS. -->
 <resources>
     <string name="app_name">ForgeRock</string>
     <string name="add">Add</string>
@@ -44,4 +43,8 @@
         <item>SHA256</item>
         <item>SHA512</item>
     </string-array>
+
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
+    <string name="title_activity_new_message">Message</string>
 </resources>

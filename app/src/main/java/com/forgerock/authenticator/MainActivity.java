@@ -34,22 +34,19 @@
  * limitations under the License.
  */
 
-/* Portions Copyrighted 2015 ForgeRock AS. */
+/* Portions Copyrighted 2015-2016 ForgeRock AS. */
 
 package com.forgerock.authenticator;
 
 import android.app.Activity;
-import android.app.Notification;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.database.DataSetObserver;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -58,10 +55,10 @@ import android.view.View;
 import android.view.WindowManager.LayoutParams;
 import android.widget.GridView;
 import android.widget.Toast;
-import com.forgerock.authenticator.servcies.GCMRegistrationService;
+import com.forgerock.authenticator.message.GCMRegistrationService;
 import com.forgerock.authenticator.add.AddActivity;
 import com.forgerock.authenticator.add.ScanActivity;
-import com.forgerock.authenticator.servcies.MessageConstants;
+import com.forgerock.authenticator.message.MessageConstants;
 import com.forgerock.authenticator.utils.TestNGCheck;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
@@ -80,17 +77,6 @@ public class MainActivity extends Activity implements OnMenuItemClickListener {
         mRegistrationBroadcastReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-//                mRegistrationProgressBar.setVisibility(ProgressBar.GONE);
-                SharedPreferences sharedPreferences =
-                        PreferenceManager.getDefaultSharedPreferences(context);
-                boolean sentToken = sharedPreferences
-                        .getBoolean(MessageConstants.TOKEN_SENT_TO_SERVER, false);
-
-//                if (sentToken) {
-//                    mInformationTextView.setText(getString(R.string.gcm_send_message));
-//                } else {
-//                    mInformationTextView.setText(getString(R.string.token_error_message));
-//                }
             }
         };
 
