@@ -26,18 +26,22 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
-
 import com.forgerock.authenticator.R;
 import com.google.android.gms.gcm.GcmListenerService;
 
 /**
- * Created by ken.stubbings on 25/02/2016.
+ * GCM Service responds to downstream messages from the Google Cloud Messaging (GCM) framework.
+ *
+ * Responsible for triggering a Permissive Intent which will invoke the notification screen in
+ * this App. The body of the GCM message is included in the Intent.
  */
-public class GCMServcie extends GcmListenerService {
+public class GcmService extends GcmListenerService {
 
-    static int messageId = 2;
 
-    private static final String TAG = "MyGcmListenerService";
+    // Place holder for the moment, to be set to something stable
+    private static int messageId = 2;
+
+    private static final String TAG = GcmService.class.getSimpleName();
 
     @Override
     public void onMessageReceived(String from, Bundle data) {
@@ -46,6 +50,8 @@ public class GCMServcie extends GcmListenerService {
         Log.d(TAG, "From: " + from);
         Log.d(TAG, "Message: " + message);
 
+        // TODO: Validate that the message is a correctly formed message from the server.
+
         handleMessage(message);
     }
 
@@ -53,9 +59,16 @@ public class GCMServcie extends GcmListenerService {
 
         int id = messageId++;
         // TODO: Change activity a list of "unread" messages when there is more than one
+
+        /**
+         * TODO: Update ID of Intent to match Notification
+         * The ID of the Intent and the Notification should be the same and linked to something
+         * stable in the downstream message. This will allow us to possibly clear out a
+         * notification from the users device if they decide to cancel the login request.
+         */
         Intent intent = new Intent(this, NewMessageActivity.class);
-        intent.putExtra("title", "New Message Recieved");
-        intent.putExtra("message", message);
+        intent.putExtra(MessageConstants.TITLE, "New Message Received");
+        intent.putExtra(MessageConstants.MESSAGE, message);
 
         intent.addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
 

@@ -24,9 +24,9 @@ import com.google.android.gms.iid.InstanceIDListenerService;
  * Respond to a request from Instance ID service to refresh the registration
  * token which may be stored on the device if registration has been performed.
  *
- * The registration token represents a combination of the users device id, the
+ * The registration token represents a combination of the user's device id, the
  * sender id of the service they are accessing and other details. It is also
- * the same mechanism by which a sender can directly address a users devices
+ * the same mechanism by which a sender can directly address a user's devices
  * via the GCM network.
  *
  * Refresh can occur for a number of reasons:

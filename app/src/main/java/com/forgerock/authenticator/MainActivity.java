@@ -1,40 +1,21 @@
 /*
- * FreeOTP
+ * The contents of this file are subject to the terms of the Common Development and
+ * Distribution License (the License). You may not use this file except in compliance with the
+ * License.
  *
- * Authors: Nathaniel McCallum <npmccallum@redhat.com>
+ * You can obtain a copy of the License at legal/CDDLv1.0.txt. See the License for the
+ * specific language governing permission and limitations under the License.
  *
- * Copyright (C) 2013  Nathaniel McCallum, Red Hat
+ * When distributing Covered Software, include this CDDL Header Notice in each file and include
+ * the License file at legal/CDDLv1.0.txt. If applicable, add the following below the CDDL
+ * Header, with the fields enclosed by brackets [] replaced by your own identifying
+ * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Copyright 2015-2016 ForgeRock AS.
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-/*
  * Portions Copyright 2009 ZXing authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Portions Copyright 2013 Nathaniel McCallum, Red Hat
  */
-
-/* Portions Copyrighted 2015-2016 ForgeRock AS. */
 
 package com.forgerock.authenticator;
 
@@ -46,7 +27,6 @@ import android.content.IntentFilter;
 import android.database.DataSetObserver;
 import android.net.Uri;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -55,18 +35,27 @@ import android.view.View;
 import android.view.WindowManager.LayoutParams;
 import android.widget.GridView;
 import android.widget.Toast;
-import com.forgerock.authenticator.message.GCMRegistrationService;
 import com.forgerock.authenticator.add.AddActivity;
 import com.forgerock.authenticator.add.ScanActivity;
+import com.forgerock.authenticator.message.GcmRegistrationService;
 import com.forgerock.authenticator.message.MessageConstants;
 import com.forgerock.authenticator.utils.TestNGCheck;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 
+/**
+ * The main entry point for the Authenticator App.
+ *
+ * Responsible for handling all startup concerns for the app. Key details:
+ *
+ * <li>check that all required services are present</li>
+ * <li>prevent screenshots of the app</li>
+ * <li>show the first screen to the user</li>
+ */
 public class MainActivity extends Activity implements OnMenuItemClickListener {
-    private TokenAdapter mTokenAdapter;
-    private DataSetObserver mDataSetObserver;
-    private BroadcastReceiver mRegistrationBroadcastReceiver;
+    private TokenAdapter tokenAdapter;
+    private DataSetObserver dataSetObserver;
+    private BroadcastReceiver broadcastReceiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,37 +63,39 @@ public class MainActivity extends Activity implements OnMenuItemClickListener {
         onNewIntent(getIntent());
         setContentView(R.layout.main);
 
-        mRegistrationBroadcastReceiver = new BroadcastReceiver() {
+        broadcastReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
             }
         };
 
-        mTokenAdapter = new TokenAdapter(this);
-        ((GridView) findViewById(R.id.grid)).setAdapter(mTokenAdapter);
+        tokenAdapter = new TokenAdapter(this);
+        ((GridView) findViewById(R.id.grid)).setAdapter(tokenAdapter);
 
         // Don't permit screenshots since these might contain OTP codes.
         getWindow().setFlags(LayoutParams.FLAG_SECURE, LayoutParams.FLAG_SECURE);
 
-        mDataSetObserver = new DataSetObserver() {
+        dataSetObserver = new DataSetObserver() {
             @Override
             public void onChanged() {
                 super.onChanged();
-                if (mTokenAdapter.getCount() == 0) {
+                if (tokenAdapter.getCount() == 0) {
                     findViewById(android.R.id.empty).setVisibility(View.VISIBLE);
                 } else {
                     findViewById(android.R.id.empty).setVisibility(View.GONE);
                 }
             }
         };
-        mTokenAdapter.registerDataSetObserver(mDataSetObserver);
+        tokenAdapter.registerDataSetObserver(dataSetObserver);
 
 
+        // // TODO: AME-9928 check should be performed in on-resume as well.
         if (checkPlayServices()) {
-            startService(new Intent(this, GCMRegistrationService.class));
+            startService(new Intent(this, GcmRegistrationService.class));
         }
 
         // Notify developer that they have included TestNG on classpath.
+        // TODO: AME-9927 should update or resolve this check
         if (TestNGCheck.isTestNGOnClassPath()) {
             Toast.makeText(getApplicationContext(), "Compiled with test libraries", Toast.LENGTH_LONG).show();
         }
@@ -113,22 +104,22 @@ public class MainActivity extends Activity implements OnMenuItemClickListener {
     @Override
     protected void onResume() {
         super.onResume();
-        LocalBroadcastManager.getInstance(this).registerReceiver(mRegistrationBroadcastReceiver,
+        LocalBroadcastManager.getInstance(this).registerReceiver(broadcastReceiver,
                 new IntentFilter(MessageConstants.REGISTRATION_COMPLETE));
-        mTokenAdapter.notifyDataSetChanged();
+        tokenAdapter.notifyDataSetChanged();
     }
 
     @Override
     protected void onPause() {
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(mRegistrationBroadcastReceiver);
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastReceiver);
         super.onPause();
-        mTokenAdapter.notifyDataSetChanged();
+        tokenAdapter.notifyDataSetChanged();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        mTokenAdapter.unregisterDataSetObserver(mDataSetObserver);
+        tokenAdapter.unregisterDataSetObserver(dataSetObserver);
     }
 
     @Override
@@ -165,6 +156,7 @@ public class MainActivity extends Activity implements OnMenuItemClickListener {
             TokenPersistence.addWithToast(this, uri.toString());
     }
 
+    // TODO: AME-9928 should seek to upgrade this functionality
     private boolean checkPlayServices() {
         GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
         int resultCode = apiAvailability.isGooglePlayServicesAvailable(this);

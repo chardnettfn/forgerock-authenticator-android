@@ -40,13 +40,13 @@ import java.io.IOException;
 /**
  * The GCMRegistrationService registers for GCM message events and retrieves the device token.
  */
-public class GCMRegistrationService extends IntentService {
-    private static final String TAG = "RegIntentService";
+public class GcmRegistrationService extends IntentService {
+    private static final String TAG = GcmRegistrationService.class.getSimpleName();
 
     /**
-     * Creates an GCMRegistrationService.
+     * Creates a GCMRegistrationService.
      */
-    public GCMRegistrationService() {
+    public GcmRegistrationService() {
         super(TAG);
     }
 
@@ -58,7 +58,6 @@ public class GCMRegistrationService extends IntentService {
             String token = getToken();
             Log.i(TAG, "GCM Registration Token: " + token);
 
-//            GcmPubSub.getInstance(this).subscribe(token, "/topics/global", null);
             GcmPubSub.getInstance(this).subscribe(token, "/topics/global", null);
             sharedPreferences.edit().putBoolean(MessageConstants.TOKEN_SENT_TO_SERVER, true).apply();
             handleToken(token);

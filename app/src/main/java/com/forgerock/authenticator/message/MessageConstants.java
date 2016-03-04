@@ -26,6 +26,13 @@ public final class MessageConstants {
 
     /** A keyword to indicate that the token has been sent to the server. */
     public static final String TOKEN_SENT_TO_SERVER = "tokenSentToServer";
-    /** A keyword to indicate that the token has been receieved by the server. */
+    /** A keyword to indicate that the token has been received by the server. */
     public static final String REGISTRATION_COMPLETE = "registrationComplete";
+
+    /**
+     * Signalling fields for a downstream message to display on a UI Activity
+     * for the user.
+     */
+    public static final String TITLE = "title";
+    public static final String MESSAGE = "message";
 }
