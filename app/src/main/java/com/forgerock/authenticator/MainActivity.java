@@ -27,6 +27,7 @@ import android.content.IntentFilter;
 import android.database.DataSetObserver;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.VisibleForTesting;
 import android.support.v4.content.LocalBroadcastManager;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -42,6 +43,8 @@ import com.forgerock.authenticator.message.MessageConstants;
 import com.forgerock.authenticator.utils.TestNGCheck;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The main entry point for the Authenticator App.
@@ -53,9 +56,28 @@ import com.google.android.gms.common.GoogleApiAvailability;
  * <li>show the first screen to the user</li>
  */
 public class MainActivity extends Activity implements OnMenuItemClickListener {
+    private final Logger logger;
+
     private TokenAdapter tokenAdapter;
     private DataSetObserver dataSetObserver;
     private BroadcastReceiver broadcastReceiver;
+
+    /**
+     * Default instance of MainActivity will be created by Android framework.
+     */
+    public MainActivity() {
+        this(LoggerFactory.getLogger(MainActivity.class));
+    }
+
+    /**
+     * Dependencies exposed for unit testing as required.
+     * 
+     * @param logger Non null logging instance.
+     */
+    @VisibleForTesting
+    public MainActivity(final Logger logger) {
+        this.logger = logger;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

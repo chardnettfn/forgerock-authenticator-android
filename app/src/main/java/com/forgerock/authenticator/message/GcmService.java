@@ -24,10 +24,14 @@ import android.content.Intent;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.VisibleForTesting;
 import android.support.v4.app.NotificationCompat;
-import android.util.Log;
 import com.forgerock.authenticator.R;
 import com.google.android.gms.gcm.GcmListenerService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+
 
 /**
  * GCM Service responds to downstream messages from the Google Cloud Messaging (GCM) framework.
@@ -36,19 +40,34 @@ import com.google.android.gms.gcm.GcmListenerService;
  * this App. The body of the GCM message is included in the Intent.
  */
 public class GcmService extends GcmListenerService {
-
-
     // Place holder for the moment, to be set to something stable
     private static int messageId = 2;
+    private final Logger logger;
 
-    private static final String TAG = GcmService.class.getSimpleName();
+    /**
+     * Default instance of GcmService expected to be instantiated by Android framework.
+     */
+    public GcmService() {
+        this(LoggerFactory.getLogger(GcmService.class));
+    }
+
+    /**
+     * Dependencies exposed for unit test purposes.
+     *
+     * @param logger Non null logging instance.
+     */
+    @VisibleForTesting
+    public GcmService(final Logger logger) {
+        this.logger = logger;
+    }
 
     @Override
     public void onMessageReceived(String from, Bundle data) {
         String message = data.getString("message");
 
-        Log.d(TAG, "From: " + from);
-        Log.d(TAG, "Message: " + message);
+        // TODO: Message contents should not be printed to system log
+        logger.info("From: {}", from);
+        logger.info("Message: {}", message);
 
         // TODO: Validate that the message is a correctly formed message from the server.
 

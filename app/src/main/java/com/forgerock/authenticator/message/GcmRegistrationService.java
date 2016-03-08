@@ -26,14 +26,15 @@ import android.content.SharedPreferences;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.preference.PreferenceManager;
+import android.support.annotation.VisibleForTesting;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
-import android.util.Log;
-
 import com.forgerock.authenticator.R;
 import com.google.android.gms.gcm.GcmPubSub;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.google.android.gms.iid.InstanceID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
@@ -41,13 +42,26 @@ import java.io.IOException;
  * The GCMRegistrationService registers for GCM message events and retrieves the device token.
  */
 public class GcmRegistrationService extends IntentService {
-    private static final String TAG = GcmRegistrationService.class.getSimpleName();
+    private final Logger logger;
 
     /**
-     * Creates a GCMRegistrationService.
+     * Default instance of GcmRegistrationService expected to be instantiated
+     * by Android framework.
      */
     public GcmRegistrationService() {
-        super(TAG);
+        this(GcmRegistrationService.class.getSimpleName(), LoggerFactory.getLogger(GcmRegistrationService.class));
+    }
+
+    /**
+     * Dependencies exposed version to support unit testing.
+     *
+     * @param serviceName Non null service name for IntentService
+     * @param logger Non null logging instance
+     */
+    @VisibleForTesting
+    public GcmRegistrationService(final String serviceName, final Logger logger) {
+        super(serviceName);
+        this.logger = logger;
     }
 
     @Override
@@ -56,14 +70,14 @@ public class GcmRegistrationService extends IntentService {
 
         try {
             String token = getToken();
-            Log.i(TAG, "GCM Registration Token: " + token);
+            logger.info("GCM Registration Token: {}", token);
 
             GcmPubSub.getInstance(this).subscribe(token, "/topics/global", null);
             sharedPreferences.edit().putBoolean(MessageConstants.TOKEN_SENT_TO_SERVER, true).apply();
             handleToken(token);
 
         } catch (IOException e) {
-            Log.d(TAG, "Failed to complete token refresh", e);
+            logger.warn("Failed to complete token refresh", e);
             sharedPreferences.edit().putBoolean(MessageConstants.TOKEN_SENT_TO_SERVER, false).apply();
         }
 

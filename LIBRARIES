@@ -34,3 +34,12 @@ license: Apache License 2.0
 
 Using version 6.8.5 as this is inline with OpenAM. No other reason for this version.
 
+SLF4J Android Wrapper
+---------------------
+
+project: http://www.slf4j.org
+resource: https://bintray.com/bintray/jcenter/org.slf4j%3Aslf4j-android/view
+license: MIT License
+
+A repackage of SLF4J with a basic Android implementation which hooks into Java Util Logging.
+
