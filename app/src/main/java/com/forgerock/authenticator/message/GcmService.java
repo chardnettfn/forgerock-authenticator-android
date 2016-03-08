@@ -18,15 +18,13 @@ package com.forgerock.authenticator.message;
 
 import android.app.Notification;
 import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.media.RingtoneManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.VisibleForTesting;
-import android.support.v4.app.NotificationCompat;
-import com.forgerock.authenticator.R;
+import com.forgerock.authenticator.utils.ContextService;
+import com.forgerock.authenticator.utils.IntentFactory;
+import com.forgerock.authenticator.utils.NotificationFactory;
 import com.google.android.gms.gcm.GcmListenerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,23 +40,33 @@ import org.slf4j.LoggerFactory;
 public class GcmService extends GcmListenerService {
     // Place holder for the moment, to be set to something stable
     private static int messageId = 2;
+
     private final Logger logger;
+    private final IntentFactory intentFactory;
+    private final NotificationFactory notificationFactory;
+    private final ContextService contextService;
 
     /**
      * Default instance of GcmService expected to be instantiated by Android framework.
      */
     public GcmService() {
-        this(LoggerFactory.getLogger(GcmService.class));
+        this(LoggerFactory.getLogger(GcmService.class), new IntentFactory(), new NotificationFactory(), new ContextService());
     }
 
     /**
      * Dependencies exposed for unit test purposes.
      *
      * @param logger Non null logging instance.
+     * @param intentFactory Non null IntentFactory for generating internal Intents.
+     * @param notificationFactory Non null NotificationFactory.
      */
     @VisibleForTesting
-    public GcmService(final Logger logger) {
+    public GcmService(final Logger logger, final IntentFactory intentFactory,
+                      final NotificationFactory notificationFactory, final ContextService contextService) {
         this.logger = logger;
+        this.intentFactory = intentFactory;
+        this.notificationFactory = notificationFactory;
+        this.contextService = contextService;
     }
 
     @Override
@@ -85,30 +93,17 @@ public class GcmService extends GcmListenerService {
          * stable in the downstream message. This will allow us to possibly clear out a
          * notification from the users device if they decide to cancel the login request.
          */
-        Intent intent = new Intent(this, NewMessageActivity.class);
+        Intent intent = intentFactory.generateInternal(this, NewMessageActivity.class);
         intent.putExtra(MessageConstants.TITLE, "New Message Received");
         intent.putExtra(MessageConstants.MESSAGE, message);
 
         intent.addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
 
-        PendingIntent pendIntent = PendingIntent.getActivity(this, id, intent,
-                PendingIntent.FLAG_ONE_SHOT);
+        String title = "Login Detected";
+        Notification notification = notificationFactory.generatePending(this, id, title, message, intent);
 
-        Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-
-        Notification notification = new NotificationCompat.Builder(this)
-                .setSmallIcon(R.drawable.forgerock_notification)
-                .setContentTitle("Login Detected")
-                .setContentText(message)
-                .setAutoCancel(true)
-                .setSound(defaultSoundUri)
-                .setContentIntent(pendIntent)
-                .build();
-
-        NotificationManager noteMan =
-                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        noteMan.notify(id, notification);
-
+        NotificationManager notificationManager = contextService.getService(this, Context.NOTIFICATION_SERVICE);
+        notificationManager.notify(id, notification);
     }
 
 }
