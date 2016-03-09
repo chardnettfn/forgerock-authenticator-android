@@ -17,8 +17,6 @@ package com.forgerock.authenticator.utils;
 
 import android.content.Context;
 
-import java.lang.reflect.Field;
-
 /**
  * Responsible for resolving context based Services which are required for performing
  * actions within the Android framework.
@@ -38,19 +36,6 @@ public class ContextService {
      */
     @SuppressWarnings("unchecked")
     public <T> T getService(Context context, String serviceName) {
-
-        boolean match = false;
-        for (Field field : Context.class.getDeclaredFields()) {
-            String name = field.getName();
-            if (name.endsWith("SERVICE") && serviceName.equals(name)) {
-                match = true;
-                break;
-            }
-        }
-        if (!match) {
-            throw new IllegalArgumentException("Invalid Service requested " + serviceName);
-        }
-
         try {
             /**
              * Later Android SDK provides a getSystemService(Class) method, but as we target SDK 14 we depend on
