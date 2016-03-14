@@ -16,7 +16,7 @@
  * Portions Copyright 2013 Nathaniel McCallum, Red Hat
  */
 
-package com.forgerock.authenticator;
+package com.forgerock.authenticator.mechanisms.TOTP;
 
 import android.content.Context;
 import android.content.Intent;
@@ -27,6 +27,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.PopupMenu;
 
+import com.forgerock.authenticator.BaseReorderableAdapter;
+import com.forgerock.authenticator.R;
 import com.forgerock.authenticator.edit.DeleteActivity;
 import com.forgerock.authenticator.edit.EditActivity;
 

@@ -16,7 +16,7 @@
  * Portions Copyright 2013 Nathaniel McCallum, Red Hat
  */
 
-package com.forgerock.authenticator;
+package com.forgerock.authenticator.mechanisms.TOTP;
 
 import android.net.Uri;
 import com.google.android.apps.authenticator.Base32String;

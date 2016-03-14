@@ -15,6 +15,8 @@
  */
 package com.forgerock.authenticator;
 
+import com.forgerock.authenticator.mechanisms.TOTP.Token;
+import com.forgerock.authenticator.mechanisms.TOTP.TokenFactory;
 import com.forgerock.authenticator.utils.URIMappingException;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;

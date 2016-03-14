@@ -1,26 +1,34 @@
 /*
- * The contents of this file are subject to the terms of the Common Development and
- * Distribution License (the License). You may not use this file except in compliance with the
- * License.
+ * FreeOTP
  *
- * You can obtain a copy of the License at legal/CDDLv1.0.txt. See the License for the
- * specific language governing permission and limitations under the License.
+ * Authors: Nathaniel McCallum <npmccallum@redhat.com>
  *
- * When distributing Covered Software, include this CDDL Header Notice in each file and include
- * the License file at legal/CDDLv1.0.txt. If applicable, add the following below the CDDL
- * Header, with the fields enclosed by brackets [] replaced by your own identifying
- * information: "Portions copyright [year] [name of copyright owner]".
+ * Copyright (C) 2013  Nathaniel McCallum, Red Hat
  *
- * Copyright 2015-2016 ForgeRock AS.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * Portions Copyright 2013 Nathaniel McCallum, Red Hat
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
-package com.forgerock.authenticator;
+/**
+ * Portions Copyrighted 2015 ForgeRock AS.
+ */
+
+package com.forgerock.authenticator.mechanisms.TOTP;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.widget.Toast;
+
+import com.forgerock.authenticator.R;
+import com.forgerock.authenticator.ValueStore;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
@@ -36,18 +44,18 @@ public class TokenPersistence {
 
     private static final TokenFactory tokenFactory = new TokenFactory();
 
-    private final SharedPreferences prefs;
-    private final Gson gson;
+    private final ValueStore valueStore;
 
-    private List<String> getTokenOrder() {
-        Type type = new TypeToken<List<String>>(){}.getType();
-        String str = prefs.getString(ORDER, "[]");
-        List<String> order = gson.fromJson(str, type);
-        return order == null ? new LinkedList<String>() : order;
+    public TokenPersistence(Context context) {
+        valueStore = new ValueStore(context, NAME);
     }
 
-    private SharedPreferences.Editor setTokenOrder(List<String> order) {
-        return prefs.edit().putString(ORDER, gson.toJson(order));
+    private List<String> getTokenOrder() {
+        return valueStore.getList(ORDER);
+    }
+
+    private ValueStore setTokenOrder(List<String> order) {
+        return valueStore.put(ORDER, order);
     }
 
     public static Token addWithToast(Context ctx, String uri) {
@@ -63,25 +71,19 @@ public class TokenPersistence {
         return null;
     }
 
-    public TokenPersistence(Context ctx) {
-        prefs = ctx.getApplicationContext().getSharedPreferences(NAME, Context.MODE_PRIVATE);
-        gson = new Gson();
-    }
-
     public int length() {
         return getTokenOrder().size();
     }
 
     public Token get(int position) {
         String key = getTokenOrder().get(position);
-        String str = prefs.getString(key, null);
 
         try {
-            return gson.fromJson(str, Token.class);
+            return valueStore.getAsClass(key, Token.class);
         } catch (JsonSyntaxException jse) {
-            // Backwards compatibility for URL-based persistence.
+            // Backwards compatibility for URL-based persistence. // Is this needed?
             try {
-                return tokenFactory.get(str);
+                return tokenFactory.get(valueStore.getString(key));
             } catch (URIMappingException e) {
                 e.printStackTrace();
             }
@@ -93,12 +95,12 @@ public class TokenPersistence {
     public void add(Token token) {
         String key = token.getID();
 
-        if (prefs.contains(key))
+        if (valueStore.contains(key))
             return;
 
         List<String> order = getTokenOrder();
         order.add(0, key);
-        setTokenOrder(order).putString(key, gson.toJson(token)).apply();
+        setTokenOrder(order).put(key, token).apply();
     }
 
     public void move(int fromPosition, int toPosition) {
@@ -122,6 +124,6 @@ public class TokenPersistence {
     }
 
     public void save(Token token) {
-        prefs.edit().putString(token.getID(), gson.toJson(token)).apply();
+        valueStore.put(token.getID(), token).apply();
     }
 }

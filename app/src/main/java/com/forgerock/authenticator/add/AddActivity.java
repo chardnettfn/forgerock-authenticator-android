@@ -32,7 +32,7 @@ import android.widget.RadioButton;
 import android.widget.Spinner;
 import com.squareup.picasso.Picasso;
 import com.forgerock.authenticator.R;
-import com.forgerock.authenticator.TokenPersistence;
+import com.forgerock.authenticator.mechanisms.TOTP.TokenPersistence;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;

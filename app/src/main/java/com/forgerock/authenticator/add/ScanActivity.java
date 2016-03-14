@@ -32,8 +32,8 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.widget.ImageView;
 import com.forgerock.authenticator.R;
-import com.forgerock.authenticator.Token;
-import com.forgerock.authenticator.TokenPersistence;
+import com.forgerock.authenticator.mechanisms.TOTP.Token;
+import com.forgerock.authenticator.mechanisms.TOTP.TokenPersistence;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 

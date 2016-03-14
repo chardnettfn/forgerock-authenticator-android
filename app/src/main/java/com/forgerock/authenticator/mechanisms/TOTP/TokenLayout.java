@@ -14,7 +14,7 @@
  * Copyright 2015 ForgeRock AS.
  */
 
-package com.forgerock.authenticator;
+package com.forgerock.authenticator.mechanisms.TOTP;
 
 import android.content.Context;
 import android.util.AttributeSet;
@@ -25,6 +25,9 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.TextView;
+
+import com.forgerock.authenticator.ProgressCircle;
+import com.forgerock.authenticator.R;
 import com.squareup.picasso.Picasso;
 
 public class TokenLayout extends FrameLayout implements View.OnClickListener, Runnable {

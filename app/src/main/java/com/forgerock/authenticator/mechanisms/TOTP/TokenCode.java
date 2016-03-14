@@ -16,7 +16,7 @@
  * Portions Copyright 2014 Nathaniel McCallum, Red Hat
  */
 
-package com.forgerock.authenticator;
+package com.forgerock.authenticator.mechanisms.TOTP;
 
 public class TokenCode {
     private final String mCode;

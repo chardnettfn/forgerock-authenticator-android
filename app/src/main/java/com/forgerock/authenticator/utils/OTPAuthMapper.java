@@ -15,6 +15,8 @@
  */
 package com.forgerock.authenticator.utils;
 
+import com.forgerock.authenticator.mechanisms.TOTP.Token;
+
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.MessageFormat;
@@ -26,7 +28,7 @@ import java.util.Map;
 
 /**
  * Provides the ability to parse URI scheme into a convenient format
- * to use with with configuring a {@link com.forgerock.authenticator.Token}
+ * to use with with configuring a {@link Token}
  * to generate OTP codes.
  *
  * The configuration URI is based on the format defined by the original

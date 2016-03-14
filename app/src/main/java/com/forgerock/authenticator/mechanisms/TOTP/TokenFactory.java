@@ -14,7 +14,7 @@
  * Copyright 2015 ForgeRock AS.
  */
 
-package com.forgerock.authenticator;
+package com.forgerock.authenticator.mechanisms.TOTP;
 
 import com.forgerock.authenticator.utils.OTPAuthMapper;
 import com.forgerock.authenticator.utils.URIMappingException;

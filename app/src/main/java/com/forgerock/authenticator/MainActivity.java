@@ -38,6 +38,8 @@ import android.widget.GridView;
 import android.widget.Toast;
 import com.forgerock.authenticator.add.AddActivity;
 import com.forgerock.authenticator.add.ScanActivity;
+import com.forgerock.authenticator.mechanisms.TOTP.TokenAdapter;
+import com.forgerock.authenticator.mechanisms.TOTP.TokenPersistence;
 import com.forgerock.authenticator.message.GcmRegistrationService;
 import com.forgerock.authenticator.message.MessageConstants;
 import com.forgerock.authenticator.utils.TestNGCheck;
