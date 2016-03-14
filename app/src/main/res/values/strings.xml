@@ -18,6 +18,7 @@
     <string name="app_name">ForgeRock</string>
     <string name="add">Add</string>
     <string name="invalid_token">The token specified was invalid!</string>
+    <string name="invalid_qr">The scanned QR code was invalid!</string>
     <string name="delete">Delete</string>
     <string name="edit">Edit</string>
     <string name="restore_defaults">Restore Defaults</string>

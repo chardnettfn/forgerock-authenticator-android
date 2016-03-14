@@ -11,20 +11,24 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2015 ForgeRock AS.
+ * Copyright 2016 ForgeRock AS.
  */
-package com.forgerock.authenticator.utils;
+
+package com.forgerock.authenticator;
+
+import android.app.Application;
+
+import roboguice.RoboGuice;
 
 /**
- * Represents an error in parsing a Configuration URI, or in creating a Configuration
- * URI from a set of attributes.
+ * Used to disable annotation database for RoboGuice. Specifically, issues were encountered using
+ * RoboGuice without RoboBlender.
+ * {@link https://github.com/roboguice/roboguice/wiki/RoboBlender-wiki pro} provides
+ * details on how to disable RoboBlender support which should be investigated at a later date.
+ * TODO: AME-10125
  */
-public class URIMappingException extends Exception {
-    public URIMappingException(String s, Throwable e) {
-        super(s, e);
-    }
-
-    public URIMappingException(String s) {
-        super(s);
+public class FRAuthApplication extends Application {
+    static {
+        RoboGuice.setUseAnnotationDatabases(false);
     }
 }

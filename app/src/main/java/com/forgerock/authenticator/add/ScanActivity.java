@@ -19,7 +19,7 @@
 package com.forgerock.authenticator.add;
 
 import android.annotation.TargetApi;
-import android.app.Activity;
+import android.content.Context;
 import android.hardware.Camera;
 import android.hardware.Camera.CameraInfo;
 import android.hardware.Camera.Parameters;
@@ -31,77 +31,63 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.Toast;
+
 import com.forgerock.authenticator.R;
-import com.forgerock.authenticator.Token;
-import com.forgerock.authenticator.TokenPersistence;
+import com.forgerock.authenticator.mechanisms.CoreMechanismFactory;
+import com.forgerock.authenticator.mechanisms.Mechanism;
+import com.forgerock.authenticator.storage.IdentityDatabase;
+import com.forgerock.authenticator.mechanisms.MechanismCreationException;
+import com.forgerock.authenticator.mechanisms.URIMappingException;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.List;
 
-public class ScanActivity extends Activity implements SurfaceHolder.Callback {
-    private final CameraInfo    mCameraInfo  = new CameraInfo();
+import roboguice.RoboGuice;
+import roboguice.activity.RoboActivity;
+
+/**
+ * Activity used for scanning QR codes. Provides feedback to the user when a QR code is scanned,
+ * and if successful, creates the Mechanism that the QR code represents.
+ */
+public class ScanActivity extends RoboActivity implements SurfaceHolder.Callback {
+    private static final CameraInfo    mCameraInfo  = new CameraInfo();
     private final ScanAsyncTask mScanAsyncTask;
     private final int           mCameraId;
     private Handler             mHandler;
     private Camera              mCamera;
+    private Logger logger;
 
-    private static class AutoFocusHandler extends Handler implements Camera.AutoFocusCallback {
-        private final Camera mCamera;
-
-        public AutoFocusHandler(Camera camera) {
-            mCamera = camera;
-        }
-
-        @Override
-        public void handleMessage(Message msg) {
-            super.handleMessage(msg);
-            mCamera.autoFocus(this);
-        }
-
-        @Override
-        public void onAutoFocus(boolean success, Camera camera) {
-            sendEmptyMessageDelayed(0, 1000);
-        }
-    }
-
-    public static boolean haveCamera() {
-        return findCamera(new CameraInfo()) >= 0;
-    }
-
-    private static int findCamera(CameraInfo cameraInfo) {
-        int cameraId = Camera.getNumberOfCameras() - 1;
-
-        // Find a back-facing camera, otherwise use the first camera.
-        for (; cameraId > 0; cameraId--) {
-            Camera.getCameraInfo(cameraId, cameraInfo);
-            if (cameraInfo.facing == CameraInfo.CAMERA_FACING_BACK)
-                break;
-        }
-
-        return cameraId;
-    }
-
+    /**
+     * Creates a new ScanActivity. Never called directly, as instantiation is handled by an Intent.
+     */
     public ScanActivity() {
         super();
+        logger = LoggerFactory.getLogger(ScanActivity.class);
 
-        mCameraId = findCamera(mCameraInfo);
+        mCameraId = findCamera();
         assert mCameraId >= 0;
+
+        final Context context = this;
 
         // Create the decoder thread
         mScanAsyncTask = new ScanAsyncTask() {
             @Override
             protected void onPostExecute(String result) {
                 super.onPostExecute(result);
-                Token token = TokenPersistence.addWithToast(ScanActivity.this, result);
-                if (token == null || token.getImage() == null) {
+                Mechanism mechanism = addWithToast(context, result);
+                if (mechanism == null || mechanism.getOwner().getImage() == null) {
                     finish();
                     return;
                 }
 
                 final ImageView image = (ImageView) findViewById(R.id.image);
                 Picasso.with(ScanActivity.this)
-                        .load(token.getImage())
+                        .load(mechanism.getOwner().getImage())
                         .placeholder(R.drawable.scan)
                         .into(image, new Callback() {
                             @Override
@@ -123,6 +109,39 @@ public class ScanActivity extends Activity implements SurfaceHolder.Callback {
                         });
             }
         };
+    }
+
+    /**
+     * Determines if a suitable camera has been detected.
+     * @return True if there is a camera available.
+     */
+    public static boolean haveCamera() {
+        return findCamera() >= 0;
+    }
+
+    private static int findCamera() {
+        int cameraId = Camera.getNumberOfCameras() - 1;
+
+        // Find a back-facing camera, otherwise use the first camera.
+        for (; cameraId > 0; cameraId--) {
+            Camera.getCameraInfo(cameraId, mCameraInfo);
+            if (mCameraInfo.facing == CameraInfo.CAMERA_FACING_BACK)
+                break;
+        }
+
+        return cameraId;
+    }
+
+    private Mechanism addWithToast(Context context, String uri) {
+        try {
+            Mechanism mechanism = RoboGuice.getInjector(this).getInstance(CoreMechanismFactory.class).createFromUri(uri);
+            RoboGuice.getInjector(context).getInstance(IdentityDatabase.class).addMechanism(mechanism);
+            return mechanism;
+        } catch (MechanismCreationException | URIMappingException e) {
+            Toast.makeText(context, R.string.invalid_qr, Toast.LENGTH_SHORT).show();
+            logger.error("Failed to create Mechanism from QR code", e);
+            return null;
+        }
     }
 
     @Override
@@ -238,5 +257,28 @@ public class ScanActivity extends Activity implements SurfaceHolder.Callback {
         mCamera.setPreviewCallback(null);
         mCamera.release();
         mCamera = null;
+    }
+
+    private static class AutoFocusHandler extends Handler implements Camera.AutoFocusCallback {
+        private final Camera mCamera;
+
+        /**
+         * Creates a handler for autofocussing a given camera.
+         * @param camera The camera to autofocus.
+         */
+        public AutoFocusHandler(Camera camera) {
+            mCamera = camera;
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            mCamera.autoFocus(this);
+        }
+
+        @Override
+        public void onAutoFocus(boolean success, Camera camera) {
+            sendEmptyMessageDelayed(0, 1000);
+        }
     }
 }

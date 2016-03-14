@@ -51,7 +51,9 @@
         android:allowBackup="true"
         android:icon="@drawable/forgerock_logo"
         android:label="@string/app_name"
-        android:theme="@style/AppTheme">
+        android:theme="@style/AppTheme"
+        android:name=".FRAuthApplication">
+        <meta-data android:name="roboguice.modules" android:value="com.forgerock.authenticator.AuthGuiceModule"/>
         <activity
             android:name=".AboutActivity"
             android:theme="@android:style/Theme.Holo.Light.Dialog.NoActionBar" />
@@ -59,18 +61,9 @@
             android:name=".add.ScanActivity"
             android:theme="@android:style/Theme.Holo.NoActionBar.Fullscreen" />
         <activity
-            android:name=".add.AddActivity"
-            android:label="@string/add_token"
-            android:theme="@android:style/Theme.Holo.Light.Dialog.NoActionBar"
-            android:windowSoftInputMode="stateVisible" />
-        <activity
-            android:name=".edit.DeleteActivity"
+            android:name=".delete.DeleteMechanismActivity"
             android:label="@string/delete_question"
             android:theme="@android:style/Theme.Holo.Light.Dialog" />
-        <activity
-            android:name=".edit.EditActivity"
-            android:theme="@android:style/Theme.Holo.Light.Dialog.NoActionBar"
-            android:windowSoftInputMode="stateVisible" />
         <activity
             android:name=".MainActivity"
             android:clearTaskOnLaunch="true"

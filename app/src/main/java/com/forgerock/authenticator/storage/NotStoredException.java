@@ -11,31 +11,20 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2015-2016 ForgeRock AS.
+ * Copyright 2016 ForgeRock AS.
  */
 
-package com.forgerock.authenticator.edit;
+package com.forgerock.authenticator.storage;
 
-import android.app.Activity;
-import android.os.Bundle;
-
-public abstract class BaseActivity extends Activity {
-    public static final String EXTRA_POSITION = "position";
-    private int mPosition;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        // Get the position of the token. This MUST exist.
-        mPosition = getIntent().getIntExtra(EXTRA_POSITION, -1);
-        assert mPosition >= 0;
-
+/**
+ * Thrown if methods are called on an object that assumes it has been stored, when it has not.
+ */
+public class NotStoredException extends Exception {
+    /**
+     * Creates the exception with the provided message.
+     * @param detailMessage A message describing the cause of the exception.
+     */
+    public NotStoredException(String detailMessage) {
+        super(detailMessage);
     }
-
-    protected int getPosition() {
-        return mPosition;
-    }
-
-
 }

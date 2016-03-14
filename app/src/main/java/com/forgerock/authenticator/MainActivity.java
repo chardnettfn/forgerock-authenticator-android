@@ -19,13 +19,11 @@
 
 package com.forgerock.authenticator;
 
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.DataSetObserver;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.VisibleForTesting;
 import android.support.v4.content.LocalBroadcastManager;
@@ -36,15 +34,20 @@ import android.view.View;
 import android.view.WindowManager.LayoutParams;
 import android.widget.GridView;
 import android.widget.Toast;
-import com.forgerock.authenticator.add.AddActivity;
+
 import com.forgerock.authenticator.add.ScanActivity;
+import com.forgerock.authenticator.identity.Identity;
+import com.forgerock.authenticator.mechanisms.MechanismAdapter;
 import com.forgerock.authenticator.message.GcmRegistrationService;
 import com.forgerock.authenticator.message.MessageConstants;
 import com.forgerock.authenticator.utils.TestNGCheck;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import roboguice.activity.RoboActivity;
 
 /**
  * The main entry point for the Authenticator App.
@@ -55,10 +58,10 @@ import org.slf4j.LoggerFactory;
  * <li>prevent screenshots of the app</li>
  * <li>show the first screen to the user</li>
  */
-public class MainActivity extends Activity implements OnMenuItemClickListener {
+public class MainActivity extends RoboActivity implements OnMenuItemClickListener {
     private final Logger logger;
 
-    private TokenAdapter tokenAdapter;
+    private MechanismAdapter mechanismAdapter;
     private DataSetObserver dataSetObserver;
     private BroadcastReceiver broadcastReceiver;
 
@@ -82,6 +85,7 @@ public class MainActivity extends Activity implements OnMenuItemClickListener {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         onNewIntent(getIntent());
         setContentView(R.layout.main);
 
@@ -91,8 +95,8 @@ public class MainActivity extends Activity implements OnMenuItemClickListener {
             }
         };
 
-        tokenAdapter = new TokenAdapter(this);
-        ((GridView) findViewById(R.id.grid)).setAdapter(tokenAdapter);
+        mechanismAdapter = new MechanismAdapter(this, Identity.builder().build());
+        ((GridView) findViewById(R.id.grid)).setAdapter(mechanismAdapter);
 
         // Don't permit screenshots since these might contain OTP codes.
         getWindow().setFlags(LayoutParams.FLAG_SECURE, LayoutParams.FLAG_SECURE);
@@ -101,14 +105,14 @@ public class MainActivity extends Activity implements OnMenuItemClickListener {
             @Override
             public void onChanged() {
                 super.onChanged();
-                if (tokenAdapter.getCount() == 0) {
+                if (mechanismAdapter.getCount() == 0) {
                     findViewById(android.R.id.empty).setVisibility(View.VISIBLE);
                 } else {
                     findViewById(android.R.id.empty).setVisibility(View.GONE);
                 }
             }
         };
-        tokenAdapter.registerDataSetObserver(dataSetObserver);
+        mechanismAdapter.registerDataSetObserver(dataSetObserver);
 
 
         // // TODO: AME-9928 check should be performed in on-resume as well.
@@ -128,20 +132,20 @@ public class MainActivity extends Activity implements OnMenuItemClickListener {
         super.onResume();
         LocalBroadcastManager.getInstance(this).registerReceiver(broadcastReceiver,
                 new IntentFilter(MessageConstants.REGISTRATION_COMPLETE));
-        tokenAdapter.notifyDataSetChanged();
+        mechanismAdapter.notifyDataSetChanged();
     }
 
     @Override
     protected void onPause() {
         LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastReceiver);
         super.onPause();
-        tokenAdapter.notifyDataSetChanged();
+        mechanismAdapter.notifyDataSetChanged();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        tokenAdapter.unregisterDataSetObserver(dataSetObserver);
+        mechanismAdapter.unregisterDataSetObserver(dataSetObserver);
     }
 
     @Override
@@ -149,33 +153,18 @@ public class MainActivity extends Activity implements OnMenuItemClickListener {
         getMenuInflater().inflate(R.menu.main, menu);
         menu.findItem(R.id.action_scan).setVisible(ScanActivity.haveCamera());
         menu.findItem(R.id.action_scan).setOnMenuItemClickListener(this);
-        menu.findItem(R.id.action_add).setOnMenuItemClickListener(this);
         return true;
     }
 
     @Override
     public boolean onMenuItemClick(MenuItem item) {
         switch (item.getItemId()) {
-        case R.id.action_scan:
-            startActivity(new Intent(this, ScanActivity.class));
-            overridePendingTransition(R.anim.fadein, R.anim.fadeout);
-            return true;
-
-        case R.id.action_add:
-            startActivity(new Intent(this, AddActivity.class));
-            return true;
+            case R.id.action_scan:
+                startActivity(new Intent(this, ScanActivity.class));
+                overridePendingTransition(R.anim.fadein, R.anim.fadeout);
+                return true;
         }
-
         return false;
-    }
-
-    @Override
-    protected void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
-
-        Uri uri = intent.getData();
-        if (uri != null)
-            TokenPersistence.addWithToast(this, uri.toString());
     }
 
     // TODO: AME-9928 should seek to upgrade this functionality

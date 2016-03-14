@@ -11,9 +11,11 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2015 ForgeRock AS.
+ * Copyright 2015-2016 ForgeRock AS.
  */
-package com.forgerock.authenticator.utils;
+package com.forgerock.authenticator.mechanisms.TOTP;
+
+import com.forgerock.authenticator.mechanisms.URIMappingException;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -26,7 +28,7 @@ import java.util.Map;
 
 /**
  * Provides the ability to parse URI scheme into a convenient format
- * to use with with configuring a {@link com.forgerock.authenticator.Token}
+ * to use with configuring a {@link Token}
  * to generate OTP codes.
  *
  * The configuration URI is based on the format defined by the original
@@ -34,25 +36,39 @@ import java.util.Map;
  *
  * https://github.com/google/google-authenticator/wiki/Key-Uri-Format
  */
-public class OTPAuthMapper {
+class OTPAuthMapper {
+    /** The protocol of the URI */
     public static final String SCHEME = "scheme";
 
+    /** The type of OTP (TOTP or HOTP) */
     public static final String TYPE = "authority"; // URI refers to this as the authority.
-    public static final String[] ALLOWED_TYPES = new String[]{"hotp", "totp"};
+    /** The URI API Version */
+    public static final String VERSION = "version";
 
+    /** The IDP that issed the URI */
     public static final String ISSUER = "issuer";
+
+    /** The identity name */
     public static final String LABEL = "accountname";
 
+    /** The secret used for generating the OTP */
     public static final String SECRET = "secret";
+
+    /** The algorithm used for generating the OTP */
     public static final String ALGORITHM = "algorithm";
+
+    /** The number of digits that the OTP should be */
     public static final String DIGITS = "digits";
+
+    /** The counter used to keep track of how many codes have been generated using this mechanism */
     public static final String COUNTER = "counter";
+
+    /** The frequency with which the OTP updates */
     public static final String PERIOD = "period";
 
-    public static final String SLASH = "/";
+    private static final String SLASH = "/";
+    private static final String[] ALLOWED_TYPES = new String[]{"hotp", "totp"};
 
-    // URI API Version
-    public static final String VERSION = "version";
 
     /**
      * Call through to {@link OTPAuthMapper#map(URI)}

@@ -13,9 +13,11 @@
  *
  * Copyright 2015 ForgeRock AS.
  */
-package com.forgerock.authenticator;
+package com.forgerock.authenticator.mechanisms.TOTP;
 
-import com.forgerock.authenticator.utils.URIMappingException;
+import com.forgerock.authenticator.identity.Identity;
+import com.forgerock.authenticator.mechanisms.URIMappingException;
+
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -24,7 +26,8 @@ public class TokenTest {
 
     @BeforeMethod
     public void setUp() {
-        token = new Token();
+        Identity owner = Identity.builder().build();
+        token = new Token(owner);
     }
 
     @Test (expectedExceptions = URIMappingException.class)

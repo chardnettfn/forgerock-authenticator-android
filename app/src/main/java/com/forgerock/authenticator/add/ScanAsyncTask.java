@@ -21,13 +21,25 @@ package com.forgerock.authenticator.add;
 import android.hardware.Camera;
 import android.hardware.Camera.PreviewCallback;
 import android.os.AsyncTask;
-import com.google.zxing.*;
+
+import com.google.zxing.BinaryBitmap;
+import com.google.zxing.ChecksumException;
+import com.google.zxing.FormatException;
+import com.google.zxing.LuminanceSource;
+import com.google.zxing.NotFoundException;
+import com.google.zxing.PlanarYUVLuminanceSource;
+import com.google.zxing.Reader;
+import com.google.zxing.Result;
 import com.google.zxing.common.HybridBinarizer;
 import com.google.zxing.qrcode.QRCodeReader;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
+/**
+ * Class responsible for continuously checking the camera output for a QR code and decoding it.
+ * This runs as a separate thread.
+ */
 public class ScanAsyncTask extends AsyncTask<Void, Void, String> implements PreviewCallback {
     private static class Data {
         public byte[] data;
@@ -37,6 +49,9 @@ public class ScanAsyncTask extends AsyncTask<Void, Void, String> implements Prev
     private final BlockingQueue<Data> mBlockingQueue;
     private final Reader              mReader;
 
+    /**
+     * Create this AsyncTask, and initialise the QR Code Reader.
+     */
     public ScanAsyncTask() {
         mBlockingQueue = new LinkedBlockingQueue<Data>(5);
         mReader = new QRCodeReader();

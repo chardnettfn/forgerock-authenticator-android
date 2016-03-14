@@ -13,7 +13,9 @@
  *
  * Copyright 2015 ForgeRock AS.
  */
-package com.forgerock.authenticator.utils;
+package com.forgerock.authenticator.mechanisms.TOTP;
+
+import com.forgerock.authenticator.mechanisms.URIMappingException;
 
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;

@@ -11,13 +11,15 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2015 ForgeRock AS.
+ * Copyright 2015-2016 ForgeRock AS.
  */
 
-package com.forgerock.authenticator;
+package com.forgerock.authenticator.mechanisms.TOTP;
 
 import android.content.Context;
+import android.content.Intent;
 import android.util.AttributeSet;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -25,9 +27,23 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.TextView;
+
+import com.forgerock.authenticator.ProgressCircle;
+import com.forgerock.authenticator.R;
+import com.forgerock.authenticator.delete.DeleteMechanismActivity;
+import com.forgerock.authenticator.mechanisms.MechanismLayout;
+import com.forgerock.authenticator.storage.IdentityDatabase;
+import com.forgerock.authenticator.storage.NotStoredException;
 import com.squareup.picasso.Picasso;
 
-public class TokenLayout extends FrameLayout implements View.OnClickListener, Runnable {
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ * Handles the display of a Token in a list.
+ * Some common features of this may be able to be broken out.
+ */
+class TokenLayout extends FrameLayout implements View.OnClickListener, Runnable, MechanismLayout<Token> {
     private ProgressCircle mProgressInner;
     private ProgressCircle mProgressOuter;
     private ImageView mImage;
@@ -41,7 +57,13 @@ public class TokenLayout extends FrameLayout implements View.OnClickListener, Ru
     private Token.TokenType mType;
     private String mPlaceholder;
     private long mStartTime;
+    private Logger logger = LoggerFactory.getLogger(TokenLayout.class);
 
+
+    /**
+     * Creates this layout using the provided context.
+     * @param context The context this layout exists within.
+     */
     public TokenLayout(Context context) {
         super(context);
     }
@@ -70,7 +92,44 @@ public class TokenLayout extends FrameLayout implements View.OnClickListener, Ru
         mMenu.setOnClickListener(this);
     }
 
-    public void bind(Token token, int menu, PopupMenu.OnMenuItemClickListener micl) {
+    @Override
+    public void bind(final Token token) {
+        final Context context = this.getContext();
+        bindData(token, R.menu.token, new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                Intent i;
+
+                switch (item.getItemId()) {
+
+                    case R.id.action_delete:
+                        i = new Intent(context, DeleteMechanismActivity.class);
+                        try {
+                            i.putExtra(DeleteMechanismActivity.ROW_ID, token.getRowId());
+                            context.startActivity(i);
+                        } catch (NotStoredException e) {
+                            logger.error("Mechanism to delete did not contain row id.", e);
+                        }
+                        break;
+                }
+
+                return true;
+            }
+        });
+
+        setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Increment the token.
+                TokenCode codes = token.generateCodes();
+                new IdentityDatabase(v.getContext()).updateMechanism(token);
+
+                ((TokenLayout) v).start(token.getType(), codes, true);
+            }
+        });
+    }
+
+    private void bindData(Token token, int menu, PopupMenu.OnMenuItemClickListener micl) {
         mCodes = null;
 
         // Setup menu.
@@ -95,16 +154,16 @@ public class TokenLayout extends FrameLayout implements View.OnClickListener, Ru
 
         // Show the image.
         Picasso.with(getContext())
-                .load(token.getImage())
+                .load(token.getOwner().getImage())
                 .placeholder(R.drawable.forgerock_logo)
                 .into(mImage);
 
         // Set the labels.
-        mLabel.setText(token.getLabel());
-        mIssuer.setText(token.getIssuer());
+        mLabel.setText(token.getOwner().getLabel());
+        mIssuer.setText(token.getOwner().getIssuer());
         mCode.setText(mPlaceholder);
         if (mIssuer.getText().length() == 0) {
-            mIssuer.setText(token.getLabel());
+            mIssuer.setText(token.getOwner().getLabel());
             mLabel.setVisibility(View.GONE);
         } else {
             mLabel.setVisibility(View.VISIBLE);
@@ -118,7 +177,7 @@ public class TokenLayout extends FrameLayout implements View.OnClickListener, Ru
         view.startAnimation(a);
     }
 
-    public void start(Token.TokenType type, TokenCode codes, boolean animate) {
+    private void start(Token.TokenType type, TokenCode codes, boolean animate) {
         mCodes = codes;
         mType = type;
 
