@@ -25,6 +25,7 @@ import com.forgerock.authenticator.mechanisms.IMechanismFactory;
 import com.forgerock.authenticator.mechanisms.Mechanism;
 import com.forgerock.authenticator.mechanisms.MechanismLayout;
 import com.forgerock.authenticator.mechanisms.MechanismLayoutManager;
+import com.forgerock.authenticator.utils.MechanismCreationException;
 import com.google.android.apps.authenticator.Base32String;
 import com.google.android.apps.authenticator.Base32String.DecodingException;
 import com.forgerock.authenticator.utils.URIMappingException;
@@ -127,18 +128,21 @@ public class Token implements Mechanism {
         this.rowId = rowId;
     }
 
-    public Token(Identity owner, Map<String, String> map) { //TODO: Throw exception if any of these fail
+    public Token(Identity owner, Map<String, String> map) throws MechanismCreationException {
         this.owner = owner;
         try {
             this.type = TokenType.valueOf(map.get(TOKEN_TYPE).toUpperCase());
         } catch (IllegalArgumentException e) {
-            throw new RuntimeException("Invalid type: " + type); //TODO: change
+            throw new MechanismCreationException("Invalid type: " + type);
         }
         algo = map.get(ALGO);
+        if(algo == null) {
+            throw new MechanismCreationException("Algorithm cannot be null");
+        }
         try {
             secret = Base32String.decode(map.get(SECRET));
         } catch (DecodingException e) {
-            throw new RuntimeException("Failed to decode secret"); //TODO: change
+            throw new MechanismCreationException("Failed to decode secret");
         }
         digits = Integer.valueOf(map.get(DIGITS));
         counter = Long.valueOf(map.get(COUNTER));

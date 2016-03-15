@@ -133,7 +133,7 @@ public class IdentityDatabase {
         String[] selectionArgs = {id.getIssuer(), id.getLabel()};
 
         Cursor cursor = database.rawQuery("SELECT rowid FROM " + IDENTITY_TABLE_NAME +
-                " WHERE " + ISSUER + " = ? AND " + LABEL + " = ?", selectionArgs); //Todo: change when using identities
+                " WHERE " + ISSUER + " = ? AND " + LABEL + " = ?", selectionArgs);
         return cursor.getCount() == 1;
     }
 

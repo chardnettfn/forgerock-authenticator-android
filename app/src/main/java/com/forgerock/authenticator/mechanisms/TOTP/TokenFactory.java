@@ -19,6 +19,7 @@ package com.forgerock.authenticator.mechanisms.TOTP;
 import com.forgerock.authenticator.identity.Identity;
 import com.forgerock.authenticator.mechanisms.IMechanismFactory;
 import com.forgerock.authenticator.mechanisms.Mechanism;
+import com.forgerock.authenticator.utils.MechanismCreationException;
 import com.forgerock.authenticator.utils.OTPAuthMapper;
 import com.forgerock.authenticator.utils.URIMappingException;
 
@@ -44,7 +45,7 @@ public class TokenFactory implements IMechanismFactory {
      * @return An instance of a Token which represents the configuration URI.
      * @throws URIMappingException If there was any unrecoverable parsing problem.
      */
-    public Mechanism get(String uri) throws URIMappingException {
+    public Mechanism get(String uri) throws MechanismCreationException, URIMappingException {
 
         Map<String, String> values = mapper.map(uri);
         int version = Integer.parseInt(get(values, OTPAuthMapper.VERSION, "1"));
@@ -67,16 +68,16 @@ public class TokenFactory implements IMechanismFactory {
             }
             return token;
         } else {
-            throw new URIMappingException("Unknown version: " + version);
+            throw new MechanismCreationException("Unknown version: " + version);
         }
     }
 
     @Override
-    public Mechanism get(int version, Identity owner, Map<String, String> map) {
+    public Mechanism get(int version, Identity owner, Map<String, String> map) throws MechanismCreationException {
         if (version == 1) {
             return new Token(owner, map);
         } else {
-            throw new RuntimeException("Unknown version: " + version); //TODO: Replace this
+            throw new MechanismCreationException("Unknown version: " + version);
         }
     }
 

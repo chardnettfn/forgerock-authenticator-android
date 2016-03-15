@@ -53,7 +53,7 @@ public class MechanismAdapter extends BaseReorderableAdapter {
 
     @Override
     public int getCount() {
-        mechanismList = identityDatabase.getMechanisms(owner);//TODO: temp
+        mechanismList = identityDatabase.getMechanisms(owner);
 
         return mechanismList.size(); //TODO: Don't refetch list unless necessary
     }

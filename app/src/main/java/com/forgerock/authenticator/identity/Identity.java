@@ -43,12 +43,4 @@ public class Identity {
     public void setImage(String image) {
         this.image = image;
     }
-
-    //TODO: Remove this
-    public static Identity getDefault() {
-        Identity id = new Identity();
-        id.setIssuer("default");
-        id.setLabel("default");
-        return id;
-    }
 }

@@ -94,7 +94,7 @@ public class ScanActivity extends Activity implements SurfaceHolder.Callback {
             new IdentityDatabase(context).addMechanism(mechanism);
             return mechanism;
         } catch (URIMappingException e) {
-            Toast.makeText(context, R.string.invalid_token, Toast.LENGTH_SHORT).show(); //TODO: Update error message
+            Toast.makeText(context, R.string.invalid_qr, Toast.LENGTH_SHORT).show();
             e.printStackTrace();
             return null;
         }
