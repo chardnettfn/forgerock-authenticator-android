@@ -16,7 +16,7 @@
 
   Portions Copyright 2013 Nathaniel McCallum, Red Hat
 -->
-<org.forgerock.authenticator.TokenLayout
+<com.forgerock.authenticator.mechanisms.TOTP.TokenLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:freeotp="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
@@ -32,7 +32,7 @@
         android:scaleType="fitCenter"
         />
 
-    <org.forgerock.authenticator.ProgressCircle
+    <com.forgerock.authenticator.ProgressCircle
         android:id="@+id/progressInner"
         android:layout_width="96dp"
         android:layout_height="96dp"
@@ -41,7 +41,7 @@
         freeotp:max="1000"
         />
 
-    <org.forgerock.authenticator.ProgressCircle
+    <com.forgerock.authenticator.ProgressCircle
         android:id="@+id/progressOuter"
         android:layout_width="96dp"
         android:layout_height="96dp"
@@ -84,4 +84,4 @@
         android:paddingBottom="12dp"
         android:src="@drawable/menu"
         />
-</org.forgerock.authenticator.TokenLayout>
+</com.forgerock.authenticator.mechanisms.TOTP.TokenLayout>

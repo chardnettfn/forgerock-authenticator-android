@@ -17,20 +17,26 @@
 package com.forgerock.authenticator.mechanisms.TOTP;
 
 import android.content.Context;
+import android.content.Intent;
 import android.util.AttributeSet;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 
+import com.forgerock.authenticator.MainActivity;
 import com.forgerock.authenticator.ProgressCircle;
 import com.forgerock.authenticator.R;
+import com.forgerock.authenticator.edit.DeleteActivity;
+import com.forgerock.authenticator.identity.IdentityDatabase;
+import com.forgerock.authenticator.mechanisms.Mechanism;
+import com.forgerock.authenticator.mechanisms.MechanismLayout;
 import com.squareup.picasso.Picasso;
 
-public class TokenLayout extends FrameLayout implements View.OnClickListener, Runnable {
+public class TokenLayout extends MechanismLayout {
     private ProgressCircle mProgressInner;
     private ProgressCircle mProgressOuter;
     private ImageView mImage;
@@ -44,6 +50,7 @@ public class TokenLayout extends FrameLayout implements View.OnClickListener, Ru
     private Token.TokenType mType;
     private String mPlaceholder;
     private long mStartTime;
+    private Token thisToken;
 
     public TokenLayout(Context context) {
         super(context);
@@ -73,7 +80,7 @@ public class TokenLayout extends FrameLayout implements View.OnClickListener, Ru
         mMenu.setOnClickListener(this);
     }
 
-    public void bind(Token token, int menu, PopupMenu.OnMenuItemClickListener micl) {
+    void bind(Token token, int menu, PopupMenu.OnMenuItemClickListener micl) {
         mCodes = null;
 
         // Setup menu.
@@ -98,16 +105,16 @@ public class TokenLayout extends FrameLayout implements View.OnClickListener, Ru
 
         // Show the image.
         Picasso.with(getContext())
-                .load(token.getImage())
+                .load(token.getOwner().getImage())
                 .placeholder(R.drawable.forgerock_logo)
                 .into(mImage);
 
         // Set the labels.
-        mLabel.setText(token.getLabel());
-        mIssuer.setText(token.getIssuer());
+        mLabel.setText(token.getOwner().getLabel());
+        mIssuer.setText(token.getOwner().getIssuer());
         mCode.setText(mPlaceholder);
         if (mIssuer.getText().length() == 0) {
-            mIssuer.setText(token.getLabel());
+            mIssuer.setText(token.getOwner().getLabel());
             mLabel.setVisibility(View.GONE);
         } else {
             mLabel.setVisibility(View.VISIBLE);
@@ -174,4 +181,5 @@ public class TokenLayout extends FrameLayout implements View.OnClickListener, Ru
         mProgressOuter.setVisibility(View.GONE);
         animate(mImage, R.anim.token_image_fadein, true);
     }
+
 }

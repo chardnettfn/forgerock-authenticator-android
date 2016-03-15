@@ -17,8 +17,8 @@
 package com.forgerock.authenticator.edit;
 
 import com.forgerock.authenticator.R;
-import com.forgerock.authenticator.mechanisms.TOTP.Token;
-import com.forgerock.authenticator.mechanisms.TOTP.TokenPersistence;
+import com.forgerock.authenticator.identity.IdentityDatabase;
+import com.forgerock.authenticator.mechanisms.Mechanism;
 
 import android.os.Bundle;
 import android.view.View;
@@ -33,11 +33,11 @@ public class DeleteActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.delete);
 
-        Token token = new TokenPersistence(this).get(getPosition());
-        ((TextView) findViewById(R.id.issuer)).setText(token.getIssuer());
-        ((TextView) findViewById(R.id.label)).setText(token.getLabel());
+        Mechanism token = new IdentityDatabase(this).getMechanism(getRowId());
+        ((TextView) findViewById(R.id.issuer)).setText(token.getOwner().getIssuer());
+        ((TextView) findViewById(R.id.label)).setText(token.getOwner().getLabel());
         Picasso.with(this)
-                .load(token.getImage())
+                .load(token.getOwner().getImage())
                 .placeholder(R.drawable.forgerock_logo)
                 .into((ImageView) findViewById(R.id.image));
 
@@ -51,7 +51,7 @@ public class DeleteActivity extends BaseActivity {
         findViewById(R.id.delete).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                new TokenPersistence(DeleteActivity.this).delete(getPosition());
+                new IdentityDatabase(DeleteActivity.this).deleteMechanism(getRowId());
                 finish();
             }
         });

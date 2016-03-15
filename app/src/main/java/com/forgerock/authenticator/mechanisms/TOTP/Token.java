@@ -19,6 +19,12 @@
 package com.forgerock.authenticator.mechanisms.TOTP;
 
 import android.net.Uri;
+
+import com.forgerock.authenticator.identity.Identity;
+import com.forgerock.authenticator.mechanisms.IMechanismFactory;
+import com.forgerock.authenticator.mechanisms.Mechanism;
+import com.forgerock.authenticator.mechanisms.MechanismLayout;
+import com.forgerock.authenticator.mechanisms.MechanismLayoutManager;
 import com.google.android.apps.authenticator.Base32String;
 import com.google.android.apps.authenticator.Base32String.DecodingException;
 import com.forgerock.authenticator.utils.URIMappingException;
@@ -28,7 +34,9 @@ import javax.crypto.spec.SecretKeySpec;
 import java.nio.ByteBuffer;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * Responsible for representing a Token in the authenticator application. Combines a
@@ -37,20 +45,30 @@ import java.util.Locale;
  * - Generate new OTP codes
  * - Value object for display purposes
  */
-public class Token {
+public class Token implements Mechanism {
     public enum TokenType {
         HOTP, TOTP
     }
 
-    private String issuer;
-    private String label;
-    private String image;
+    private static final String TOKEN_TYPE = "tokenType";
+    private static final String ALGO = "algo";
+    private static final String SECRET = "SECRET";
+    private static final String DIGITS = "digits";
+    private static final String COUNTER = "counter";
+    private static final String PERIOD = "period";
+
     private TokenType type;
     private String algo;
     private byte[] secret;
     private int digits;
     private long counter;
     private int period;
+    private Identity owner;
+    private long rowId;
+
+    public Token(Identity owner) {
+        this.owner = owner;
+    }
 
     private String getHOTP(long counter) {
         // Encode counter in network byte order
@@ -94,32 +112,64 @@ public class Token {
         return "";
     }
 
-    public String getID() {
-        if (!issuer.isEmpty()) {
-            return issuer + ":" + label;
+    @Override
+    public int getVersion() {
+        return 1;
+    }
+
+    @Override
+    public long getRowId() {
+        return rowId;
+    }
+
+    @Override
+    public void setRowId(long rowId) {
+        this.rowId = rowId;
+    }
+
+    public Token(Identity owner, Map<String, String> map) { //TODO: Throw exception if any of these fail
+        this.owner = owner;
+        try {
+            this.type = TokenType.valueOf(map.get(TOKEN_TYPE).toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Invalid type: " + type); //TODO: change
         }
-        return label;
+        algo = map.get(ALGO);
+        try {
+            secret = Base32String.decode(map.get(SECRET));
+        } catch (DecodingException e) {
+            throw new RuntimeException("Failed to decode secret"); //TODO: change
+        }
+        digits = Integer.valueOf(map.get(DIGITS));
+        counter = Long.valueOf(map.get(COUNTER));
+        period = Integer.valueOf(map.get(PERIOD));
     }
 
-    public String getIssuer() {
-        return issuer;
+    @Override
+    public Map<String, String> asMap() {
+        Map<String, String> result = new HashMap<>();
+        result.put(TOKEN_TYPE, type.toString());
+        result.put(ALGO, algo);
+        result.put(SECRET, Base32String.encode(secret));
+        result.put(DIGITS, Integer.toString(digits));
+        result.put(COUNTER, Long.toString(counter));
+        result.put(PERIOD, Integer.toString(period));
+        return result;
     }
 
-    // NOTE: This changes internal data. You MUST save the token immediately.
-    public void setIssuer(String updatedIssuer) {
-        this.issuer = updatedIssuer;
+    @Override
+    public IMechanismFactory getFactory() {
+        return new TokenFactory();
     }
 
-    /**
-     * @return The label if it has been assigned or an empty String.
-     */
-    public String getLabel() {
-        return label != null ? label : "";
+    @Override
+    public MechanismLayoutManager getLayoutManager() {
+        return new TokenLayoutManager();
     }
 
-    // NOTE: This changes internal data. You MUST save the token immediately.
-    public void setLabel(String label) {
-        this.label = label;
+    @Override
+    public Identity getOwner() {
+        return owner;
     }
 
     public int getDigits() {
@@ -236,14 +286,4 @@ public class Token {
         }
     }
 
-    /**
-     * @return Non null {@link Uri} representing the path to the image, or null if not assigned.
-     */
-    public Uri getImage() {
-        return image == null ? null : Uri.parse(image);
-    }
-
-    public void setImage(String image) {
-        this.image = image;
-    }
 }

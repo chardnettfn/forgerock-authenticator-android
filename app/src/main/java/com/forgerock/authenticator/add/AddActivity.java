@@ -32,7 +32,6 @@ import android.widget.RadioButton;
 import android.widget.Spinner;
 import com.squareup.picasso.Picasso;
 import com.forgerock.authenticator.R;
-import com.forgerock.authenticator.mechanisms.TOTP.TokenPersistence;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -130,7 +129,7 @@ public class AddActivity extends Activity implements View.OnClickListener, Compo
                 }
 
                 // Add the token
-                if (TokenPersistence.addWithToast(this, uri) != null)
+                if (ScanActivity.addWithToast(this, uri) != null)
                     finish();
 
                 break;

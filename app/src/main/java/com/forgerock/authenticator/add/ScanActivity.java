@@ -20,6 +20,7 @@ package com.forgerock.authenticator.add;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.content.Context;
 import android.hardware.Camera;
 import android.hardware.Camera.CameraInfo;
 import android.hardware.Camera.Parameters;
@@ -31,9 +32,13 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.Toast;
+
 import com.forgerock.authenticator.R;
-import com.forgerock.authenticator.mechanisms.TOTP.Token;
-import com.forgerock.authenticator.mechanisms.TOTP.TokenPersistence;
+import com.forgerock.authenticator.identity.IdentityDatabase;
+import com.forgerock.authenticator.mechanisms.Mechanism;
+import com.forgerock.authenticator.mechanisms.MechanismFactory;
+import com.forgerock.authenticator.utils.URIMappingException;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
@@ -45,6 +50,7 @@ public class ScanActivity extends Activity implements SurfaceHolder.Callback {
     private final int           mCameraId;
     private Handler             mHandler;
     private Camera              mCamera;
+    private MechanismFactory mechanismFactory;
 
     private static class AutoFocusHandler extends Handler implements Camera.AutoFocusCallback {
         private final Camera mCamera;
@@ -82,26 +88,42 @@ public class ScanActivity extends Activity implements SurfaceHolder.Callback {
         return cameraId;
     }
 
+    public static Mechanism addWithToast(Context context, String uri) { //TODO: find better place for this
+        try {
+            Mechanism mechanism = new MechanismFactory().get(uri);
+            new IdentityDatabase(context).addMechanism(mechanism);
+            return mechanism;
+        } catch (URIMappingException e) {
+            Toast.makeText(context, R.string.invalid_token, Toast.LENGTH_SHORT).show(); //TODO: Update error message
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     public ScanActivity() {
         super();
 
+        mechanismFactory = new MechanismFactory();
+
         mCameraId = findCamera(mCameraInfo);
         assert mCameraId >= 0;
+
+        final Context context = this;
 
         // Create the decoder thread
         mScanAsyncTask = new ScanAsyncTask() {
             @Override
             protected void onPostExecute(String result) {
                 super.onPostExecute(result);
-                Token token = TokenPersistence.addWithToast(ScanActivity.this, result);
-                if (token == null || token.getImage() == null) {
+                Mechanism mechanism = addWithToast(context, result);
+                if (mechanism == null || mechanism.getOwner().getImage() == null) {
                     finish();
                     return;
                 }
 
                 final ImageView image = (ImageView) findViewById(R.id.image);
                 Picasso.with(ScanActivity.this)
-                        .load(token.getImage())
+                        .load(mechanism.getOwner().getImage())
                         .placeholder(R.drawable.scan)
                         .into(image, new Callback() {
                             @Override

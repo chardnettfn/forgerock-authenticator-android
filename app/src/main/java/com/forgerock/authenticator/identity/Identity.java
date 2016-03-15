@@ -5,19 +5,12 @@ import android.net.Uri;
 import com.forgerock.authenticator.mechanisms.Mechanism;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class Identity {
     private String issuer;
     private String label;
     private String image;
-    private ArrayList<Mechanism> mechanisms;
-
-    public String getID() {
-        if (!issuer.isEmpty()) {
-            return issuer + ":" + label;
-        }
-        return label;
-    }
 
     public String getIssuer() {
         return issuer;
@@ -49,5 +42,13 @@ public class Identity {
 
     public void setImage(String image) {
         this.image = image;
+    }
+
+    //TODO: Remove this
+    public static Identity getDefault() {
+        Identity id = new Identity();
+        id.setIssuer("default");
+        id.setLabel("default");
+        return id;
     }
 }

@@ -11,31 +11,19 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2015-2016 ForgeRock AS.
+ * Copyright 2015 ForgeRock AS.
  */
+package com.forgerock.authenticator.utils;
 
-package com.forgerock.authenticator.edit;
-
-import android.app.Activity;
-import android.os.Bundle;
-
-public abstract class BaseActivity extends Activity {
-    public static final String ROW_ID = "rowid";
-    private long rowId;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        // Get the position of the token. This MUST exist.
-        rowId = getIntent().getLongExtra(ROW_ID, -1);
-        assert rowId >= 0;
-
+/**
+ * Represents an error in setting up a mechanism.
+ */
+public class MechanismCreationException extends Exception {
+    public MechanismCreationException(String s, Throwable e) {
+        super(s, e);
     }
 
-    protected long getRowId() {
-        return rowId;
+    public MechanismCreationException(String s) {
+        super(s);
     }
-
-
 }

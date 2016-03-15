@@ -68,10 +68,6 @@
             android:label="@string/delete_question"
             android:theme="@android:style/Theme.Holo.Light.Dialog" />
         <activity
-            android:name=".edit.EditActivity"
-            android:theme="@android:style/Theme.Holo.Light.Dialog.NoActionBar"
-            android:windowSoftInputMode="stateVisible" />
-        <activity
             android:name=".MainActivity"
             android:clearTaskOnLaunch="true"
             android:configChanges="orientation|screenSize"
