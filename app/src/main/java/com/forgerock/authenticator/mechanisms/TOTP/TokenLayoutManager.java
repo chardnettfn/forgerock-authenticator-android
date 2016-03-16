@@ -23,9 +23,6 @@ public class TokenLayoutManager extends MechanismLayoutManager{
                 Intent i;
 
                 switch (item.getItemId()) {
-                    case R.id.action_edit:
-                        //Removed
-                        break;
 
                     case R.id.action_delete:
                         i = new Intent(context, DeleteActivity.class);

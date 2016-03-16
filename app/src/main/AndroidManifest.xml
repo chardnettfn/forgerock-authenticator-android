@@ -61,11 +61,6 @@
             android:name=".add.ScanActivity"
             android:theme="@android:style/Theme.Holo.NoActionBar.Fullscreen" />
         <activity
-            android:name=".add.AddActivity"
-            android:label="@string/add_token"
-            android:theme="@android:style/Theme.Holo.Light.Dialog.NoActionBar"
-            android:windowSoftInputMode="stateVisible" />
-        <activity
             android:name=".edit.DeleteActivity"
             android:label="@string/delete_question"
             android:theme="@android:style/Theme.Holo.Light.Dialog" />

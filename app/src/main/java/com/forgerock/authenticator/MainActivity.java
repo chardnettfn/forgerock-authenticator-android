@@ -35,13 +35,11 @@ import android.view.WindowManager.LayoutParams;
 import android.widget.GridView;
 import android.widget.Toast;
 
-import com.forgerock.authenticator.add.AddActivity;
 import com.forgerock.authenticator.add.ScanActivity;
 import com.forgerock.authenticator.identity.Identity;
 import com.forgerock.authenticator.mechanisms.MechanismAdapter;
 import com.forgerock.authenticator.message.GcmRegistrationService;
 import com.forgerock.authenticator.message.MessageConstants;
-import com.forgerock.authenticator.storage.IdentityDatabase;
 import com.forgerock.authenticator.utils.TestNGCheck;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
@@ -49,7 +47,6 @@ import com.google.android.gms.common.GoogleApiAvailability;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import roboguice.RoboGuice;
 import roboguice.activity.RoboActivity;
 
 /**
@@ -156,23 +153,17 @@ public class MainActivity extends RoboActivity implements OnMenuItemClickListene
         getMenuInflater().inflate(R.menu.main, menu);
         menu.findItem(R.id.action_scan).setVisible(ScanActivity.haveCamera());
         menu.findItem(R.id.action_scan).setOnMenuItemClickListener(this);
-        menu.findItem(R.id.action_add).setOnMenuItemClickListener(this);
         return true;
     }
 
     @Override
     public boolean onMenuItemClick(MenuItem item) {
         switch (item.getItemId()) {
-        case R.id.action_scan:
-            startActivity(new Intent(this, ScanActivity.class));
-            overridePendingTransition(R.anim.fadein, R.anim.fadeout);
-            return true;
-
-        case R.id.action_add:
-            startActivity(new Intent(this, AddActivity.class));
-            return true;
+            case R.id.action_scan:
+                startActivity(new Intent(this, ScanActivity.class));
+                overridePendingTransition(R.anim.fadein, R.anim.fadeout);
+                return true;
         }
-
         return false;
     }
 

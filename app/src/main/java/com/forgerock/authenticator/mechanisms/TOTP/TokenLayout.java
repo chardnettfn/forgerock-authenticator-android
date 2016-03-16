@@ -44,7 +44,6 @@ public class TokenLayout extends MechanismLayout {
     private Token.TokenType mType;
     private String mPlaceholder;
     private long mStartTime;
-    private Token thisToken;
 
     public TokenLayout(Context context) {
         super(context);
