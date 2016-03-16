@@ -8,6 +8,7 @@ import android.net.Uri;
 
 import com.forgerock.authenticator.mechanisms.Mechanism;
 import com.forgerock.authenticator.mechanisms.MechanismFactory;
+import com.forgerock.authenticator.utils.MechanismCreationException;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -61,7 +62,7 @@ public class IdentityDatabase {
         return result;
     }
 
-    public Mechanism getMechanism(long rowId) {
+    public Mechanism getMechanism(long rowId) throws MechanismCreationException {
         Cursor cursor = database.rawQuery("SELECT rowid, * FROM " + MECHANISM_TABLE_NAME +
                         " WHERE rowid = " + rowId, null);
         cursor.moveToFirst();
@@ -77,13 +78,18 @@ public class IdentityDatabase {
         cursor.moveToFirst();
 
         while (!cursor.isAfterLast()) {
-            result.add(cursorToMechanism(cursor));
+            try {
+                result.add(cursorToMechanism(cursor));
+            } catch (MechanismCreationException e) {
+                e.printStackTrace();
+                // Don't add the mechanism that failed to load.
+            }
             cursor.moveToNext();
         }
         return result;
     }
 
-    private Mechanism cursorToMechanism(Cursor cursor) {
+    private Mechanism cursorToMechanism(Cursor cursor) throws MechanismCreationException {
         String type = cursor.getString(cursor.getColumnIndex(TYPE));
         int version = cursor.getInt(cursor.getColumnIndex(VERSION));
         Type mapType = new TypeToken<Map<String, String>>(){}.getType();

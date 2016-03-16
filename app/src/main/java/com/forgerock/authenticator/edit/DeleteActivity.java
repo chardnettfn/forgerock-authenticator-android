@@ -25,6 +25,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.forgerock.authenticator.utils.MechanismCreationException;
 import com.squareup.picasso.Picasso;
 
 public class DeleteActivity extends BaseActivity {
@@ -32,8 +33,14 @@ public class DeleteActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.delete);
-
-        Mechanism token = new IdentityDatabase(this).getMechanism(getRowId());
+        Mechanism token;
+        try {
+            token = new IdentityDatabase(this).getMechanism(getRowId());
+        } catch (MechanismCreationException e) {
+            e.printStackTrace();
+            finish();
+            return;
+        }
         ((TextView) findViewById(R.id.issuer)).setText(token.getOwner().getIssuer());
         ((TextView) findViewById(R.id.label)).setText(token.getOwner().getLabel());
         Picasso.with(this)

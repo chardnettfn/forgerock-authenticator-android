@@ -3,6 +3,7 @@ package com.forgerock.authenticator.mechanisms;
 import com.forgerock.authenticator.identity.Identity;
 import com.forgerock.authenticator.mechanisms.TOTP.Token;
 import com.forgerock.authenticator.mechanisms.TOTP.TokenFactory;
+import com.forgerock.authenticator.utils.MechanismCreationException;
 import com.forgerock.authenticator.utils.OTPAuthMapper;
 import com.forgerock.authenticator.utils.URIMappingException;
 
@@ -24,13 +25,13 @@ public class MechanismFactory {
 
 
     //Note: This should establish and populate the owner identity
-    public Mechanism get(String uri) throws URIMappingException {
+    public Mechanism get(String uri) throws URIMappingException, MechanismCreationException {
         // pull out type and version, then pass to correct constructor
         return factories.get(new TokenFactory().getMechanismString()).get(uri);
     }
 
     //Note: This should probably also take the owner identity
-    public Mechanism get(String type, int version, Identity owner, Map<String, String> map) {
+    public Mechanism get(String type, int version, Identity owner, Map<String, String> map) throws MechanismCreationException {
         // pull out type and version, then pass to correct constructor/gson?
         return factories.get(type).get(version, owner, map);
     }

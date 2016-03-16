@@ -38,6 +38,7 @@ import com.forgerock.authenticator.R;
 import com.forgerock.authenticator.identity.IdentityDatabase;
 import com.forgerock.authenticator.mechanisms.Mechanism;
 import com.forgerock.authenticator.mechanisms.MechanismFactory;
+import com.forgerock.authenticator.utils.MechanismCreationException;
 import com.forgerock.authenticator.utils.URIMappingException;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
@@ -88,12 +89,12 @@ public class ScanActivity extends Activity implements SurfaceHolder.Callback {
         return cameraId;
     }
 
-    public static Mechanism addWithToast(Context context, String uri) { //TODO: find better place for this
+    public static Mechanism addWithToast(Context context, String uri) {
         try {
             Mechanism mechanism = new MechanismFactory().get(uri);
             new IdentityDatabase(context).addMechanism(mechanism);
             return mechanism;
-        } catch (URIMappingException e) {
+        } catch (MechanismCreationException | URIMappingException e) {
             Toast.makeText(context, R.string.invalid_qr, Toast.LENGTH_SHORT).show();
             e.printStackTrace();
             return null;
