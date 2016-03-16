@@ -17,6 +17,7 @@ public interface Mechanism {
 
     /**
      * Gets the id of this Mechanism used for storage. This value is unique to each Mechanism instance.
+     * Return -1 if the id is not set.
      * @return The id.
      */
     long getRowId();

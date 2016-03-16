@@ -17,6 +17,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Represents a connection to a SQLite database. Ideally, there should only be one of these existing,
+ * in order to properly support listeners and avoid stray connections.
+ */
 public class IdentityDatabase {
     public static final String IDENTITY_TABLE_NAME = "identity";
     public static final String MECHANISM_TABLE_NAME = "mechanism";
@@ -49,6 +53,10 @@ public class IdentityDatabase {
         listeners = new ArrayList<>();
     }
 
+    /**
+     * Gets all of the identities which are stored.
+     * @return The list of identities.
+     */
     public List<Identity> getIdentities() {
         Cursor cursor = database.rawQuery("SELECT * FROM " + IDENTITY_TABLE_NAME, null);
         List<Identity> result = new ArrayList<>();
@@ -64,6 +72,12 @@ public class IdentityDatabase {
         return result;
     }
 
+    /**
+     * Gets the mechanism identified uniquely by the provided row ID.
+     * @param rowId The id of the row to get.
+     * @return The mechanism at the provided row.
+     * @throws MechanismCreationException If the mechanism failed to be created.
+     */
     public Mechanism getMechanism(long rowId) throws MechanismCreationException {
         Cursor cursor = database.rawQuery("SELECT rowid, * FROM " + MECHANISM_TABLE_NAME +
                         " WHERE rowid = " + rowId, null);
@@ -71,6 +85,11 @@ public class IdentityDatabase {
         return cursorToMechanism(cursor);
     }
 
+    /**
+     * Get the mechanisms associated with an owning identity (currently gets all mechanisms).
+     * @param owner
+     * @return
+     */
     public List<Mechanism> getMechanisms(Identity owner) {
         String[] selectionArgs = {};//{ owner.getIssuer(), owner.getLabel() };
         Cursor cursor = database.rawQuery("SELECT rowid, * FROM " + MECHANISM_TABLE_NAME
@@ -107,6 +126,12 @@ public class IdentityDatabase {
         return mechanism;
     }
 
+    /**
+     * Gets the identity uniquely identified by the issuer and label provided (primary key).
+     * @param issuer The issuer of the identity.
+     * @param label The label of the identity.
+     * @return The identity that was stored.
+     */
     public Identity getIdentity(String issuer, String label) {
         String[] selectionArgs = { issuer, label };
         Cursor cursor = database.rawQuery("SELECT * FROM " + IDENTITY_TABLE_NAME +
@@ -124,6 +149,10 @@ public class IdentityDatabase {
         return identity;
     }
 
+    /**
+     * Add the identity to the database.
+     * @param id The identity to add.
+     */
     public void addIdentity(Identity id) {
         String issuer = id.getIssuer();
         String label = id.getLabel();
@@ -146,6 +175,10 @@ public class IdentityDatabase {
         return cursor.getCount() == 1;
     }
 
+    /**
+     * Add the mechanism to the database. If the owning identity is not yet stored, store that as well.
+     * @param mechanism The mechanism to store.
+     */
     public void addMechanism(Mechanism mechanism) {
         if (!isIdentityStored(mechanism.getOwner())) {
             addIdentity(mechanism.getOwner());
@@ -168,24 +201,34 @@ public class IdentityDatabase {
         onDatabaseChange();
     }
 
+    /**
+     * Update the mechanism in the database. Does not create it if it does not exist.
+     * @param mechanism The mechanism to update.
+     */
     public void updateMechanism(Mechanism mechanism) {
         ContentValues values = new ContentValues();
         String options = gson.toJson(mechanism.asMap());
         values.put(OPTIONS, options);
-        String issuer = mechanism.getOwner().getIssuer();
-        String label = mechanism.getOwner().getLabel();
-        String[] selectionArgs = { issuer, label };
-
-
-        database.update(MECHANISM_TABLE_NAME, values, ID_ISSUER + " = ? AND " + ID_LABEL + " = ?", selectionArgs);
-        onDatabaseChange();
+        if (mechanism.getRowId() != -1) {
+            String[] selectionArgs = {Long.toString(mechanism.getRowId())};
+            database.update(MECHANISM_TABLE_NAME, values, "rowId = ?", selectionArgs);
+            onDatabaseChange();
+        }
     }
 
+    /**
+     * Delete the mechanism uniquely identified by a rowId.
+     * @param rowId The rowId of the mechanism to delete.
+     */
     public void deleteMechanism(long rowId) {
         database.delete(MECHANISM_TABLE_NAME, "rowId = " + rowId, null);
         onDatabaseChange();
     }
 
+    /**
+     * Add a listener to this connection.
+     * @param listener The listener to add.
+     */
     public void addListener(DatabaseListener listener) {
         listeners.add(listener);
     }

@@ -62,7 +62,7 @@ class Token implements Mechanism {
     private long counter;
     private int period;
     private Identity owner;
-    private long rowId;
+    private long rowId = -1;
 
     public Token(Identity owner) {
         this.owner = owner;
