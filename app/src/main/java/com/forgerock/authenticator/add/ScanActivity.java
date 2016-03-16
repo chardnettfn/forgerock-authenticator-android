@@ -36,7 +36,7 @@ import android.widget.Toast;
 import com.forgerock.authenticator.R;
 import com.forgerock.authenticator.storage.IdentityDatabase;
 import com.forgerock.authenticator.mechanisms.Mechanism;
-import com.forgerock.authenticator.mechanisms.MechanismFactory;
+import com.forgerock.authenticator.mechanisms.CoreMechanismFactory;
 import com.forgerock.authenticator.utils.MechanismCreationException;
 import com.forgerock.authenticator.utils.URIMappingException;
 import com.squareup.picasso.Callback;
@@ -53,7 +53,7 @@ public class ScanActivity extends RoboActivity implements SurfaceHolder.Callback
     private final int           mCameraId;
     private Handler             mHandler;
     private Camera              mCamera;
-    private MechanismFactory mechanismFactory;
+    private CoreMechanismFactory coreMechanismFactory;
 
     private static class AutoFocusHandler extends Handler implements Camera.AutoFocusCallback {
         private final Camera mCamera;
@@ -93,7 +93,7 @@ public class ScanActivity extends RoboActivity implements SurfaceHolder.Callback
 
     public static Mechanism addWithToast(Context context, String uri) { //TODO: change to not be static
         try {
-            Mechanism mechanism = new MechanismFactory().get(uri);
+            Mechanism mechanism = new CoreMechanismFactory().get(uri);
             RoboGuice.getInjector(context).getInstance(IdentityDatabase.class).addMechanism(mechanism);
             return mechanism;
         } catch (MechanismCreationException | URIMappingException e) {
@@ -106,7 +106,7 @@ public class ScanActivity extends RoboActivity implements SurfaceHolder.Callback
     public ScanActivity() {
         super();
 
-        mechanismFactory = new MechanismFactory();
+        coreMechanismFactory = new CoreMechanismFactory();
 
         mCameraId = findCamera(mCameraInfo);
         assert mCameraId >= 0;

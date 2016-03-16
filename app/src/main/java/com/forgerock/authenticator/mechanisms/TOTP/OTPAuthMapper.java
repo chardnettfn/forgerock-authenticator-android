@@ -13,9 +13,9 @@
  *
  * Copyright 2015 ForgeRock AS.
  */
-package com.forgerock.authenticator.utils;
+package com.forgerock.authenticator.mechanisms.TOTP;
 
-import com.forgerock.authenticator.mechanisms.TOTP.Token;
+import com.forgerock.authenticator.utils.URIMappingException;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -36,7 +36,7 @@ import java.util.Map;
  *
  * https://github.com/google/google-authenticator/wiki/Key-Uri-Format
  */
-public class OTPAuthMapper {
+class OTPAuthMapper {
     public static final String SCHEME = "scheme";
 
     public static final String TYPE = "authority"; // URI refers to this as the authority.

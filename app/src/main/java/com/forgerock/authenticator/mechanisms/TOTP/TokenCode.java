@@ -18,7 +18,10 @@
 
 package com.forgerock.authenticator.mechanisms.TOTP;
 
-public class TokenCode {
+/**
+ * Represents a currently active token.
+ */
+class TokenCode {
     private final String mCode;
     private final long mStart;
     private final long mUntil;
@@ -40,6 +43,10 @@ public class TokenCode {
         mNext = next;
     }
 
+    /**
+     * Gets the code which is currently active.
+     * @return The currently active token.
+     */
     public String getCurrentCode() {
         TokenCode active = getActive(System.currentTimeMillis());
         if (active == null)

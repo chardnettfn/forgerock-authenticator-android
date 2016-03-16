@@ -7,7 +7,7 @@ import android.database.sqlite.SQLiteDatabase;
 
 import com.forgerock.authenticator.identity.Identity;
 import com.forgerock.authenticator.mechanisms.Mechanism;
-import com.forgerock.authenticator.mechanisms.MechanismFactory;
+import com.forgerock.authenticator.mechanisms.CoreMechanismFactory;
 import com.forgerock.authenticator.utils.MechanismCreationException;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -38,14 +38,14 @@ public class IdentityDatabase {
 
     private Gson gson = new Gson();
     private SQLiteDatabase database;
-    private MechanismFactory mechanismFactory;
+    private CoreMechanismFactory coreMechanismFactory;
     private List<DatabaseListener> listeners;
 
 
     public IdentityDatabase(Context context) {
         DatabaseOpenHelper databaseOpeHelper = new DatabaseOpenHelper(context);
         database = databaseOpeHelper.getWritableDatabase();
-        mechanismFactory = new MechanismFactory();
+        coreMechanismFactory = new CoreMechanismFactory();
         listeners = new ArrayList<>();
     }
 
@@ -102,7 +102,7 @@ public class IdentityDatabase {
         String label = cursor.getString(cursor.getColumnIndex(ID_LABEL));
         Identity owner = getIdentity(issuer, label);
 
-        Mechanism mechanism = mechanismFactory.get(type, version, owner, options);
+        Mechanism mechanism = coreMechanismFactory.get(type, version, owner, options);
         mechanism.setRowId(cursor.getLong(cursor.getColumnIndex("rowid")));
         return mechanism;
     }
@@ -152,7 +152,7 @@ public class IdentityDatabase {
         }
         String issuer = mechanism.getOwner().getIssuer();
         String label = mechanism.getOwner().getLabel();
-        String type = mechanism.getFactory().getMechanismString();
+        String type = mechanism.getInfo().getMechanismString();
         int version = mechanism.getVersion();
         String options = gson.toJson(mechanism.asMap());
 

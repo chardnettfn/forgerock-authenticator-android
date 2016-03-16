@@ -15,6 +15,8 @@
  */
 package com.forgerock.authenticator.utils;
 
+import com.forgerock.authenticator.mechanisms.TOTP.OTPAuthMapper;
+
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 

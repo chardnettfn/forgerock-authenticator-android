@@ -17,20 +17,29 @@
 package com.forgerock.authenticator.mechanisms.TOTP;
 
 import android.content.Context;
+import android.content.Intent;
 import android.util.AttributeSet;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 
 import com.forgerock.authenticator.ProgressCircle;
 import com.forgerock.authenticator.R;
+import com.forgerock.authenticator.edit.DeleteActivity;
+import com.forgerock.authenticator.mechanisms.Mechanism;
 import com.forgerock.authenticator.mechanisms.MechanismLayout;
+import com.forgerock.authenticator.storage.IdentityDatabase;
 import com.squareup.picasso.Picasso;
 
-public class TokenLayout extends MechanismLayout {
+/**
+ * Handles the display of a Token in a list.
+ */
+class TokenLayout extends FrameLayout implements View.OnClickListener, Runnable, MechanismLayout<Token> {
     private ProgressCircle mProgressInner;
     private ProgressCircle mProgressOuter;
     private ImageView mImage;
@@ -73,7 +82,40 @@ public class TokenLayout extends MechanismLayout {
         mMenu.setOnClickListener(this);
     }
 
-    void bind(Token token, int menu, PopupMenu.OnMenuItemClickListener micl) {
+    @Override
+    public void bind(final Token token) {
+        final Context context = this.getContext();
+        bindData(token, R.menu.token, new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                Intent i;
+
+                switch (item.getItemId()) {
+
+                    case R.id.action_delete:
+                        i = new Intent(context, DeleteActivity.class);
+                        i.putExtra(DeleteActivity.ROW_ID, token.getRowId());
+                        context.startActivity(i);
+                        break;
+                }
+
+                return true;
+            }
+        });
+
+        setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Increment the token.
+                TokenCode codes = token.generateCodes();
+                new IdentityDatabase(v.getContext()).updateMechanism(token);
+
+                ((TokenLayout) v).start(token.getType(), codes, true);
+            }
+        });
+    }
+
+    private void bindData(Token token, int menu, PopupMenu.OnMenuItemClickListener micl) {
         mCodes = null;
 
         // Setup menu.
@@ -121,7 +163,7 @@ public class TokenLayout extends MechanismLayout {
         view.startAnimation(a);
     }
 
-    public void start(Token.TokenType type, TokenCode codes, boolean animate) {
+    private void start(Token.TokenType type, TokenCode codes, boolean animate) {
         mCodes = codes;
         mType = type;
 
@@ -174,5 +216,4 @@ public class TokenLayout extends MechanismLayout {
         mProgressOuter.setVisibility(View.GONE);
         animate(mImage, R.anim.token_image_fadein, true);
     }
-
 }

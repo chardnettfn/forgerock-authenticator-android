@@ -18,13 +18,10 @@
 
 package com.forgerock.authenticator.mechanisms.TOTP;
 
-import android.net.Uri;
-
 import com.forgerock.authenticator.identity.Identity;
 import com.forgerock.authenticator.mechanisms.IMechanismFactory;
 import com.forgerock.authenticator.mechanisms.Mechanism;
-import com.forgerock.authenticator.mechanisms.MechanismLayout;
-import com.forgerock.authenticator.mechanisms.MechanismLayoutManager;
+import com.forgerock.authenticator.mechanisms.MechanismInfo;
 import com.forgerock.authenticator.utils.MechanismCreationException;
 import com.google.android.apps.authenticator.Base32String;
 import com.google.android.apps.authenticator.Base32String.DecodingException;
@@ -46,7 +43,7 @@ import java.util.Map;
  * - Generate new OTP codes
  * - Value object for display purposes
  */
-public class Token implements Mechanism {
+class Token implements Mechanism {
     public enum TokenType {
         HOTP, TOTP
     }
@@ -162,13 +159,8 @@ public class Token implements Mechanism {
     }
 
     @Override
-    public IMechanismFactory getFactory() {
-        return new TokenFactory();
-    }
-
-    @Override
-    public MechanismLayoutManager getLayoutManager() {
-        return new TokenLayoutManager();
+    public MechanismInfo getInfo() {
+        return new TokenInfo();
     }
 
     @Override

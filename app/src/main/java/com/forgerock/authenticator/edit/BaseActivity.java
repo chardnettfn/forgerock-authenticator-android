@@ -35,6 +35,10 @@ public abstract class BaseActivity extends RoboActivity {
         assert rowId >= 0;
     }
 
+    /**
+     * Gets the database used for storing the data. Exposed for testing.
+     * @return The shared database connection.
+     */
     public IdentityDatabase getIdentityDatabase() {
         return RoboGuice.getInjector(this).getInstance(IdentityDatabase.class);
     }

@@ -28,7 +28,7 @@ import com.forgerock.authenticator.R;
 import com.forgerock.authenticator.identity.Identity;
 import com.forgerock.authenticator.storage.DatabaseListener;
 import com.forgerock.authenticator.storage.IdentityDatabase;
-import com.forgerock.authenticator.mechanisms.TOTP.TokenLayoutManager;
+import com.forgerock.authenticator.mechanisms.TOTP.TokenInfo;
 
 import java.util.HashMap;
 import java.util.List;
@@ -36,12 +36,15 @@ import java.util.Map;
 
 import roboguice.RoboGuice;
 
+/**
+ * Class for displaying a list of mechanisms belonging to a particular identity.
+ */
 public class MechanismAdapter extends BaseAdapter implements DatabaseListener {
     private final IdentityDatabase identityDatabase;
     private final LayoutInflater mLayoutInflater;
     private final Identity owner;
     private List<Mechanism> mechanismList;
-    private Map<Integer, MechanismLayoutManager> layoutTypeMap;
+    private Map<Integer, MechanismInfo> layoutTypeMap;
 
     public MechanismAdapter(Context context, Identity owner) {
         identityDatabase = getIdentityDatabase(context);
@@ -50,16 +53,25 @@ public class MechanismAdapter extends BaseAdapter implements DatabaseListener {
         this.owner = owner;
         mechanismList = identityDatabase.getMechanisms(owner);
         layoutTypeMap = new HashMap<>();
-        layoutTypeMap.put(0, new TokenLayoutManager());
+        int index = 0;
+        for (MechanismInfo info : MechanismList.getAllMechanisms()) {
+            layoutTypeMap.put(index, info);
+            index++;
+        }
     }
 
+    /**
+     * Gets the database used for storing the data. Exposed for testing.
+     * @param context The current context.
+     * @return The shared database connection.
+     */
     public IdentityDatabase getIdentityDatabase(Context context) {
         return RoboGuice.getInjector(context).getInstance(IdentityDatabase.class);
     }
 
     @Override
     public int getCount() {
-        return mechanismList.size(); //TODO: Don't refetch list unless necessary
+        return mechanismList.size();
     }
 
     @Override
@@ -82,7 +94,7 @@ public class MechanismAdapter extends BaseAdapter implements DatabaseListener {
         convertView.setTag(R.id.reorder_key, Integer.valueOf(position)); // TODO: Is this needed?
 
         Mechanism mechanism = getItem(position);
-        mechanism.getLayoutManager().bind(convertView.getContext(), mechanism, convertView);
+        mechanism.getInfo().bind(convertView, mechanism);
         return convertView;
     }
 
@@ -94,7 +106,7 @@ public class MechanismAdapter extends BaseAdapter implements DatabaseListener {
     @Override
     public int getItemViewType(int position) {
         for (int key : layoutTypeMap.keySet()) { //TODO: more elegant solution
-            if (layoutTypeMap.get(key).getLayoutType() == getItem(position).getLayoutManager().getLayoutType()) {
+            if (layoutTypeMap.get(key).getLayoutType() == getItem(position).getInfo().getLayoutType()) {
                 return key;
             }
         }

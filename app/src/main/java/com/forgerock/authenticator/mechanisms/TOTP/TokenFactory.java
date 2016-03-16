@@ -20,10 +20,8 @@ import com.forgerock.authenticator.identity.Identity;
 import com.forgerock.authenticator.mechanisms.IMechanismFactory;
 import com.forgerock.authenticator.mechanisms.Mechanism;
 import com.forgerock.authenticator.utils.MechanismCreationException;
-import com.forgerock.authenticator.utils.OTPAuthMapper;
 import com.forgerock.authenticator.utils.URIMappingException;
 
-import java.util.IllegalFormatException;
 import java.util.Map;
 
 /**
@@ -32,19 +30,10 @@ import java.util.Map;
  * Understands the concept of a version number associated with a Token
  * and will parse the URI according to this.
  */
-public class TokenFactory implements IMechanismFactory {
+class TokenFactory implements IMechanismFactory {
     private final OTPAuthMapper mapper = new OTPAuthMapper();
 
     @Override
-    public String getMechanismString() {
-        return "OTP";
-    }
-
-    /**
-     * @param uri Non null configuration URI.
-     * @return An instance of a Token which represents the configuration URI.
-     * @throws URIMappingException If there was any unrecoverable parsing problem.
-     */
     public Mechanism get(String uri) throws MechanismCreationException, URIMappingException {
 
         Map<String, String> values = mapper.map(uri);
