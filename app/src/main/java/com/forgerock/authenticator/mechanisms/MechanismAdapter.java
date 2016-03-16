@@ -22,8 +22,9 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.BaseAdapter;
 
-import com.forgerock.authenticator.BaseReorderableAdapter;
+import com.forgerock.authenticator.R;
 import com.forgerock.authenticator.identity.Identity;
 import com.forgerock.authenticator.storage.DatabaseListener;
 import com.forgerock.authenticator.storage.IdentityDatabase;
@@ -35,7 +36,7 @@ import java.util.Map;
 
 import roboguice.RoboGuice;
 
-public class MechanismAdapter extends BaseReorderableAdapter implements DatabaseListener {
+public class MechanismAdapter extends BaseAdapter implements DatabaseListener {
     private final IdentityDatabase identityDatabase;
     private final LayoutInflater mLayoutInflater;
     private final Identity owner;
@@ -72,19 +73,17 @@ public class MechanismAdapter extends BaseReorderableAdapter implements Database
     }
 
     @Override
-    protected void move(int fromPosition, int toPosition) {
-        //Do nothing
-    }
+    public View getView(int position, View convertView, ViewGroup parent) {
+        if (convertView == null) {
+            int type = getItemViewType(position);
+            convertView = mLayoutInflater.inflate(layoutTypeMap.get(type).getLayoutType(), parent, false);
+        }
 
-    @Override
-    protected void bindView(View view, final int position) {
+        convertView.setTag(R.id.reorder_key, Integer.valueOf(position)); // TODO: Is this needed?
+
         Mechanism mechanism = getItem(position);
-        mechanism.getLayoutManager().bind(view.getContext(), mechanism, view);
-    }
-
-    @Override
-    protected View createView(ViewGroup parent, int type) {
-        return mLayoutInflater.inflate(layoutTypeMap.get(type).getLayoutType(), parent, false);
+        mechanism.getLayoutManager().bind(convertView.getContext(), mechanism, convertView);
+        return convertView;
     }
 
     @Override
