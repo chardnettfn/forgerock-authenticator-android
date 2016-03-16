@@ -17,6 +17,7 @@
 package com.forgerock.authenticator.edit;
 
 import com.forgerock.authenticator.R;
+import com.forgerock.authenticator.identity.Identity;
 import com.forgerock.authenticator.identity.IdentityDatabase;
 import com.forgerock.authenticator.mechanisms.Mechanism;
 
@@ -28,14 +29,19 @@ import android.widget.TextView;
 import com.forgerock.authenticator.utils.MechanismCreationException;
 import com.squareup.picasso.Picasso;
 
+import javax.inject.Inject;
+
+import roboguice.RoboGuice;
+
 public class DeleteActivity extends BaseActivity {
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.delete);
         Mechanism token;
         try {
-            token = new IdentityDatabase(this).getMechanism(getRowId());
+            token = getIdentityDatabase().getMechanism(getRowId());
         } catch (MechanismCreationException e) {
             e.printStackTrace();
             finish();
@@ -58,7 +64,7 @@ public class DeleteActivity extends BaseActivity {
         findViewById(R.id.delete).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                new IdentityDatabase(DeleteActivity.this).deleteMechanism(getRowId());
+                getIdentityDatabase().deleteMechanism(getRowId());
                 finish();
             }
         });

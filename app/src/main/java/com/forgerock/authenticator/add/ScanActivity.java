@@ -45,6 +45,8 @@ import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
+import roboguice.RoboGuice;
+
 public class ScanActivity extends Activity implements SurfaceHolder.Callback {
     private final CameraInfo    mCameraInfo  = new CameraInfo();
     private final ScanAsyncTask mScanAsyncTask;
@@ -89,10 +91,10 @@ public class ScanActivity extends Activity implements SurfaceHolder.Callback {
         return cameraId;
     }
 
-    public static Mechanism addWithToast(Context context, String uri) {
+    public static Mechanism addWithToast(Context context, String uri) { //TODO: change to not be static
         try {
             Mechanism mechanism = new MechanismFactory().get(uri);
-            new IdentityDatabase(context).addMechanism(mechanism);
+            RoboGuice.getInjector(context).getInstance(IdentityDatabase.class).addMechanism(mechanism);
             return mechanism;
         } catch (MechanismCreationException | URIMappingException e) {
             Toast.makeText(context, R.string.invalid_qr, Toast.LENGTH_SHORT).show();

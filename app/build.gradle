@@ -65,6 +65,9 @@ dependencies {
     compile 'com.android.support:support-v4:23.2.0'
     // Logging framework
     compile 'org.slf4j:slf4j-android:1.7.18'
+    // Guice
+    compile 'org.roboguice:roboguice:3.+'
+    provided 'org.roboguice:roboblender:3.+'
 }
 
 apply plugin: 'com.google.gms.google-services'

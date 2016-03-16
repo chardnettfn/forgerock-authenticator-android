@@ -35,6 +35,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import roboguice.RoboGuice;
+
 public class MechanismAdapter extends BaseReorderableAdapter {
     private final IdentityDatabase identityDatabase;
     private final LayoutInflater mLayoutInflater;
@@ -42,13 +44,17 @@ public class MechanismAdapter extends BaseReorderableAdapter {
     private List<Mechanism> mechanismList;
     private Map<Integer, MechanismLayoutManager> layoutTypeMap;
 
-    public MechanismAdapter(Context ctx, Identity owner) {
-        identityDatabase = new IdentityDatabase(ctx);
-        mLayoutInflater = (LayoutInflater) ctx.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+    public MechanismAdapter(Context context, Identity owner) {
+        identityDatabase = getIdentityDatabase(context);
+        mLayoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         this.owner = owner;
-        mechanismList = new IdentityDatabase(ctx).getMechanisms(owner);
+        mechanismList = identityDatabase.getMechanisms(owner);
         layoutTypeMap = new HashMap<>();
         layoutTypeMap.put(0, new TokenLayoutManager());
+    }
+
+    public IdentityDatabase getIdentityDatabase(Context context) {
+        return RoboGuice.getInjector(context).getInstance(IdentityDatabase.class);
     }
 
     @Override

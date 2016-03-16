@@ -44,8 +44,12 @@ import com.forgerock.authenticator.message.MessageConstants;
 import com.forgerock.authenticator.utils.TestNGCheck;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.inject.Module;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import roboguice.RoboGuice;
 
 /**
  * The main entry point for the Authenticator App.
@@ -83,6 +87,7 @@ public class MainActivity extends Activity implements OnMenuItemClickListener {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         onNewIntent(getIntent());
         setContentView(R.layout.main);
 

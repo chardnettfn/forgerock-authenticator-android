@@ -16,21 +16,27 @@
 
 package com.forgerock.authenticator.edit;
 
-import android.app.Activity;
 import android.os.Bundle;
 
-public abstract class BaseActivity extends Activity {
+import com.forgerock.authenticator.identity.IdentityDatabase;
+
+import roboguice.RoboGuice;
+import roboguice.activity.RoboActivity;
+
+public abstract class BaseActivity extends RoboActivity {
     public static final String ROW_ID = "rowid";
     private long rowId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         // Get the position of the token. This MUST exist.
         rowId = getIntent().getLongExtra(ROW_ID, -1);
         assert rowId >= 0;
+    }
 
+    public IdentityDatabase getIdentityDatabase() {
+        return RoboGuice.getInjector(this).getInstance(IdentityDatabase.class);
     }
 
     protected long getRowId() {
