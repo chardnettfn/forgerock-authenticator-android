@@ -38,6 +38,7 @@ import com.squareup.picasso.Picasso;
 
 /**
  * Handles the display of a Token in a list.
+ * Some common features of this may be able to be broken out.
  */
 class TokenLayout extends FrameLayout implements View.OnClickListener, Runnable, MechanismLayout<Token> {
     private ProgressCircle mProgressInner;

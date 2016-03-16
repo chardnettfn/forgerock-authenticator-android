@@ -30,6 +30,7 @@ import com.forgerock.authenticator.storage.DatabaseListener;
 import com.forgerock.authenticator.storage.IdentityDatabase;
 import com.forgerock.authenticator.mechanisms.TOTP.TokenInfo;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,7 +45,7 @@ public class MechanismAdapter extends BaseAdapter implements DatabaseListener {
     private final LayoutInflater mLayoutInflater;
     private final Identity owner;
     private List<Mechanism> mechanismList;
-    private Map<Integer, MechanismInfo> layoutTypeMap;
+    private List<Integer> layoutTypes;
 
     public MechanismAdapter(Context context, Identity owner) {
         identityDatabase = getIdentityDatabase(context);
@@ -52,11 +53,10 @@ public class MechanismAdapter extends BaseAdapter implements DatabaseListener {
         mLayoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         this.owner = owner;
         mechanismList = identityDatabase.getMechanisms(owner);
-        layoutTypeMap = new HashMap<>();
+        layoutTypes = new ArrayList<>();
         int index = 0;
         for (MechanismInfo info : MechanismList.getAllMechanisms()) {
-            layoutTypeMap.put(index, info);
-            index++;
+            layoutTypes.add(info.getLayoutType());
         }
     }
 
@@ -87,8 +87,8 @@ public class MechanismAdapter extends BaseAdapter implements DatabaseListener {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         if (convertView == null) {
-            int type = getItemViewType(position);
-            convertView = mLayoutInflater.inflate(layoutTypeMap.get(type).getLayoutType(), parent, false);
+            int typeIndex = getItemViewType(position);
+            convertView = mLayoutInflater.inflate(layoutTypes.get(typeIndex), parent, false);
         }
 
         convertView.setTag(R.id.reorder_key, Integer.valueOf(position)); // TODO: Is this needed?
@@ -100,17 +100,12 @@ public class MechanismAdapter extends BaseAdapter implements DatabaseListener {
 
     @Override
     public int getViewTypeCount() {
-        return layoutTypeMap.size();
+        return layoutTypes.size();
     }
 
     @Override
     public int getItemViewType(int position) {
-        for (int key : layoutTypeMap.keySet()) { //TODO: more elegant solution
-            if (layoutTypeMap.get(key).getLayoutType() == getItem(position).getInfo().getLayoutType()) {
-                return key;
-            }
-        }
-        return -1;
+        return layoutTypes.indexOf(getItem(position).getInfo().getLayoutType());
     }
 
     @Override
