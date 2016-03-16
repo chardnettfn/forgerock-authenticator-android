@@ -18,7 +18,7 @@ package com.forgerock.authenticator.edit;
 
 import android.os.Bundle;
 
-import com.forgerock.authenticator.identity.IdentityDatabase;
+import com.forgerock.authenticator.storage.IdentityDatabase;
 
 import roboguice.RoboGuice;
 import roboguice.activity.RoboActivity;

@@ -1,4 +1,4 @@
-package com.forgerock.authenticator.identity;
+package com.forgerock.authenticator.storage;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;

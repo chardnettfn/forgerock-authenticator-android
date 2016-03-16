@@ -19,7 +19,6 @@
 
 package com.forgerock.authenticator;
 
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -35,21 +34,23 @@ import android.view.View;
 import android.view.WindowManager.LayoutParams;
 import android.widget.GridView;
 import android.widget.Toast;
+
 import com.forgerock.authenticator.add.AddActivity;
 import com.forgerock.authenticator.add.ScanActivity;
 import com.forgerock.authenticator.identity.Identity;
 import com.forgerock.authenticator.mechanisms.MechanismAdapter;
 import com.forgerock.authenticator.message.GcmRegistrationService;
 import com.forgerock.authenticator.message.MessageConstants;
+import com.forgerock.authenticator.storage.IdentityDatabase;
 import com.forgerock.authenticator.utils.TestNGCheck;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
-import com.google.inject.Module;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import roboguice.RoboGuice;
+import roboguice.activity.RoboActivity;
 
 /**
  * The main entry point for the Authenticator App.
@@ -60,7 +61,7 @@ import roboguice.RoboGuice;
  * <li>prevent screenshots of the app</li>
  * <li>show the first screen to the user</li>
  */
-public class MainActivity extends Activity implements OnMenuItemClickListener {
+public class MainActivity extends RoboActivity implements OnMenuItemClickListener {
     private final Logger logger;
 
     private MechanismAdapter mechanismAdapter;

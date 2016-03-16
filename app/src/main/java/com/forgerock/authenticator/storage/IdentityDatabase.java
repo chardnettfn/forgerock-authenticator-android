@@ -1,11 +1,11 @@
-package com.forgerock.authenticator.identity;
+package com.forgerock.authenticator.storage;
 
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.net.Uri;
 
+import com.forgerock.authenticator.identity.Identity;
 import com.forgerock.authenticator.mechanisms.Mechanism;
 import com.forgerock.authenticator.mechanisms.MechanismFactory;
 import com.forgerock.authenticator.utils.MechanismCreationException;
@@ -39,12 +39,14 @@ public class IdentityDatabase {
     private Gson gson = new Gson();
     private SQLiteDatabase database;
     private MechanismFactory mechanismFactory;
+    private List<DatabaseListener> listeners;
 
 
     public IdentityDatabase(Context context) {
         DatabaseOpenHelper databaseOpeHelper = new DatabaseOpenHelper(context);
         database = databaseOpeHelper.getWritableDatabase();
         mechanismFactory = new MechanismFactory();
+        listeners = new ArrayList<>();
     }
 
     public List<Identity> getIdentities() {
@@ -108,7 +110,7 @@ public class IdentityDatabase {
     public Identity getIdentity(String issuer, String label) {
         String[] selectionArgs = { issuer, label };
         Cursor cursor = database.rawQuery("SELECT * FROM " + IDENTITY_TABLE_NAME +
-                        " WHERE " + ISSUER + " = ? AND " + LABEL + " = ?", selectionArgs);
+                " WHERE " + ISSUER + " = ? AND " + LABEL + " = ?", selectionArgs);
         if (cursor.getCount() == 0) {
             return null;
         }
@@ -133,6 +135,7 @@ public class IdentityDatabase {
         values.put(IMAGE, image);
 
         database.insert(IDENTITY_TABLE_NAME, null, values);
+        onDatabaseChange();
     }
 
     private boolean isIdentityStored(Identity id) {
@@ -162,6 +165,7 @@ public class IdentityDatabase {
 
         long rowId = database.insert(MECHANISM_TABLE_NAME, null, values);
         mechanism.setRowId(rowId);
+        onDatabaseChange();
     }
 
     public void updateMechanism(Mechanism mechanism) {
@@ -174,9 +178,21 @@ public class IdentityDatabase {
 
 
         database.update(MECHANISM_TABLE_NAME, values, ID_ISSUER + " = ? AND " + ID_LABEL + " = ?", selectionArgs);
+        onDatabaseChange();
     }
 
     public void deleteMechanism(long rowId) {
         database.delete(MECHANISM_TABLE_NAME, "rowId = " + rowId, null);
+        onDatabaseChange();
+    }
+
+    public void addListener(DatabaseListener listener) {
+        listeners.add(listener);
+    }
+
+    private void onDatabaseChange() {
+        for (DatabaseListener listener : listeners) {
+            listener.onUpdate();
+        }
     }
 }

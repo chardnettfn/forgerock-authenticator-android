@@ -24,20 +24,18 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.forgerock.authenticator.BaseReorderableAdapter;
-import com.forgerock.authenticator.ProgressCircle;
 import com.forgerock.authenticator.identity.Identity;
-import com.forgerock.authenticator.identity.IdentityDatabase;
+import com.forgerock.authenticator.storage.DatabaseListener;
+import com.forgerock.authenticator.storage.IdentityDatabase;
 import com.forgerock.authenticator.mechanisms.TOTP.TokenLayoutManager;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import roboguice.RoboGuice;
 
-public class MechanismAdapter extends BaseReorderableAdapter {
+public class MechanismAdapter extends BaseReorderableAdapter implements DatabaseListener {
     private final IdentityDatabase identityDatabase;
     private final LayoutInflater mLayoutInflater;
     private final Identity owner;
@@ -46,6 +44,7 @@ public class MechanismAdapter extends BaseReorderableAdapter {
 
     public MechanismAdapter(Context context, Identity owner) {
         identityDatabase = getIdentityDatabase(context);
+        identityDatabase.addListener(this);
         mLayoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         this.owner = owner;
         mechanismList = identityDatabase.getMechanisms(owner);
@@ -59,8 +58,6 @@ public class MechanismAdapter extends BaseReorderableAdapter {
 
     @Override
     public int getCount() {
-        mechanismList = identityDatabase.getMechanisms(owner);
-
         return mechanismList.size(); //TODO: Don't refetch list unless necessary
     }
 
@@ -103,5 +100,11 @@ public class MechanismAdapter extends BaseReorderableAdapter {
             }
         }
         return -1;
+    }
+
+    @Override
+    public void onUpdate() {
+        mechanismList = identityDatabase.getMechanisms(owner);
+        notifyDataSetChanged();
     }
 }

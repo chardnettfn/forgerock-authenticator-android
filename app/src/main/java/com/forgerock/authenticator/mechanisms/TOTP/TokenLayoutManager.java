@@ -8,7 +8,7 @@ import android.widget.PopupMenu;
 
 import com.forgerock.authenticator.R;
 import com.forgerock.authenticator.edit.DeleteActivity;
-import com.forgerock.authenticator.identity.IdentityDatabase;
+import com.forgerock.authenticator.storage.IdentityDatabase;
 import com.forgerock.authenticator.mechanisms.Mechanism;
 import com.forgerock.authenticator.mechanisms.MechanismLayoutManager;
 

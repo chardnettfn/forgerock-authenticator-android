@@ -19,7 +19,6 @@
 package com.forgerock.authenticator.add;
 
 import android.annotation.TargetApi;
-import android.app.Activity;
 import android.content.Context;
 import android.hardware.Camera;
 import android.hardware.Camera.CameraInfo;
@@ -35,7 +34,7 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.forgerock.authenticator.R;
-import com.forgerock.authenticator.identity.IdentityDatabase;
+import com.forgerock.authenticator.storage.IdentityDatabase;
 import com.forgerock.authenticator.mechanisms.Mechanism;
 import com.forgerock.authenticator.mechanisms.MechanismFactory;
 import com.forgerock.authenticator.utils.MechanismCreationException;
@@ -46,8 +45,9 @@ import com.squareup.picasso.Picasso;
 import java.util.List;
 
 import roboguice.RoboGuice;
+import roboguice.activity.RoboActivity;
 
-public class ScanActivity extends Activity implements SurfaceHolder.Callback {
+public class ScanActivity extends RoboActivity implements SurfaceHolder.Callback {
     private final CameraInfo    mCameraInfo  = new CameraInfo();
     private final ScanAsyncTask mScanAsyncTask;
     private final int           mCameraId;

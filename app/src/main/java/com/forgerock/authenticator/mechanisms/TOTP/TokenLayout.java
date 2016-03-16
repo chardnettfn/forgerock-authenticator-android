@@ -17,9 +17,7 @@
 package com.forgerock.authenticator.mechanisms.TOTP;
 
 import android.content.Context;
-import android.content.Intent;
 import android.util.AttributeSet;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -27,12 +25,8 @@ import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 
-import com.forgerock.authenticator.MainActivity;
 import com.forgerock.authenticator.ProgressCircle;
 import com.forgerock.authenticator.R;
-import com.forgerock.authenticator.edit.DeleteActivity;
-import com.forgerock.authenticator.identity.IdentityDatabase;
-import com.forgerock.authenticator.mechanisms.Mechanism;
 import com.forgerock.authenticator.mechanisms.MechanismLayout;
 import com.squareup.picasso.Picasso;
 

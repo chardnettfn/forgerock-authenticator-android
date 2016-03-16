@@ -3,7 +3,7 @@ package com.forgerock.authenticator;
 import android.app.Application;
 import android.content.Context;
 
-import com.forgerock.authenticator.identity.IdentityDatabase;
+import com.forgerock.authenticator.storage.IdentityDatabase;
 import com.google.inject.AbstractModule;
 
 import roboguice.RoboGuice;

@@ -17,8 +17,6 @@
 package com.forgerock.authenticator.edit;
 
 import com.forgerock.authenticator.R;
-import com.forgerock.authenticator.identity.Identity;
-import com.forgerock.authenticator.identity.IdentityDatabase;
 import com.forgerock.authenticator.mechanisms.Mechanism;
 
 import android.os.Bundle;
@@ -28,10 +26,6 @@ import android.widget.TextView;
 
 import com.forgerock.authenticator.utils.MechanismCreationException;
 import com.squareup.picasso.Picasso;
-
-import javax.inject.Inject;
-
-import roboguice.RoboGuice;
 
 public class DeleteActivity extends BaseActivity {
 
