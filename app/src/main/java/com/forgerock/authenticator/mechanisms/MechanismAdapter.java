@@ -91,8 +91,6 @@ public class MechanismAdapter extends BaseAdapter implements DatabaseListener {
             convertView = mLayoutInflater.inflate(layoutTypes.get(typeIndex), parent, false);
         }
 
-        convertView.setTag(R.id.reorder_key, Integer.valueOf(position)); // TODO: Is this needed?
-
         Mechanism mechanism = getItem(position);
         mechanism.getInfo().bind(convertView, mechanism);
         return convertView;
