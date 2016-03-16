@@ -19,7 +19,6 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
                 IdentityDatabase.ISSUER + " TEXT, " +
                 IdentityDatabase.LABEL + " TEXT, " +
                 IdentityDatabase.IMAGE + " TEXT, " +
-                IdentityDatabase.ORDER_NUMBER + " INTEGER, " +
                 "PRIMARY KEY(" + IdentityDatabase.ISSUER + ", " + IdentityDatabase.LABEL + "));");
 
         db.execSQL("CREATE TABLE " + IdentityDatabase.MECHANISM_TABLE_NAME + " (" +
@@ -28,7 +27,6 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
                 IdentityDatabase.TYPE + " TEXT, " +
                 IdentityDatabase.VERSION + " INTEGER, " +
                 IdentityDatabase.OPTIONS + " TEXT, " +
-                IdentityDatabase.ORDER_NUMBER + " INTEGER, " +
                 "FOREIGN KEY(" + IdentityDatabase.ID_ISSUER + ", " + IdentityDatabase.ID_LABEL + ") " +
                 "REFERENCES " + IdentityDatabase.IDENTITY_TABLE_NAME
                 + "(" + IdentityDatabase.ISSUER + ", " + IdentityDatabase.LABEL + "));");

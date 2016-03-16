@@ -25,9 +25,6 @@ public class IdentityDatabase {
     public static final String IDENTITY_TABLE_NAME = "identity";
     public static final String MECHANISM_TABLE_NAME = "mechanism";
 
-    // Common columns
-    public static final String ORDER_NUMBER = "orderNumber";
-
     // Identity columns
     public static final String ISSUER = "issuer";
     public static final String LABEL = "label";
