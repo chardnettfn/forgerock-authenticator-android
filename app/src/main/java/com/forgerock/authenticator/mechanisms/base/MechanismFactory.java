@@ -14,9 +14,12 @@
  * Copyright 2016 ForgeRock AS.
  */
 
-package com.forgerock.authenticator.mechanisms;
+package com.forgerock.authenticator.mechanisms.base;
 
-import com.forgerock.authenticator.identity.Identity;
+import android.content.Context;
+
+import com.forgerock.authenticator.mechanisms.MechanismCreationException;
+import com.forgerock.authenticator.mechanisms.URIMappingException;
 
 import java.util.Map;
 
@@ -26,23 +29,23 @@ import java.util.Map;
 public interface MechanismFactory {
 
     /**
-     * Convert a URL to the Mechanism it represents, including extracting the owner.
+     * Convert a URL to the Mechanism it represents, including extracting the owner. Also saves it to the database.
      * @param uri The URI to process.
      * @return The created Mechanism.
      * @throws URIMappingException If the URL was not parsed correctly.
      * @throws MechanismCreationException If the data was not valid to create a Mechanism.
      */
-    Mechanism createFromUri(String uri) throws URIMappingException, MechanismCreationException;
+    Mechanism createFromUri(Context context, String uri) throws URIMappingException, MechanismCreationException;
 
 
     /**
-     * Uses the map to create the Mechanism associated with the version provided, and
-     * links it to the owner.
+     * Uses the map to create the partial mechanism builder associated with the version provided.
+     * This is used to restore a mechanism that has been stored.
+     * The resulting Mechanism builder must be added to the owner.
      * @param version The version of the Mechanism being created.
-     * @param owner The owner of the mechanism.
      * @param map The set of properties.
      * @return The create Mechanism.
      * @throws MechanismCreationException If the data was not valid to create a Mechanism.
      */
-    Mechanism createFromParameters(int version, Identity owner, Map<String, String> map) throws MechanismCreationException;
+    Mechanism.PartialMechanismBuilder restoreFromParameters(int version, Map<String, String> map) throws MechanismCreationException;
 }

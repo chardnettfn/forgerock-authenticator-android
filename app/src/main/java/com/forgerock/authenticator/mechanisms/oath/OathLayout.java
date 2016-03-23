@@ -28,12 +28,11 @@ import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 
-import com.forgerock.authenticator.ProgressCircle;
+import com.forgerock.authenticator.ui.ProgressCircle;
 import com.forgerock.authenticator.R;
 import com.forgerock.authenticator.delete.DeleteMechanismActivity;
-import com.forgerock.authenticator.mechanisms.MechanismLayout;
+import com.forgerock.authenticator.mechanisms.base.MechanismLayout;
 import com.forgerock.authenticator.storage.IdentityDatabase;
-import com.forgerock.authenticator.storage.NotStoredException;
 import com.squareup.picasso.Picasso;
 
 import org.slf4j.Logger;
@@ -43,7 +42,7 @@ import org.slf4j.LoggerFactory;
  * Handles the display of a Token in a list.
  * Some common features of this may be able to be broken out.
  */
-class OathLayout extends FrameLayout implements View.OnClickListener, Runnable, MechanismLayout<Oath> {
+public class OathLayout extends FrameLayout implements View.OnClickListener, Runnable, MechanismLayout<Oath> {
     private ProgressCircle mProgressInner;
     private ProgressCircle mProgressOuter;
     private ImageView mImage;
@@ -57,8 +56,6 @@ class OathLayout extends FrameLayout implements View.OnClickListener, Runnable, 
     private Oath.TokenType mType;
     private String mPlaceholder;
     private long mStartTime;
-    private Logger logger = LoggerFactory.getLogger(OathLayout.class);
-
 
     /**
      * Creates this layout using the provided context.
@@ -109,12 +106,8 @@ class OathLayout extends FrameLayout implements View.OnClickListener, Runnable, 
 
                     case R.id.action_delete:
                         i = new Intent(context, DeleteMechanismActivity.class);
-                        try {
-                            i.putExtra(DeleteMechanismActivity.MECHANISM_ID, oath.getId());
-                            context.startActivity(i);
-                        } catch (NotStoredException e) {
-                            logger.error("Mechanism to delete did not contain row id.", e);
-                        }
+                        i.putExtra(DeleteMechanismActivity.MECHANISM_REFERENCE, oath.getOpaqueReference());
+                        context.startActivity(i);
                         break;
                 }
 
@@ -127,7 +120,7 @@ class OathLayout extends FrameLayout implements View.OnClickListener, Runnable, 
             public void onClick(View v) {
                 // Increment the token.
                 TokenCode codes = oath.generateCodes();
-                new IdentityDatabase(v.getContext()).updateMechanism(oath);
+                oath.save(context); //TODO: move this inside generateCodes()
 
                 ((OathLayout) v).start(oath.getType(), codes, true);
             }

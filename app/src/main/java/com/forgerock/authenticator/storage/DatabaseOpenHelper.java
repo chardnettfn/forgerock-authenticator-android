@@ -49,6 +49,7 @@ class DatabaseOpenHelper extends SQLiteOpenHelper {
         db.execSQL("CREATE TABLE " + IdentityDatabase.MECHANISM_TABLE_NAME + " (" +
                 IdentityDatabase.ID_ISSUER + " TEXT, " +
                 IdentityDatabase.ID_ACCOUNT_NAME + " TEXT, " +
+                IdentityDatabase.MECHANISM_UID + " TEXT UNIQUE, " +
                 IdentityDatabase.TYPE + " TEXT, " +
                 IdentityDatabase.VERSION + " INTEGER, " +
                 IdentityDatabase.OPTIONS + " TEXT, " +
@@ -56,6 +57,15 @@ class DatabaseOpenHelper extends SQLiteOpenHelper {
                 "REFERENCES " + IdentityDatabase.IDENTITY_TABLE_NAME
                 + "(" + IdentityDatabase.ISSUER + ", " + IdentityDatabase.ACCOUNT_NAME + "));");
 
+        db.execSQL("CREATE TABLE " + IdentityDatabase.NOTIFICATION_TABLE_NAME + " (" +
+                IdentityDatabase.MECHANISM_UID + " TEXT, " +
+                IdentityDatabase.ADDED_TIME + " TEXT, " +
+                IdentityDatabase.EXPIRY_TIME + " TEXT, " +
+                IdentityDatabase.DATA + " TEXT, " +
+                IdentityDatabase.SUCCESSFUL + " INT, " +
+                "FOREIGN KEY(" + IdentityDatabase.MECHANISM_UID + ") " +
+                "REFERENCES " + IdentityDatabase.MECHANISM_TABLE_NAME
+                + "(" + IdentityDatabase.MECHANISM_UID + "));");
     }
 
     @Override

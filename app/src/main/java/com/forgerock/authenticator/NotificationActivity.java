@@ -16,85 +16,64 @@
 
 package com.forgerock.authenticator;
 
-import android.content.Context;
-import android.content.Intent;
 import android.database.DataSetObserver;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.GridView;
-import android.widget.TextView;
 
 import com.forgerock.authenticator.baseactivities.BaseIdentityActivity;
 import com.forgerock.authenticator.identity.Identity;
-import com.forgerock.authenticator.mechanisms.MechanismAdapter;
+import com.forgerock.authenticator.notifications.NotificationAdapter;
 
 /**
- * Page for viewing the mechanisms relating to an identity.
+ * Page for viewing a list of Notifications relating to a mechanism.
  */
-public class MechanismActivity extends BaseIdentityActivity {
+public class NotificationActivity extends BaseIdentityActivity { //TODO: change this to extend BaseMechanismActivity
 
-    private MechanismAdapter mechanismAdapter;
+    private NotificationAdapter notificationAdapter;
     private DataSetObserver dataSetObserver;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.mechanism);
+        setContentView(R.layout.notifications);
 
         final Identity identity = getIdentity();
         assert identity != null;
 
-        TextView issuerView = (TextView) findViewById(R.id.issuer);
-        issuerView.setText(identity.getIssuer());
-        TextView accountNameView = (TextView) findViewById(R.id.account_name);
-        accountNameView.setText(identity.getAccountName());
-
-        mechanismAdapter = new MechanismAdapter(this, identity);
-
-        ((GridView) findViewById(R.id.grid)).setAdapter(mechanismAdapter);
-
-        final Context context = this;
-
-        View activity = findViewById(R.id.activity);
-        activity.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(context, NotificationActivity.class);
-                intent.putExtra(NotificationActivity.IDENTITY_REFERENCE, identity.getOpaqueReference());
-                startActivity(intent);
-            }
-        });
+        notificationAdapter = new NotificationAdapter(this);
+        ((GridView) findViewById(R.id.grid)).setAdapter(notificationAdapter);
 
         dataSetObserver = new DataSetObserver() {
             @Override
             public void onChanged() {
                 super.onChanged();
-                if (mechanismAdapter.getCount() == 0) {
-                    findViewById(android.R.id.empty).setVisibility(View.VISIBLE);
+                if (notificationAdapter.getCount() == 0) {
+                    findViewById(R.id.empty).setVisibility(View.VISIBLE);
                 } else {
-                    findViewById(android.R.id.empty).setVisibility(View.GONE);
+                    findViewById(R.id.empty).setVisibility(View.GONE);
                 }
             }
         };
-        mechanismAdapter.registerDataSetObserver(dataSetObserver);
+        notificationAdapter.registerDataSetObserver(dataSetObserver);
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        //mechanismAdapter.notifyDataSetChanged();
+        notificationAdapter.notifyDataSetChanged();
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        //mechanismAdapter.notifyDataSetChanged();
+        notificationAdapter.notifyDataSetChanged();
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-       // mechanismAdapter.unregisterDataSetObserver(dataSetObserver);
+        notificationAdapter.unregisterDataSetObserver(dataSetObserver);
     }
 }

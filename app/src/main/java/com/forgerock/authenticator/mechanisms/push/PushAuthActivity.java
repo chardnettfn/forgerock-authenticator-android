@@ -24,7 +24,10 @@ import android.view.View;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
-import com.forgerock.authenticator.ConfirmationSwipeBar;
+import com.forgerock.authenticator.baseactivities.BaseNotificationActivity;
+import com.forgerock.authenticator.notifications.Notification;
+import com.forgerock.authenticator.storage.IdentityModel;
+import com.forgerock.authenticator.ui.ConfirmationSwipeBar;
 import com.forgerock.authenticator.R;
 import com.forgerock.authenticator.message.MessageConstants;
 
@@ -33,21 +36,21 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 
+import roboguice.RoboGuice;
 import roboguice.activity.RoboActivity;
 
 /**
  * Activity which allows the user to approve or reject a request for authentication that has been
  * provided by a message.
  */
-public class PushAuthActivity extends RoboActivity {
+public class PushAuthActivity extends BaseNotificationActivity {
     private static final Logger logger = LoggerFactory.getLogger(PushAuthActivity.class);
     private ConfirmationSwipeBar swipeToConfirm;
 
@@ -57,19 +60,10 @@ public class PushAuthActivity extends RoboActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.pushauth);
 
-        String title = getIntent().getStringExtra(MessageConstants.TITLE);
-        final String messageId = getIntent().getStringExtra(MessageConstants.MESSAGE_ID);
-        String message = getIntent().getStringExtra(MessageConstants.MESSAGE);
+        final Notification notification = getNotification();
 
-        assert title != null;
-        assert messageId != null;
-        assert message != null;
-
-        TextView titleView = (TextView) findViewById(R.id.title);
-        titleView.setText(title);
-
-        TextView messageView = (TextView) findViewById(R.id.message);
-        messageView.setText(message);
+        TextView questionView = (TextView) findViewById(R.id.question);
+        questionView.setText("Log into " + notification.getMechanism().getOwner().getIssuer() + "?");
 
         ImageButton button = (ImageButton) findViewById(R.id.cancel);
         button.setOnClickListener(new View.OnClickListener() {
@@ -78,19 +72,18 @@ public class PushAuthActivity extends RoboActivity {
                 finish();
             }
         });
-        titleView.setText(title);
 
         swipeToConfirm = (ConfirmationSwipeBar) findViewById(R.id.slideToConfirm);
         swipeToConfirm.setListener(new ConfirmationSwipeBar.ConfirmationSwipeBarListener() {
             @Override
             public void onConfirm() {
-                new RespondToMessageTask(messageId).execute();
+                new RespondToMessageTask(notification.getMessageId()).execute();
             }
         });
     }
 
     /**
-     * Class responsible for making a request to OpenAM to complete the request.
+     * Class responsible for making a request to OpenAM to complete the authentication request.
      */
     private class RespondToMessageTask extends AsyncTask<Void, Void, Integer> {
         private String messageId;
@@ -139,7 +132,7 @@ public class PushAuthActivity extends RoboActivity {
 
         @Override
         protected void onPostExecute(Integer responseCode) {
-            if (responseCode == 200) {
+            if (responseCode != 200) {
                 new AlertDialog.Builder(PushAuthActivity.this)
                         .setTitle("Error")
                         .setMessage("Failed to connect to server")

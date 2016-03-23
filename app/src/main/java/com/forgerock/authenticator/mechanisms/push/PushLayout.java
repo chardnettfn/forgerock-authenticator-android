@@ -23,18 +23,15 @@ import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
+import com.forgerock.authenticator.NotificationActivity;
 import com.forgerock.authenticator.R;
-import com.forgerock.authenticator.mechanisms.MechanismLayout;
+import com.forgerock.authenticator.mechanisms.base.MechanismLayout;
 import com.forgerock.authenticator.message.MessageConstants;
-import com.forgerock.authenticator.storage.NotStoredException;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Handles the display of a Push mechanism in a list.
  */
-public class PushLayout extends FrameLayout implements View.OnClickListener, MechanismLayout<Push> {
+public class PushLayout extends FrameLayout implements MechanismLayout<Push> {
 
     public PushLayout(Context context) {
         super(context);
@@ -49,23 +46,21 @@ public class PushLayout extends FrameLayout implements View.OnClickListener, Mec
     }
 
     @Override
-    public void bind(Push mechanism) {
+    public void bind(final Push mechanism) {
         TextView issuer = (TextView) findViewById(R.id.issuer);
         TextView label = (TextView) findViewById(R.id.label);
 
         issuer.setText(mechanism.getOwner().getIssuer());
         label.setText(mechanism.getOwner().getAccountName());
 
-        setOnClickListener(this);
-    }
-
-    @Override
-    public void onClick(View view) {
-        Context context = getContext();
-        Intent intent = new Intent(context, PushAuthActivity.class);
-        intent.putExtra(MessageConstants.TITLE, "New Message Received");
-        intent.putExtra(MessageConstants.MESSAGE_ID, "Placeholder");
-        intent.putExtra(MessageConstants.MESSAGE, "Placeholder 2");
-        context.startActivity(intent);
+        setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Context context = getContext();
+                Intent intent = new Intent(context, NotificationActivity.class);
+                intent.putExtra(NotificationActivity.IDENTITY_REFERENCE, mechanism.getOwner().getOpaqueReference());
+                context.startActivity(intent);
+            }
+        });
     }
 }

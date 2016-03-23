@@ -16,51 +16,83 @@
 
 package com.forgerock.authenticator.identity;
 
+import android.content.Context;
 import android.net.Uri;
 
-import com.forgerock.authenticator.storage.NotStoredException;
+import com.forgerock.authenticator.mechanisms.MechanismCreationException;
+import com.forgerock.authenticator.mechanisms.base.Mechanism;
+import com.forgerock.authenticator.model.ModelObject;
+import com.forgerock.authenticator.storage.IdentityDatabase;
+import com.forgerock.authenticator.storage.IdentityModel;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+
+import roboguice.RoboGuice;
 
 /**
  * Identity is responsible for modelling the information that makes up part of a users identity in
  * the context of logging into that users account.
  */
-public class Identity {
-    private long id = -1;
-    private String issuer;
-    private String accountName;
-    private Uri image;
+public final class Identity extends ModelObject {
+    private long id;
+    private final String issuer;
+    private final String accountName;
+    private final Uri image;
+    private final List<Mechanism> mechanismList;
+    private static final Logger logger = LoggerFactory.getLogger(Identity.class);
 
-    private Identity(String issuer, String accountName, Uri image) {
+
+    private Identity(long id, String issuer, String accountName, Uri image) {
+        this.id = id;
         this.issuer = issuer;
         this.accountName = accountName;
         this.image = image;
+        this.mechanismList = new ArrayList<>();
     }
 
     /**
-     * Returns the id that corresponds to this Identity.
-     * @return The storage id that relates to this Identity.
+     * Adds the provided mechanism to this Identity, and therefore to the larger data model.
+     * @param context The context that the mechanism is being added from.
+     * @param builder An incomplete builder for a non stored mechanism.
+     * @return The mechanism that has been added to the data model.
+     * @throws MechanismCreationException If something went wrong when creating the mechanism.
      */
-    public long getId() throws NotStoredException {
-        if (id == -1) {
-            throw new NotStoredException("The mechanism has not yet been stored.");
+    public Mechanism addMechanism(Context context, Mechanism.PartialMechanismBuilder builder) throws MechanismCreationException {
+        Mechanism mechanism = builder.setOwner(this).build();
+        if (!mechanism.isStored() && !mechanismList.contains(mechanism)) {
+            mechanism.save(context);
+            mechanismList.add(mechanism);
         }
-        return id;
+        return mechanism;
     }
 
     /**
-     * Sets the storage id for this Identity.
-     * @param id The id that the storage mechanism uses to identify this Identity.
+     * Deletes the provided mechanism, and removes it from this Identity. Deletes this identity if
+     * this results in this identity containing no mechanisms.
+     * @param context The context that the mechanism is being deleted from.
+     * @param mechanism The mechanism to delete.
      */
-    public void setId(long id) {
-        this.id = id;
+    public void removeMechanism(Context context, Mechanism mechanism) {
+        mechanism.delete(context);
+        mechanismList.remove(mechanism);
+
+        if (mechanismList.isEmpty()) {
+            RoboGuice.getInjector(context).getInstance(IdentityModel.class).removeIdentity(context, this);
+        }
     }
 
     /**
-     * Returns a builder for creating an Identity.
-     * @return The Identity builder.
+     * Gets all of the mechanisms that belong to this Identity.
+     * @return The list of mechanisms.
      */
-    public static Builder builder() {
-        return new Builder();
+    public List<Mechanism> getMechanisms() {
+        return Collections.unmodifiableList(mechanismList);
     }
 
     /**
@@ -87,19 +119,119 @@ public class Identity {
         return image;
     }
 
+    @Override
+    public ArrayList<String> getOpaqueReference() {
+        ArrayList<String> reference = new ArrayList<>();
+        reference.add(issuer + ":" + accountName);
+        return reference;
+    }
+
+    @Override
+    public boolean consumeOpaqueReference(ArrayList<String> reference) {
+        if (reference.size() > 0 && reference.get(0) != null &&
+                reference.get(0).equals(issuer + ":" + accountName)) {
+            reference.remove(0);
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean validate() {
+        boolean valid = true;
+        for (Mechanism mechanism : mechanismList) {
+            valid = valid && mechanism.validate();
+        }
+        return isStored() && valid;
+    }
+
+    @Override
+    public boolean isStored() {
+        return id != NOT_STORED;
+    }
+
+    @Override
+    public void save(Context context) {
+        if (!isStored()) {
+            id = RoboGuice.getInjector(context).getInstance(IdentityDatabase.class).addIdentity(this);
+        } else {
+            // TODO: handle updates
+        }
+    }
+
+    @Override
+    public void delete(Context context) {
+        for (Mechanism mechanism : mechanismList) {
+            mechanism.delete(context);
+        }
+        if (id != NOT_STORED) {
+            RoboGuice.getInjector(context).getInstance(IdentityDatabase.class).deleteIdentity(id);
+            id = NOT_STORED;
+        }
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (object == null || !(object instanceof Identity)) {
+            return false;
+        }
+        Identity other = (Identity) object;
+        return other.issuer.equals(issuer) && other.accountName.equals(accountName);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(issuer, accountName); //TODO: insufficient API level
+    }
+
+    /**
+     * Returns a builder for creating an Identity.
+     * @return The Identity builder.
+     */
+    public static IdentityBuilder builder() {
+        return new IdentityBuilder();
+    }
+
+    private void populateMechanisms(List<Mechanism.PartialMechanismBuilder> mechanismBuilders) {
+        for (Mechanism.PartialMechanismBuilder mechanismBuilder : mechanismBuilders) {
+            try {
+                Mechanism mechanism = mechanismBuilder.setOwner(this).build();
+                if (mechanism.isStored()) {
+                    mechanismList.add(mechanism);
+                } else {
+                    logger.error("Tried to populate mechanism list with Mechanism that has not been stored.");
+                }
+            } catch (MechanismCreationException e) {
+                logger.error("Something went wrong while loading Mechanism.", e);
+            }
+        }
+    }
+
     /**
      * Builder class responsible for producing Identities.
      */
-    public static class Builder {
+    public static class IdentityBuilder {
+        private long id = NOT_STORED;
         private String issuer;
         private String accountName;
         private Uri image;
+        private List<Mechanism.PartialMechanismBuilder> mechanismBuilders = new ArrayList<>();
+
+        /**
+         * Sets the storage id of this Identity. Should not be set manually, or if the Identity is
+         * not stored.
+         * @param id The storage id.
+         */
+        public IdentityBuilder setId(long id) {
+            this.id = id;
+            return this;
+        }
 
         /**
          * Sets the name of the IDP that issued this identity.
          * @param issuer The IDP name.
          */
-        public Builder setIssuer(String issuer) {
+        public IdentityBuilder setIssuer(String issuer) {
             this.issuer = issuer != null ? issuer : "";
             return this;
         }
@@ -108,7 +240,7 @@ public class Identity {
          * Sets the name of the identity.
          * @param accountName The identity name.
          */
-        public Builder setAccountName(String accountName) {
+        public IdentityBuilder setAccountName(String accountName) {
             this.accountName = accountName != null ? accountName : "";
             return this;
         }
@@ -117,8 +249,17 @@ public class Identity {
          * Sets the image for the IDP that issued this identity.
          * @param image A string that represents the image URI.
          */
-        public Builder setImage(String image) {
+        public IdentityBuilder setImage(String image) {
             this.image = image == null ? null : Uri.parse(image);
+            return this;
+        }
+
+        /**
+         * Sets the mechanisms that are currently associated with this Identity.
+         * @param mechanismBuilders A list of incomplete mechanism builders.
+         */
+        public IdentityBuilder setMechanisms(List<Mechanism.PartialMechanismBuilder> mechanismBuilders) {
+            this.mechanismBuilders = mechanismBuilders;
             return this;
         }
 
@@ -127,7 +268,9 @@ public class Identity {
          * @return The identity.
          */
         public Identity build() {
-            return new Identity(issuer, accountName, image);
+            Identity result =  new Identity(id, issuer, accountName, image);
+            result.populateMechanisms(mechanismBuilders);
+            return result;
         }
     }
 }

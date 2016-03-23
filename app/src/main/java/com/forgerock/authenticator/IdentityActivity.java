@@ -11,10 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2015-2016 ForgeRock AS.
- *
- * Portions Copyright 2009 ZXing authors
- * Portions Copyright 2013 Nathaniel McCallum, Red Hat
+ * Copyright 2016 ForgeRock AS.
  */
 
 package com.forgerock.authenticator;
@@ -22,10 +19,8 @@ package com.forgerock.authenticator;
 import android.content.Intent;
 import android.database.DataSetObserver;
 import android.os.Bundle;
-import android.support.annotation.VisibleForTesting;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MenuItem.OnMenuItemClickListener;
 import android.view.View;
 import android.view.WindowManager.LayoutParams;
 import android.widget.GridView;
@@ -33,36 +28,15 @@ import android.widget.GridView;
 import com.forgerock.authenticator.add.ScanActivity;
 import com.forgerock.authenticator.identity.IdentityAdapter;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import roboguice.activity.RoboActivity;
 
 /**
  * Page for viewing a list of all Identities. Currently the start page for the app.
  */
-public class IdentityActivity extends RoboActivity implements OnMenuItemClickListener {
-    private final Logger logger;
+public class IdentityActivity extends RoboActivity implements MenuItem.OnMenuItemClickListener {
 
     private IdentityAdapter identityAdapter;
     private DataSetObserver dataSetObserver;
-
-    /**
-     * Default instance of MainActivity will be created by Android framework.
-     */
-    public IdentityActivity() {
-        this(LoggerFactory.getLogger(IdentityActivity.class));
-    }
-
-    /**
-     * Dependencies exposed for unit testing as required.
-     *
-     * @param logger Non null logging instance.
-     */
-    @VisibleForTesting
-    public IdentityActivity(final Logger logger) {
-        this.logger = logger;
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,20 +45,21 @@ public class IdentityActivity extends RoboActivity implements OnMenuItemClickLis
         onNewIntent(getIntent());
         setContentView(R.layout.identity);
 
-        identityAdapter = new IdentityAdapter(this);
-        ((GridView) findViewById(R.id.grid)).setAdapter(identityAdapter);
-
         // Don't permit screenshots since these might contain secret information.
         getWindow().setFlags(LayoutParams.FLAG_SECURE, LayoutParams.FLAG_SECURE);
+
+        identityAdapter = new IdentityAdapter(this);
+        final GridView identityView = ((GridView) findViewById(R.id.grid));
+        identityView.setAdapter(identityAdapter);
 
         dataSetObserver = new DataSetObserver() {
             @Override
             public void onChanged() {
                 super.onChanged();
                 if (identityAdapter.getCount() == 0) {
-                    findViewById(android.R.id.empty).setVisibility(View.VISIBLE);
+                    findViewById(R.id.empty).setVisibility(View.VISIBLE);
                 } else {
-                    findViewById(android.R.id.empty).setVisibility(View.GONE);
+                    findViewById(R.id.empty).setVisibility(View.GONE);
                 }
             }
         };
@@ -127,6 +102,4 @@ public class IdentityActivity extends RoboActivity implements OnMenuItemClickLis
         }
         return false;
     }
-
-
 }

@@ -16,5 +16,10 @@
 <resources>
 
     <color name="black_overlay">#66000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="sea_green">#519387</color>
+    <color name="off_white">#f7f7f7</color>
+    <color name="light_gray">#eee</color>
+    <color name="border_gray">#ddd</color>
 
 </resources>

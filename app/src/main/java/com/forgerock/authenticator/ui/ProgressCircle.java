@@ -16,7 +16,7 @@
  * Portions Copyright 2013 Nathaniel McCallum, Red Hat
  */
 
-package com.forgerock.authenticator;
+package com.forgerock.authenticator.ui;
 
 import android.content.Context;
 import android.content.res.Resources.Theme;
@@ -30,6 +30,8 @@ import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.View;
+
+import com.forgerock.authenticator.R;
 
 public class ProgressCircle extends View {
     private Paint   mPaint;

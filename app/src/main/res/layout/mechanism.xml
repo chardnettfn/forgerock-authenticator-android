@@ -1,49 +1,162 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  The contents of this file are subject to the terms of the Common Development and
-  Distribution License (the License). You may not use this file except in compliance with the
-  License.
+  ~ The contents of this file are subject to the terms of the Common Development and
+  ~ Distribution License (the License). You may not use this file except in compliance with the
+  ~ License.
+  ~
+  ~ You can obtain a copy of the License at legal/CDDLv1.0.txt. See the License for the
+  ~ specific language governing permission and limitations under the License.
+  ~
+  ~ When distributing Covered Software, include this CDDL Header Notice in each file and include
+  ~ the License file at legal/CDDLv1.0.txt. If applicable, add the following below the CDDL
+  ~ Header, with the fields enclosed by brackets [] replaced by your own identifying
+  ~ information: "Portions copyright [year] [name of copyright owner]".
+  ~
+  ~ Copyright 2016 ForgeRock AS.
+  -->
 
-  You can obtain a copy of the License at legal/CDDLv1.0.txt. See the License for the
-  specific language governing permission and limitations under the License.
 
-  When distributing Covered Software, include this CDDL Header Notice in each file and include
-  the License file at legal/CDDLv1.0.txt. If applicable, add the following below the CDDL
-  Header, with the fields enclosed by brackets [] replaced by your own identifying
-  information: "Portions copyright [year] [name of copyright owner]".
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="180dp"
+        android:background="@color/sea_green">
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="20dp" />
+        <ImageView
+            android:id="@+id/image"
+            android:layout_width="96dp"
+            android:layout_height="96dp"
+            android:layout_gravity="center_horizontal"
+            android:src="@drawable/forgerock_logo"
+            android:scaleType="fitCenter"
+            android:layout_weight="5"
+            />
+        <TextView
+            android:id="@+id/issuer"
+            android:textColor="@color/white"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="ForgeRock"
+            android:textSize="20dp"
+            android:layout_weight="1"
+            />
+        <TextView
+            android:id="@+id/account_name"
+            android:textColor="@color/white"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="joe.bloggs"
+            android:textSize="15dp"
 
-  Copyright 2015-2016 ForgeRock AS.
+            android:layout_weight="1"
+            />
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="20dp" />
 
-  Portions Copyright 2013 Nathaniel McCallum, Red Hat
--->
+    </LinearLayout>
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-	android:orientation="vertical"
-	android:layout_width="match_parent"
-	android:layout_height="match_parent"
-	>
-
-    <TextView
-        android:id="@android:id/empty"
+    <LinearLayout
+        android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="8dp"
-        android:gravity="center"
-        android:text="@string/no_mechanisms"
-        />
+        >
 
-	<GridView
-	    android:id="@+id/grid"
-	    android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-	    android:columnWidth="250dp"
-	    android:gravity="center"
-	    android:horizontalSpacing="8dp"
-	    android:numColumns="auto_fit"
-	    android:padding="8dp"
-	    android:stretchMode="columnWidth"
-	    android:verticalSpacing="8dp"
-	    android:background="#E5E5E5"
-	    />
+        <!--<TextView-->
+            <!--android:id="@android:id/empty"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="match_parent"-->
+            <!--android:padding="8dp"-->
+            <!--android:gravity="center"-->
+            <!--android:text="@string/no_mechanisms"-->
+            <!--/>-->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@android:color/darker_gray"/>
+        <GridView
+            android:id="@+id/grid"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:columnWidth="250dp"
+            android:gravity="center"
+            android:horizontalSpacing="8dp"
+            android:numColumns="auto_fit"
+            android:stretchMode="columnWidth"
+            android:verticalSpacing="8dp"
+            tools:layout_height="80dp"
+            />
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@android:color/darker_gray"/>
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="20dp" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@android:color/darker_gray"/>
+        <LinearLayout
+            android:id="@+id/activity"
+            android:background="@color/white"
+            android:layout_width="match_parent"
+            android:layout_height="60dp">
+            <ImageView
+                android:src="@drawable/forgerock_icon_activity"
+                android:layout_gravity="center_vertical"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp" />
+            <TextView
+                android:layout_gravity="center_vertical"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Activity"/>
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/white">
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginLeft="50dp"
+            android:background="@android:color/darker_gray"/>
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/account_management"
+            android:background="@color/white"
+            android:layout_width="match_parent"
+            android:layout_height="60dp">
+            <ImageView
+                android:src="@drawable/forgerock_icon_activity"
+                android:layout_gravity="center_vertical"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp" />
+            <TextView
+                android:layout_gravity="center_vertical"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Account Management"/>
+        </LinearLayout>
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@android:color/darker_gray"/>
+    </LinearLayout>
 </LinearLayout>

@@ -14,7 +14,7 @@
  * Copyright 2016 ForgeRock AS.
  */
 
-package com.forgerock.authenticator.utils;
+package com.forgerock.authenticator.mechanisms.base;
 
 import com.forgerock.authenticator.mechanisms.URIMappingException;
 
@@ -56,7 +56,7 @@ public abstract class UriParser {
      * @return Non null, possibly empty Map.
      * @throws URIMappingException If there was an unexpected error parsing.
      */
-    public Map<String, String> map(String uriScheme) throws URIMappingException {
+    public final Map<String, String> map(String uriScheme) throws URIMappingException {
         try {
             return validate(map(new URI(uriScheme)));
         } catch (URISyntaxException e) {

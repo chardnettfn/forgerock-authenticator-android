@@ -11,10 +11,10 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2015-2016 ForgeRock AS.
+ * Copyright 2016 ForgeRock AS.
  */
 
-package com.forgerock.authenticator.identity;
+package com.forgerock.authenticator.notifications;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -30,31 +30,30 @@ import java.util.List;
 import roboguice.RoboGuice;
 
 /**
- * Class for linking the complete list of Identities with a series of layouts which display each one.
+ * Class for linking the complete list of Notifications with a series of layouts which display each one.
  */
-public class IdentityAdapter extends BaseAdapter {
+public class NotificationAdapter extends BaseAdapter {
     private final IdentityModel identityModel;
     private final LayoutInflater mLayoutInflater;
-    private List<Identity> identityList;
+    private List<Notification> notificationList;
 
     /**
      * Creates the adapter, and finds the data model.
      */
-    public IdentityAdapter(Context context) {
+    public NotificationAdapter(Context context) {
         identityModel = RoboGuice.getInjector(context).getInstance(IdentityModel.class);
         mLayoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        identityList = identityModel.getIdentities();
-
+        notificationList = identityModel.getNotifications();
     }
 
     @Override
     public int getCount() {
-        return identityList.size();
+        return notificationList.size();
     }
 
     @Override
-    public Identity getItem(int position) {
-        return identityList.get(position);
+    public Notification getItem(int position) {
+        return notificationList.get(position);
     }
 
     @Override
@@ -65,17 +64,11 @@ public class IdentityAdapter extends BaseAdapter {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         if (convertView == null) {
-            convertView = mLayoutInflater.inflate(R.layout.identitycell, parent, false);
+            convertView = mLayoutInflater.inflate(R.layout.notificationcell, parent, false);
         }
 
-        Identity identity = getItem(position);
-        ((IdentityLayout) convertView).bind(identity);
+        Notification not = getItem(position);
+        ((NotificationLayout) convertView).bind(not);
         return convertView;
-    }
-
-    @Override
-    public void notifyDataSetChanged() {
-        identityList = identityModel.getIdentities();
-        super.notifyDataSetChanged();
     }
 }

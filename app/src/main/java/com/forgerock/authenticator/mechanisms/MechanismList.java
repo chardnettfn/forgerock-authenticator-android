@@ -16,6 +16,7 @@
 
 package com.forgerock.authenticator.mechanisms;
 
+import com.forgerock.authenticator.mechanisms.base.MechanismInfo;
 import com.forgerock.authenticator.mechanisms.oath.OathInfo;
 import com.forgerock.authenticator.mechanisms.push.PushInfo;
 

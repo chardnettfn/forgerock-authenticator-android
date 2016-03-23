@@ -14,7 +14,7 @@
  * Copyright 2016 ForgeRock AS.
  */
 
-package com.forgerock.authenticator;
+package com.forgerock.authenticator.ui;
 
 import android.content.Context;
 import android.graphics.Canvas;

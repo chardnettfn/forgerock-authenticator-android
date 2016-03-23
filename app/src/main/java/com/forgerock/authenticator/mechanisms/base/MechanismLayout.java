@@ -14,17 +14,16 @@
  * Copyright 2016 ForgeRock AS.
  */
 
-package com.forgerock.authenticator.storage;
+package com.forgerock.authenticator.mechanisms.base;
 
 /**
- * Thrown if methods are called on an object that assumes it has been stored, when it has not.
+ * Base interface for Mechanism layouts, which handles all aspects relating to display.
  */
-public class NotStoredException extends Exception {
+public interface MechanismLayout<T extends Mechanism> {
+
     /**
-     * Creates the exception with the provided message.
-     * @param detailMessage A message describing the cause of the exception.
+     * Sets up this layout to represent the provided mechanism.
+     * @param mechanism The mechanism to display.
      */
-    public NotStoredException(String detailMessage) {
-        super(detailMessage);
-    }
+    void bind(T mechanism);
 }

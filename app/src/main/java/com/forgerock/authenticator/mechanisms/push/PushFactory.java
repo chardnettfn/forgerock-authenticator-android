@@ -16,13 +16,18 @@
 
 package com.forgerock.authenticator.mechanisms.push;
 
+import android.content.Context;
+
 import com.forgerock.authenticator.identity.Identity;
-import com.forgerock.authenticator.mechanisms.Mechanism;
+import com.forgerock.authenticator.mechanisms.base.Mechanism;
 import com.forgerock.authenticator.mechanisms.MechanismCreationException;
-import com.forgerock.authenticator.mechanisms.MechanismFactory;
+import com.forgerock.authenticator.mechanisms.base.MechanismFactory;
 import com.forgerock.authenticator.mechanisms.URIMappingException;
+import com.forgerock.authenticator.storage.IdentityModel;
 
 import java.util.Map;
+
+import roboguice.RoboGuice;
 
 /**
  * Responsible for generating instances of {@link Push}.
@@ -34,7 +39,7 @@ public class PushFactory implements MechanismFactory {
     private PushAuthMapper mapper = new PushAuthMapper();
 
     @Override
-    public Mechanism createFromUri(String uri) throws URIMappingException, MechanismCreationException {
+    public Mechanism createFromUri(Context context, String uri) throws URIMappingException, MechanismCreationException {
         Map<String, String> values = mapper.map(uri);
         int version;
         try {
@@ -44,15 +49,29 @@ public class PushFactory implements MechanismFactory {
                     get(values, PushAuthMapper.VERSION, "1"), e);
         }
         if (version == 1) {
-            Identity identity = Identity.builder()
-                    .setIssuer(get(values, PushAuthMapper.ISSUER, ""))
-                    .setAccountName(get(values, PushAuthMapper.ACCOUNT_NAME, ""))
-                    .setImage(get(values, "image", null))
-                    .build();
+            IdentityModel identityModel = RoboGuice.getInjector(context).getInstance(IdentityModel.class);
 
-            Push pushAuth = Push.builder()
-                    .setOwner(identity)
-                    .build();
+            String issuer = get(values, PushAuthMapper.ISSUER, "");
+            String accountName = get(values, PushAuthMapper.ACCOUNT_NAME, "");
+            String image = get(values, "image", null);
+
+            Identity identity = identityModel.getIdentity(issuer, accountName);
+
+            if (identity == null) {
+                identity = Identity.builder()
+                        .setIssuer(issuer)
+                        .setAccountName(accountName)
+                        .setImage(image)
+                        .build();
+                identityModel.addIdentity(context, identity);
+            }
+
+            Push.PushBuilder pushBuilder = Push.builder()
+                    .setMechanismUID(5);
+            //TODO: Get real authentication UID
+
+            Mechanism pushAuth = identity.addMechanism(context, pushBuilder);
+
             return pushAuth;
         } else {
             throw new MechanismCreationException("Unknown version: " + version);
@@ -60,13 +79,10 @@ public class PushFactory implements MechanismFactory {
 
     }
     @Override
-    public Mechanism createFromParameters(int version, Identity owner, Map<String, String> map) throws MechanismCreationException {
+    public Mechanism.PartialMechanismBuilder restoreFromParameters(int version, Map<String, String> map) throws MechanismCreationException {
         if (version == 1) {
             return Push.builder()
-                    .setOwner(owner)
-                    .setOptions(map)
-                    .build();
-
+                    .setOptions(map);
         } else {
             throw new MechanismCreationException("Unknown version: " + version);
         }

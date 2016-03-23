@@ -16,7 +16,11 @@
 
 package com.forgerock.authenticator.mechanisms;
 
-import com.forgerock.authenticator.identity.Identity;
+import android.content.Context;
+
+import com.forgerock.authenticator.mechanisms.base.Mechanism;
+import com.forgerock.authenticator.mechanisms.base.MechanismFactory;
+import com.forgerock.authenticator.mechanisms.base.MechanismInfo;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -43,35 +47,34 @@ public class CoreMechanismFactory {
     }
 
     /**
-     * Convert a URL to the Mechanism it contains, including extracting the owner.
+     * Convert a URL to the Mechanism it contains, including extracting the owner. This data is then added to the model.
      * @param uri The URI to process.
      * @return The created Mechanism.
      * @throws URIMappingException If the URL was not parsed correctly.
      * @throws MechanismCreationException If the data was not valid to create a Mechanism.
      */
-    public Mechanism createFromUri(String uri) throws URIMappingException, MechanismCreationException {
+    public Mechanism createFromUri(Context context, String uri) throws URIMappingException, MechanismCreationException {
         for (MechanismInfo info : MechanismList.getAllMechanisms()) {
             if (info.matchesURI(uri)) {
-                return factories.get(info.getMechanismString()).createFromUri(uri);
+                return factories.get(info.getMechanismString()).createFromUri(context, uri);
             }
         }
         throw new MechanismCreationException("Unknown URI structure");
     }
 
     /**
-     * Uses the map to create the Mechanism associated with the type and version provided, and
-     * links it to the owner.
+     * Uses the map to create the Mechanism associated with the type and version provided.
+     * This must be added to an owner before it can be used.
      * @param type The mechanism string for the Mechanism.
      * @param version The version of the Mechanism being created.
-     * @param owner The owner of the mechanism.
      * @param map The set of properties.
-     * @return The create Mechanism.
+     * @return The incomplete mechanism builder.
      * @throws MechanismCreationException If the data was not valid to create a Mechanism.
      */
-    public Mechanism createFromParameters(String type, int version, Identity owner, Map<String, String> map) throws MechanismCreationException {
+    public Mechanism.PartialMechanismBuilder restoreFromParameters(String type, int version, Map<String, String> map) throws MechanismCreationException {
         if(!factories.containsKey(type)) {
             throw new MechanismCreationException("Unknown mechanism type stored \"" + type + "\"");
         }
-        return factories.get(type).createFromParameters(version, owner, map);
+        return factories.get(type).restoreFromParameters(version, map);
     }
 }

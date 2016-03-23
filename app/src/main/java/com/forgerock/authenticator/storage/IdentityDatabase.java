@@ -23,8 +23,9 @@ import android.database.sqlite.SQLiteDatabase;
 
 import com.forgerock.authenticator.identity.Identity;
 import com.forgerock.authenticator.mechanisms.CoreMechanismFactory;
-import com.forgerock.authenticator.mechanisms.Mechanism;
+import com.forgerock.authenticator.mechanisms.base.Mechanism;
 import com.forgerock.authenticator.mechanisms.MechanismCreationException;
+import com.forgerock.authenticator.notifications.Notification;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -33,9 +34,9 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Data Access Object which can store and load both Identities and Mechanisms. Encapsulates the
@@ -46,6 +47,8 @@ public class IdentityDatabase {
     static final String IDENTITY_TABLE_NAME = "identity";
     /**The name of the table the mechanisms are stored in */
     static final String MECHANISM_TABLE_NAME = "mechanism";
+    /**The name of the table the notifications are stored in */
+    static final String NOTIFICATION_TABLE_NAME = "notification";
 
     // Identity columns
     /** The IDP name column */
@@ -66,11 +69,23 @@ public class IdentityDatabase {
     static final String VERSION = "version";
     /** The mechanism options column */
     static final String OPTIONS = "options";
+    /** The mechanism uid generated if the mechanism can receive notifications */
+    static final String MECHANISM_UID = "mechanismUID";
+
+    // Notification columns
+    /** The time that the notification was received */
+    static final String ADDED_TIME = "timeAdded";
+    /** The time that the notification will expire */
+    static final String EXPIRY_TIME = "timeExpired";
+    /** The data that is relevant to the notification (e.g. messageId) */
+    static final String DATA = "data";
+    /** Whether the notification was successful or not, for historical purposes */
+    static final String SUCCESSFUL = "successful";
+
 
     private final Gson gson = new Gson();
     private final SQLiteDatabase database;
     private final CoreMechanismFactory coreMechanismFactory;
-    private final List<DatabaseListener> listeners;
     private static final Logger logger = LoggerFactory.getLogger(IdentityDatabase.class);
 
     /**
@@ -81,140 +96,29 @@ public class IdentityDatabase {
         DatabaseOpenHelper databaseOpeHelper = new DatabaseOpenHelper(context);
         database = databaseOpeHelper.getWritableDatabase();
         coreMechanismFactory = new CoreMechanismFactory();
-        listeners = new CopyOnWriteArrayList<>();
     }
 
     /**
-     * Gets all of the identities which are stored.
-     * @return The list of identities.
+     * Loads the complete list of Identities, loaded with the mechanisms and notifications from the database.
+     * @return The complete set of data.
      */
-    public List<Identity> getIdentities() {
-        Cursor cursor = database.rawQuery("SELECT rowid, * FROM " + IDENTITY_TABLE_NAME + " ORDER BY "
-                + ISSUER + " ASC, " + ACCOUNT_NAME + " ASC", null);
-        List<Identity> result = new ArrayList<>();
-        cursor.moveToFirst();
-        while (!cursor.isAfterLast()) {
-            Identity newIdentity = cursorToIdentity(cursor);
-            result.add(newIdentity);
-            cursor.moveToNext();
+    public List<Identity> getModel() {
+        List<Identity.IdentityBuilder> identityBuilders = getIdentityBuilders();
+
+        List<Identity> identities = new ArrayList<>();
+
+        for (Identity.IdentityBuilder identityBuilder : identityBuilders) {
+            identities.add(identityBuilder.build());
         }
-        return result;
-    }
 
-    /**
-     * Gets the mechanism identified uniquely by the provided row ID.
-     * @param mechanismId The id of the row to get.
-     * @return The mechanism at the provided row.
-     * @throws MechanismCreationException If the mechanism failed to be created.
-     */
-    public Mechanism getMechanism(long mechanismId) throws MechanismCreationException {
-        Cursor cursor = database.rawQuery("SELECT rowid, * FROM " + MECHANISM_TABLE_NAME +
-                " WHERE rowid = " + mechanismId, null);
-        cursor.moveToFirst();
-        return cursorToMechanism(cursor);
-    }
-
-    /**
-     * Get the mechanisms associated with an owning identity (currently gets all mechanisms).
-     * @param owner
-     * @return
-     */
-    public List<Mechanism> getMechanisms(Identity owner) {
-        String[] selectionArgs = { owner.getIssuer(), owner.getAccountName() };
-        Cursor cursor = database.rawQuery("SELECT rowid, * FROM " + MECHANISM_TABLE_NAME +
-                        " WHERE " + ID_ISSUER + " = ? AND " + ID_ACCOUNT_NAME + " = ? ORDER BY " +
-                        TYPE + " ASC"
-                , selectionArgs);
-        List<Mechanism> result = new ArrayList<>();
-        cursor.moveToFirst();
-
-        while (!cursor.isAfterLast()) {
-            try {
-                result.add(cursorToMechanism(cursor));
-            } catch (MechanismCreationException e) {
-                logger.error("Failed to load mechanism. This may be caused by invalid data, or data " +
-                        "that has not been upgraded.", e);
-                // Don't add the mechanism that failed to load.
-            }
-            cursor.moveToNext();
-        }
-        return result;
-    }
-
-    private Identity cursorToIdentity(Cursor cursor) {
-        int rowid = cursor.getInt(cursor.getColumnIndex("rowid"));
-        String issuer = cursor.getString(cursor.getColumnIndex(ISSUER));
-        String accountName = cursor.getString(cursor.getColumnIndex(ACCOUNT_NAME));
-        String image = cursor.getString(cursor.getColumnIndex(IMAGE));
-        Identity identity = Identity.builder()
-                .setIssuer(issuer)
-                .setAccountName(accountName)
-                .setImage(image)
-                .build();
-        identity.setId(rowid);
-        return identity;
-    }
-
-    private Mechanism cursorToMechanism(Cursor cursor) throws MechanismCreationException {
-        String type = cursor.getString(cursor.getColumnIndex(TYPE));
-        int version = cursor.getInt(cursor.getColumnIndex(VERSION));
-        Type mapType = new TypeToken<Map<String, String>>() {
-        }.getType();
-        Map<String, String> options =
-                gson.fromJson(cursor.getString(cursor.getColumnIndex(OPTIONS)), mapType);
-
-        String issuer = cursor.getString(cursor.getColumnIndex(ID_ISSUER));
-        String accountName = cursor.getString(cursor.getColumnIndex(ID_ACCOUNT_NAME));
-        Identity owner = getIdentity(issuer, accountName);
-
-        Mechanism mechanism = coreMechanismFactory.createFromParameters(type, version, owner, options);
-        mechanism.setId(cursor.getLong(cursor.getColumnIndex("rowid")));
-        return mechanism;
-    }
-
-    /**
-     * Gets the identity uniquely identified by the issuer and accountName provided (primary key).
-     * @param issuer The issuer of the identity.
-     * @param accountName The accountName of the identity.
-     * @return The identity that was stored, or null if the identity was not found.
-     */
-    public Identity getIdentity(String issuer, String accountName) {
-        String[] selectionArgs = { issuer, accountName };
-        Cursor cursor = database.rawQuery("SELECT rowid, * FROM " + IDENTITY_TABLE_NAME +
-                " WHERE " + ISSUER + " = ? AND " + ACCOUNT_NAME + " = ?", selectionArgs);
-        if (cursor.getCount() == 0) {
-            return null;
-        }
-        cursor.moveToFirst();
-
-        Identity identity = cursorToIdentity(cursor);
-
-        return identity;
-    }
-
-    /**
-     * Returns the Identity that is identified by the id provided.
-     * @param identityId The id of the Identity.
-     * @return The stored Identity.
-     */
-    public Identity getIdentity(long identityId) {
-        Cursor cursor = database.rawQuery("SELECT rowid, * FROM " + IDENTITY_TABLE_NAME +
-                " WHERE rowId = " + identityId, null);
-        if (cursor.getCount() == 0) {
-            return null;
-        }
-        cursor.moveToFirst();
-
-        Identity identity = cursorToIdentity(cursor);
-
-        return identity;
+        return identities;
     }
 
     /**
      * Add the identity to the database.
      * @param id The identity to add.
      */
-    public void addIdentity(Identity id) {
+    public long addIdentity(Identity id) {
         String issuer = id.getIssuer();
         String accountName = id.getAccountName();
         String image = id.getImage() == null ? null : id.getImage().toString();
@@ -224,27 +128,15 @@ public class IdentityDatabase {
         values.put(ACCOUNT_NAME, accountName);
         values.put(IMAGE, image);
 
-        long rowid = database.insert(IDENTITY_TABLE_NAME, null, values);
-        id.setId(rowid);
-        onDatabaseChange();
-    }
-
-    private boolean isIdentityStored(Identity id) {
-        String[] selectionArgs = {id.getIssuer(), id.getAccountName()};
-
-        Cursor cursor = database.rawQuery("SELECT rowid FROM " + IDENTITY_TABLE_NAME +
-                " WHERE " + ISSUER + " = ? AND " + ACCOUNT_NAME + " = ?", selectionArgs);
-        return cursor.getCount() == 1;
+        long rowId = database.insert(IDENTITY_TABLE_NAME, null, values);
+        return rowId;
     }
 
     /**
      * Add the mechanism to the database. If the owning identity is not yet stored, store that as well.
      * @param mechanism The mechanism to store.
      */
-    public void addMechanism(Mechanism mechanism) {
-        if (!isIdentityStored(mechanism.getOwner())) {
-            addIdentity(mechanism.getOwner());
-        }
+    public long addMechanism(Mechanism mechanism) {
         String issuer = mechanism.getOwner().getIssuer();
         String accountName = mechanism.getOwner().getAccountName();
         String type = mechanism.getInfo().getMechanismString();
@@ -257,27 +149,45 @@ public class IdentityDatabase {
         values.put(TYPE, type);
         values.put(VERSION, version);
         values.put(OPTIONS, options);
+        values.put(MECHANISM_UID, mechanism.getMechanismUID());
 
         long rowId = database.insert(MECHANISM_TABLE_NAME, null, values);
-        mechanism.setId(rowId);
-        onDatabaseChange();
+        return rowId;
+    }
+
+    /**
+     * Add the notification to the database.
+     * @param notification The notification to store.
+     */
+    public long addNotification(Notification notification) {
+        long timeAdded = notification.getTimeAdded().getTimeInMillis();
+        long timeExpired = notification.getTimeExpired().getTimeInMillis();
+        int wasSuccessful = notification.wasSuccessful() ? 1 : 0;
+        int mechanismUID = notification.getMechanism().getMechanismUID();
+        String data = gson.toJson(notification.getData());
+
+        ContentValues values = new ContentValues();
+        values.put(ADDED_TIME, timeAdded);
+        values.put(EXPIRY_TIME, timeExpired);
+        values.put(SUCCESSFUL, wasSuccessful);
+        values.put(MECHANISM_UID, mechanismUID);
+        values.put(DATA, data);
+
+        long rowId = database.insert(NOTIFICATION_TABLE_NAME, null, values);
+        return rowId;
     }
 
     /**
      * Update the mechanism in the database. Does not create it if it does not exist.
-     * @param mechanism The mechanism to update.
+     * @param mechanismId The id of the mechanism to update.
+     * @param mechanism The mechanism to update it with.
      */
-    public void updateMechanism(Mechanism mechanism) {
+    public void updateMechanism(long mechanismId, Mechanism mechanism) {
         ContentValues values = new ContentValues();
         String options = gson.toJson(mechanism.asMap());
         values.put(OPTIONS, options);
-        try {
-            String[] selectionArgs = { Long.toString(mechanism.getId()) };
-            database.update(MECHANISM_TABLE_NAME, values, "rowId = ?", selectionArgs);
-            onDatabaseChange();
-        } catch (NotStoredException e) {
-            logger.error("Tried to update mechanism that hadn't been stored", e);
-        }
+        String[] selectionArgs = { Long.toString(mechanismId) };
+        database.update(MECHANISM_TABLE_NAME, values, "rowId = ?", selectionArgs);
     }
 
     /**
@@ -285,49 +195,131 @@ public class IdentityDatabase {
      * @param mechanismId The id of the mechanism to delete.
      */
     public void deleteMechanism(long mechanismId) {
-        Mechanism mechanism;
-        try {
-            mechanism = getMechanism(mechanismId);
-        } catch (MechanismCreationException e) {
-            return;
-        }
-        int mechanismCount = countMechanisms(mechanism.getOwner());
-
-        database.beginTransaction();
         database.delete(MECHANISM_TABLE_NAME, "rowId = " + mechanismId, null);
-
-        if(mechanismCount == 1) {
-            deleteIdentitySuppressListeners(mechanism.getOwner());
-        }
-        database.setTransactionSuccessful();
-        database.endTransaction();
-        onDatabaseChange();
-    }
-
-    private void deleteIdentitySuppressListeners(Identity identity) {
-        String[] whereArgs = { identity.getIssuer(), identity.getAccountName() };
-        database.delete(IDENTITY_TABLE_NAME, ISSUER + " = ? AND " + ACCOUNT_NAME + " = ?", whereArgs);
-    }
-
-    private int countMechanisms(Identity owner) {
-        String[] selectionArgs = { owner.getIssuer(), owner.getAccountName() };
-        Cursor cursor = database.rawQuery("SELECT rowid, * FROM " + MECHANISM_TABLE_NAME +
-                        " WHERE " + ID_ISSUER + " = ? AND " + ID_ACCOUNT_NAME + " = ?"
-                , selectionArgs);
-        return cursor.getCount();
     }
 
     /**
-     * Add a listener to this connection.
-     * @param listener The listener to add.
+     * Delete the identity that was passed in.
+     * @param identityId The if of the identity to delete.
      */
-    public void addListener(DatabaseListener listener) {
-        listeners.add(listener);
+    public void deleteIdentity(long identityId) {
+        database.delete(IDENTITY_TABLE_NAME, "rowId = " + identityId, null);
     }
 
-    private void onDatabaseChange() {
-        for (DatabaseListener listener : listeners) {
-            listener.onUpdate();
+    private List<Identity.IdentityBuilder> getIdentityBuilders() {
+        Cursor cursor = database.rawQuery("SELECT rowid, * FROM " + IDENTITY_TABLE_NAME + " ORDER BY "
+                + ISSUER + " ASC, " + ACCOUNT_NAME + " ASC", null);
+        List<Identity.IdentityBuilder> result = new ArrayList<>();
+        cursor.moveToFirst();
+        while (!cursor.isAfterLast()) {
+            Identity.IdentityBuilder newIdentityBuilder = cursorToIdentityBuilder(cursor);
+            result.add(newIdentityBuilder);
+            cursor.moveToNext();
         }
+        return result;
+    }
+
+    private Identity.IdentityBuilder cursorToIdentityBuilder(Cursor cursor) {
+        int rowid = cursor.getInt(cursor.getColumnIndex("rowid"));
+        String issuer = cursor.getString(cursor.getColumnIndex(ISSUER));
+        String accountName = cursor.getString(cursor.getColumnIndex(ACCOUNT_NAME));
+        String image = cursor.getString(cursor.getColumnIndex(IMAGE));
+
+        List<Mechanism.PartialMechanismBuilder> mechanismBuilders = getMechanismBuilders(issuer, accountName);
+
+        Identity.IdentityBuilder identityBuilder = Identity.builder()
+                .setIssuer(issuer)
+                .setAccountName(accountName)
+                .setImage(image)
+                .setId(rowid)
+                .setMechanisms(mechanismBuilders);
+        return identityBuilder;
+    }
+
+    private List<Mechanism.PartialMechanismBuilder> getMechanismBuilders(String issuer, String accountName) {
+        String[] selectionArgs = { issuer, accountName };
+
+        Cursor cursor = database.rawQuery("SELECT rowid, * FROM " + MECHANISM_TABLE_NAME +
+                " WHERE " + ID_ISSUER + " = ? AND " + ID_ACCOUNT_NAME + " = ?", selectionArgs);
+        List<Mechanism.PartialMechanismBuilder> result = new ArrayList<>();
+        cursor.moveToFirst();
+
+        while (!cursor.isAfterLast()) {
+            try {
+                result.add(cursorToMechanismBuilder(cursor));
+            } catch (MechanismCreationException e) {
+                logger.error("Failed to load mechanism. This may be caused by invalid data, or data " +
+                        "that has not been upgraded.", e);
+                // Don't add the mechanism that failed to load.
+            }
+            cursor.moveToNext();
+        }
+        return result;
+    }
+
+
+
+    private Mechanism.PartialMechanismBuilder cursorToMechanismBuilder(Cursor cursor) throws MechanismCreationException {
+        String type = cursor.getString(cursor.getColumnIndex(TYPE));
+        int version = cursor.getInt(cursor.getColumnIndex(VERSION));
+        Type mapType = new TypeToken<Map<String, String>>() {
+        }.getType();
+        Map<String, String> options =
+                gson.fromJson(cursor.getString(cursor.getColumnIndex(OPTIONS)), mapType);
+
+        int mechanismUID = cursor.getInt(cursor.getColumnIndex(MECHANISM_UID));
+
+        List<Notification.NotificationBuilder> notificationBuilders = getNotificationBuilders(mechanismUID);
+
+        Mechanism.PartialMechanismBuilder mechanismBuilder = coreMechanismFactory.restoreFromParameters(type, version, options);
+        mechanismBuilder.setId(cursor.getLong(cursor.getColumnIndex("rowid")))
+                .setMechanismUID(mechanismUID)
+                .setNotifications(notificationBuilders);
+        return mechanismBuilder;
+    }
+
+    private List<Notification.NotificationBuilder> getNotificationBuilders(int mechanismUid) {
+        if (mechanismUid == -1) {
+            return new ArrayList<>();
+        }
+        String[] selectionArgs = { Integer.toString(mechanismUid) };
+
+        Cursor cursor = database.rawQuery("SELECT rowid, * FROM " + NOTIFICATION_TABLE_NAME +
+                " WHERE " + MECHANISM_UID + " = ?", selectionArgs);
+        List<Notification.NotificationBuilder> result = new ArrayList<>();
+        cursor.moveToFirst();
+
+        while (!cursor.isAfterLast()) {
+            try {
+                result.add(cursorToNotificationBuilder(cursor));
+            } catch (MechanismCreationException e) {
+                logger.error("Failed to load notification. This may be caused by invalid data, or data " +
+                        "that has not been upgraded.", e);
+                // Don't add the notification that failed to load.
+            }
+            cursor.moveToNext();
+        }
+        return result;
+    }
+
+    private Notification.NotificationBuilder cursorToNotificationBuilder(Cursor cursor) throws MechanismCreationException {
+        int rowid = cursor.getInt(cursor.getColumnIndex("rowid"));
+        Calendar addedTime = Calendar.getInstance();
+        addedTime.setTimeInMillis(cursor.getLong(cursor.getColumnIndex(ADDED_TIME)));
+        Calendar expiryTime = Calendar.getInstance();
+        expiryTime.setTimeInMillis(cursor.getLong(cursor.getColumnIndex(EXPIRY_TIME)));
+        boolean successful = cursor.getLong(cursor.getColumnIndex(SUCCESSFUL)) == 1;
+        Type mapType = new TypeToken<Map<String, String>>() {
+        }.getType();
+        Map<String, String> data =
+                gson.fromJson(cursor.getString(cursor.getColumnIndex(DATA)), mapType);
+
+        Notification.NotificationBuilder notificationBuilder = Notification.builder()
+                .setSuccessful(successful)
+                .setTimeAdded(addedTime)
+                .setTimeExpired(expiryTime)
+                .setData(data)
+                .setId(rowid);
+        return notificationBuilder;
     }
 }

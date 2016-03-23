@@ -23,12 +23,9 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 
 import com.forgerock.authenticator.identity.Identity;
-import com.forgerock.authenticator.storage.DatabaseListener;
-import com.forgerock.authenticator.storage.IdentityDatabase;
-import com.forgerock.authenticator.storage.NotStoredException;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.forgerock.authenticator.mechanisms.base.Mechanism;
+import com.forgerock.authenticator.mechanisms.base.MechanismInfo;
+import com.forgerock.authenticator.storage.IdentityModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,38 +36,26 @@ import roboguice.RoboGuice;
  * Class for displaying a list of mechanisms belonging to a particular identity.
  * Keeps itself in sync the database by listening to it for updates.
  */
-public class MechanismAdapter extends BaseAdapter implements DatabaseListener {
-    private final IdentityDatabase identityDatabase;
+public class MechanismAdapter extends BaseAdapter {
     private final LayoutInflater mLayoutInflater;
-    private final Identity owner;
+    private Identity owner;
     private List<Mechanism> mechanismList;
     private List<Integer> layoutTypes;
-    private Logger logger = LoggerFactory.getLogger(MechanismAdapter.class);
 
     /**
      * Creates an adapter which contains all of the mechanisms related to a particular identity.
-     * @param context
-     * @param owner
+     * @param context The context the adapter is being used in.
+     * @param owner The identity which is having its mechanism loaded.
      */
-    public MechanismAdapter(Context context, Identity owner) {
-        identityDatabase = getIdentityDatabase(context);
-        identityDatabase.addListener(this);
-        mLayoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+    public MechanismAdapter(Context context, final Identity owner) {
         this.owner = owner;
-        mechanismList = identityDatabase.getMechanisms(owner);
+        mLayoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        mechanismList = owner.getMechanisms();
+
         layoutTypes = new ArrayList<>();
         for (MechanismInfo info : MechanismList.getAllMechanisms()) {
             layoutTypes.add(info.getLayoutType());
         }
-    }
-
-    /**
-     * Gets the database used for storing the data. Exposed for testing.
-     * @param context The current context.
-     * @return The shared database connection.
-     */
-    public IdentityDatabase getIdentityDatabase(Context context) {
-        return RoboGuice.getInjector(context).getInstance(IdentityDatabase.class);
     }
 
     @Override
@@ -83,15 +68,8 @@ public class MechanismAdapter extends BaseAdapter implements DatabaseListener {
         return mechanismList.get(position);
     }
 
-    @Override
     public long getItemId(int position) {
-        try {
-            return getItem(position).getId();
-        } catch (NotStoredException e) {
-            // This should never happen, as the mechanismList is populated directly from the database.
-            logger.error("Mechanism loaded from database did not contain row id.", e);
-            return -1;
-        }
+        return 0;
     }
 
     @Override
@@ -117,8 +95,8 @@ public class MechanismAdapter extends BaseAdapter implements DatabaseListener {
     }
 
     @Override
-    public void onUpdate() {
-        mechanismList = identityDatabase.getMechanisms(owner);
-        notifyDataSetChanged();
+    public void notifyDataSetChanged() {
+        mechanismList = owner.getMechanisms();
+        super.notifyDataSetChanged();
     }
 }

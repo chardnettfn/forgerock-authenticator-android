@@ -14,21 +14,29 @@
  * Copyright 2016 ForgeRock AS.
  */
 
-package com.forgerock.authenticator.mechanisms.push;
+package com.forgerock.authenticator.baseactivities;
 
-import com.forgerock.authenticator.mechanisms.URIMappingException;
-import com.forgerock.authenticator.mechanisms.base.UriParser;
+import android.os.Bundle;
 
-import java.util.Map;
+import com.forgerock.authenticator.storage.IdentityModel;
+import com.forgerock.authenticator.storage.Settings;
+
+import roboguice.RoboGuice;
+import roboguice.activity.RoboActivity;
 
 /**
- * Provides the ability to parse URI scheme into a convenient format
- * to use with configuring a {@link Push} to receive push notifications.
+ * Base activity for all activities in the app, used to provide access to Guice and common data objects.
  */
-public class PushAuthMapper extends UriParser {
+public class BaseActivity extends RoboActivity {
+
+    protected IdentityModel identityModel;
+    protected Settings settings;
+
 
     @Override
-    protected Map<String, String> validate(Map<String, String> values) throws URIMappingException {
-        return values;
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        identityModel = RoboGuice.getInjector(this).getInstance(IdentityModel.class);
+        settings = RoboGuice.getInjector(this).getInstance(Settings.class);
     }
 }

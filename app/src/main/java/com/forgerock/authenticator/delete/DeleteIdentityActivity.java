@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2015-2016 ForgeRock AS.
+ * Copyright 2016 ForgeRock AS.
  */
 
 package com.forgerock.authenticator.delete;
@@ -22,9 +22,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.forgerock.authenticator.R;
-import com.forgerock.authenticator.baseactivities.BaseMechanismActivity;
+import com.forgerock.authenticator.baseactivities.BaseIdentityActivity;
 import com.forgerock.authenticator.identity.Identity;
-import com.forgerock.authenticator.mechanisms.base.Mechanism;
 import com.forgerock.authenticator.storage.IdentityModel;
 import com.squareup.picasso.Picasso;
 
@@ -37,30 +36,29 @@ import roboguice.RoboGuice;
 import roboguice.activity.RoboActivity;
 
 /**
- * Activity responsible for verifying that a user wishes to delete a mechanism, then deleting it.
+ * Activity responsible for verifying that a user wishes to delete an identity, then deleting it.
  */
-public class DeleteMechanismActivity extends BaseMechanismActivity {
+public class DeleteIdentityActivity extends BaseIdentityActivity {
 
     private Logger logger;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        logger = LoggerFactory.getLogger(DeleteMechanismActivity.class);
+        logger = LoggerFactory.getLogger(DeleteIdentityActivity.class);
 
         setContentView(R.layout.delete);
 
-        final Mechanism mechanism = getMechanism();
-        if (mechanism == null) {
-            logger.error("Failed to find Mechanism to delete.");
+        final Identity identity = getIdentity();
+        if (identity == null) {
+            logger.error("Failed to find Identity to delete.");
             finish();
             return;
         }
-        final Identity owner = mechanism.getOwner();
-        ((TextView) findViewById(R.id.issuer)).setText(mechanism.getOwner().getIssuer());
-        ((TextView) findViewById(R.id.label)).setText(mechanism.getOwner().getAccountName());
+        ((TextView) findViewById(R.id.issuer)).setText(identity.getIssuer());
+        ((TextView) findViewById(R.id.label)).setText(identity.getAccountName());
         Picasso.with(this)
-                .load(mechanism.getOwner().getImage())
+                .load(identity.getImage())
                 .placeholder(R.drawable.forgerock_logo)
                 .into((ImageView) findViewById(R.id.image));
 
@@ -74,7 +72,7 @@ public class DeleteMechanismActivity extends BaseMechanismActivity {
         findViewById(R.id.delete).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                owner.removeMechanism(v.getContext(), mechanism);
+                identityModel.removeIdentity(v.getContext(), identity);
                 finish();
             }
         });

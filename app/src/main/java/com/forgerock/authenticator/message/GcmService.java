@@ -23,15 +23,22 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.VisibleForTesting;
 
+import com.forgerock.authenticator.mechanisms.base.Mechanism;
 import com.forgerock.authenticator.mechanisms.push.PushAuthActivity;
+import com.forgerock.authenticator.notifications.Notification.NotificationBuilder;
+import com.forgerock.authenticator.storage.IdentityModel;
 import com.forgerock.authenticator.utils.ContextService;
 import com.forgerock.authenticator.utils.IntentFactory;
 import com.forgerock.authenticator.utils.NotificationFactory;
-import com.google.android.gms.gcm.GcmListenerService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Calendar;
+import java.util.List;
+import java.util.TimeZone;
+
+import roboguice.RoboGuice;
 
 
 /**
@@ -40,7 +47,7 @@ import org.slf4j.LoggerFactory;
  * Responsible for triggering a Permissive Intent which will invoke the notification screen in
  * this App. The body of the GCM message is included in the Intent.
  */
-public class GcmService extends GcmListenerService {
+public class GcmService extends RoboGcmListenerService {
     // Place holder for the moment, to be set to something stable
     private static int messageCount = 2;
 
@@ -74,6 +81,7 @@ public class GcmService extends GcmListenerService {
 
     @Override
     public void onMessageReceived(String from, Bundle data) {
+
         String messageId = data.getString("messageId");
         String message = data.getString("message");
 
@@ -91,6 +99,32 @@ public class GcmService extends GcmListenerService {
         int id = messageCount++;
         // TODO: Change activity a list of "unread" messages when there is more than one
 
+
+        //TODO: extract id from message
+        int mechanismId = 5;
+
+        List<Mechanism> mechanismList = identityModel.getMechanisms();
+
+        Mechanism mechanism = null;
+
+        for (Mechanism current : mechanismList) {
+            if (current.getMechanismUID() == mechanismId) {
+                mechanism = current;
+                break;
+            }
+        }
+
+        if (mechanism == null) {
+            return;
+        }
+
+        NotificationBuilder notificationBuilder =
+                com.forgerock.authenticator.notifications.Notification.builder()
+                        .setTimeAdded(Calendar.getInstance(TimeZone.getTimeZone("UTC")))
+                        .setTimeExpired(Calendar.getInstance(TimeZone.getTimeZone("UTC")))
+                        .setMessageId(messageId);
+        com.forgerock.authenticator.notifications.Notification notificationData = mechanism.addNotification(this, notificationBuilder);
+
         /**
          * TODO: Update ID of Intent to match Notification
          * The ID of the Intent and the Notification should be the same and linked to something
@@ -98,9 +132,7 @@ public class GcmService extends GcmListenerService {
          * notification from the users device if they decide to cancel the login request.
          */
         Intent intent = intentFactory.generateInternal(this, PushAuthActivity.class);
-        intent.putExtra(MessageConstants.TITLE, "New Message Received");
-        intent.putExtra(MessageConstants.MESSAGE_ID, messageId);
-        intent.putExtra(MessageConstants.MESSAGE, message);
+        intent.putExtra(PushAuthActivity.NOTIFICATION_REFERENCE, notificationData.getOpaqueReference());
 
         intent.addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
 
@@ -110,5 +142,4 @@ public class GcmService extends GcmListenerService {
         NotificationManager notificationManager = contextService.getService(this, Context.NOTIFICATION_SERVICE);
         notificationManager.notify(id, notification);
     }
-
 }

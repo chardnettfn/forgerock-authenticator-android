@@ -14,7 +14,7 @@
  * Copyright 2016 ForgeRock AS.
  */
 
-package com.forgerock.authenticator.mechanisms;
+package com.forgerock.authenticator.mechanisms.base;
 
 import android.view.View;
 
@@ -55,5 +55,4 @@ public interface MechanismInfo {
      * @return True if the URI matches this type of mechanism, false otherwise.
      */
     boolean matchesURI(String uri);
-
 }

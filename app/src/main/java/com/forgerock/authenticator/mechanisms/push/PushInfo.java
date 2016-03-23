@@ -19,9 +19,9 @@ package com.forgerock.authenticator.mechanisms.push;
 import android.view.View;
 
 import com.forgerock.authenticator.R;
-import com.forgerock.authenticator.mechanisms.Mechanism;
-import com.forgerock.authenticator.mechanisms.MechanismFactory;
-import com.forgerock.authenticator.mechanisms.MechanismInfo;
+import com.forgerock.authenticator.mechanisms.base.Mechanism;
+import com.forgerock.authenticator.mechanisms.base.MechanismFactory;
+import com.forgerock.authenticator.mechanisms.base.MechanismInfo;
 
 /**
  * Provides information about the push mechanism.

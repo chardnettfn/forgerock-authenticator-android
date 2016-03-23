@@ -16,7 +16,7 @@
 package com.forgerock.authenticator.mechanisms.oath;
 
 import com.forgerock.authenticator.mechanisms.URIMappingException;
-import com.forgerock.authenticator.utils.UriParser;
+import com.forgerock.authenticator.mechanisms.base.UriParser;
 
 import java.text.MessageFormat;
 import java.util.Map;

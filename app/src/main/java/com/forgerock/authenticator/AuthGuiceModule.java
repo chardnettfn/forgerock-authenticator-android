@@ -21,9 +21,9 @@ import android.content.Context;
 
 import com.forgerock.authenticator.mechanisms.CoreMechanismFactory;
 import com.forgerock.authenticator.storage.IdentityDatabase;
+import com.forgerock.authenticator.storage.IdentityModel;
+import com.forgerock.authenticator.storage.Settings;
 import com.google.inject.AbstractModule;
-
-import roboguice.RoboGuice;
 
 /**
  * Guice module for the ForgeRock Authenticator app.
@@ -42,6 +42,8 @@ public class AuthGuiceModule extends AbstractModule {
     @Override
     protected void configure() {
         bind(IdentityDatabase.class).toInstance(new IdentityDatabase(context));
+        bind(IdentityModel.class).toInstance(new IdentityModel(context));
+        bind(Settings.class).toInstance(new Settings(context));
         bind(CoreMechanismFactory.class).toInstance(new CoreMechanismFactory());
     }
 }

@@ -34,9 +34,9 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.forgerock.authenticator.R;
+import com.forgerock.authenticator.baseactivities.BaseActivity;
 import com.forgerock.authenticator.mechanisms.CoreMechanismFactory;
-import com.forgerock.authenticator.mechanisms.Mechanism;
-import com.forgerock.authenticator.storage.IdentityDatabase;
+import com.forgerock.authenticator.mechanisms.base.Mechanism;
 import com.forgerock.authenticator.mechanisms.MechanismCreationException;
 import com.forgerock.authenticator.mechanisms.URIMappingException;
 import com.squareup.picasso.Callback;
@@ -54,7 +54,7 @@ import roboguice.activity.RoboActivity;
  * Activity used for scanning QR codes. Provides feedback to the user when a QR code is scanned,
  * and if successful, creates the Mechanism that the QR code represents.
  */
-public class ScanActivity extends RoboActivity implements SurfaceHolder.Callback {
+public class ScanActivity extends BaseActivity implements SurfaceHolder.Callback {
     private static final CameraInfo    mCameraInfo  = new CameraInfo();
     private final ScanAsyncTask mScanAsyncTask;
     private final int           mCameraId;
@@ -134,8 +134,7 @@ public class ScanActivity extends RoboActivity implements SurfaceHolder.Callback
 
     private Mechanism addWithToast(Context context, String uri) {
         try {
-            Mechanism mechanism = RoboGuice.getInjector(this).getInstance(CoreMechanismFactory.class).createFromUri(uri);
-            RoboGuice.getInjector(context).getInstance(IdentityDatabase.class).addMechanism(mechanism);
+            Mechanism mechanism = RoboGuice.getInjector(this).getInstance(CoreMechanismFactory.class).createFromUri(context, uri);
             return mechanism;
         } catch (MechanismCreationException | URIMappingException e) {
             Toast.makeText(context, R.string.invalid_qr, Toast.LENGTH_SHORT).show();
