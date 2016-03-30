@@ -16,7 +16,7 @@
  * Portions Copyright 2013 Nathaniel McCallum, Red Hat
  */
 
-package com.forgerock.authenticator.mechanisms.TOTP;
+package com.forgerock.authenticator.mechanisms.oath;
 
 import com.forgerock.authenticator.identity.Identity;
 import com.forgerock.authenticator.mechanisms.Mechanism;
@@ -45,7 +45,7 @@ import javax.crypto.spec.SecretKeySpec;
  * - Generate new OTP codes
  * - Value object for display purposes
  */
-class Token extends Mechanism {
+class Oath extends Mechanism {
     public enum TokenType {
         HOTP, TOTP
     }
@@ -57,7 +57,7 @@ class Token extends Mechanism {
     private static final String COUNTER = "counter";
     private static final String PERIOD = "period";
     private static final int VERSION = 1;
-    private static final TokenInfo tokenInfo = new TokenInfo();
+    private static final OathInfo oathInfo = new OathInfo();
 
     private TokenType type;
     private String algo;
@@ -67,10 +67,10 @@ class Token extends Mechanism {
     private int period;
 
     private Identity owner;
-    private Logger logger = LoggerFactory.getLogger(Token.class);
+    private Logger logger = LoggerFactory.getLogger(Oath.class);
 
-    private Token(Identity owner, TokenType type, String algo, byte[] secret, int digits,
-                  long counter, int period) {
+    private Oath(Identity owner, TokenType type, String algo, byte[] secret, int digits,
+                 long counter, int period) {
         this.owner = owner;
         this.type = type;
         this.algo = algo;
@@ -107,7 +107,7 @@ class Token extends Mechanism {
 
     @Override
     public MechanismInfo getInfo() {
-        return tokenInfo;
+        return oathInfo;
     }
 
     @Override
@@ -200,7 +200,7 @@ class Token extends Mechanism {
     }
 
     /**
-     * Builder class responsible for producing Token.
+     * Builder class responsible for producing a Token.
      */
     public static class Builder {
         private Identity owner;
@@ -344,11 +344,11 @@ class Token extends Mechanism {
          * @return The built Token.
          * @throws MechanismCreationException If an owner was not provided.
          */
-        public Token build() throws MechanismCreationException {
+        public Oath build() throws MechanismCreationException {
             if (owner == null) {
                 throw new MechanismCreationException("Built mechanism must have an owner.");
             }
-            return new Token(owner, type, algo, secret, digits, counter, period);
+            return new Oath(owner, type, algo, secret, digits, counter, period);
         }
     }
 

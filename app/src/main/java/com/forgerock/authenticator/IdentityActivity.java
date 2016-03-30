@@ -31,8 +31,7 @@ import android.view.WindowManager.LayoutParams;
 import android.widget.GridView;
 
 import com.forgerock.authenticator.add.ScanActivity;
-import com.forgerock.authenticator.identity.Identity;
-import com.forgerock.authenticator.mechanisms.MechanismAdapter;
+import com.forgerock.authenticator.identity.IdentityAdapter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,34 +39,28 @@ import org.slf4j.LoggerFactory;
 import roboguice.activity.RoboActivity;
 
 /**
- * The main entry point for the Authenticator App.
- *
- * Responsible for handling all startup concerns for the app. Key details:
- *
- * <li>check that all required services are present</li>
- * <li>prevent screenshots of the app</li>
- * <li>show the first screen to the user</li>
+ * Page for viewing a list of all Identities. Currently the start page for the app.
  */
-public class MainActivity extends RoboActivity implements OnMenuItemClickListener {
+public class IdentityActivity extends RoboActivity implements OnMenuItemClickListener {
     private final Logger logger;
 
-    private MechanismAdapter mechanismAdapter;
+    private IdentityAdapter identityAdapter;
     private DataSetObserver dataSetObserver;
 
     /**
      * Default instance of MainActivity will be created by Android framework.
      */
-    public MainActivity() {
-        this(LoggerFactory.getLogger(MainActivity.class));
+    public IdentityActivity() {
+        this(LoggerFactory.getLogger(IdentityActivity.class));
     }
 
     /**
      * Dependencies exposed for unit testing as required.
-     * 
+     *
      * @param logger Non null logging instance.
      */
     @VisibleForTesting
-    public MainActivity(final Logger logger) {
+    public IdentityActivity(final Logger logger) {
         this.logger = logger;
     }
 
@@ -76,44 +69,44 @@ public class MainActivity extends RoboActivity implements OnMenuItemClickListene
         super.onCreate(savedInstanceState);
 
         onNewIntent(getIntent());
-        setContentView(R.layout.main);
+        setContentView(R.layout.identity);
 
-        mechanismAdapter = new MechanismAdapter(this, Identity.builder().build());
-        ((GridView) findViewById(R.id.grid)).setAdapter(mechanismAdapter);
+        identityAdapter = new IdentityAdapter(this);
+        ((GridView) findViewById(R.id.grid)).setAdapter(identityAdapter);
 
-        // Don't permit screenshots since these might contain OTP codes.
+        // Don't permit screenshots since these might contain secret information.
         getWindow().setFlags(LayoutParams.FLAG_SECURE, LayoutParams.FLAG_SECURE);
 
         dataSetObserver = new DataSetObserver() {
             @Override
             public void onChanged() {
                 super.onChanged();
-                if (mechanismAdapter.getCount() == 0) {
+                if (identityAdapter.getCount() == 0) {
                     findViewById(android.R.id.empty).setVisibility(View.VISIBLE);
                 } else {
                     findViewById(android.R.id.empty).setVisibility(View.GONE);
                 }
             }
         };
-        mechanismAdapter.registerDataSetObserver(dataSetObserver);
+        identityAdapter.registerDataSetObserver(dataSetObserver);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        mechanismAdapter.notifyDataSetChanged();
+        identityAdapter.notifyDataSetChanged();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        mechanismAdapter.notifyDataSetChanged();
+        identityAdapter.notifyDataSetChanged();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        mechanismAdapter.unregisterDataSetObserver(dataSetObserver);
+        identityAdapter.unregisterDataSetObserver(dataSetObserver);
     }
 
     @Override
@@ -134,5 +127,6 @@ public class MainActivity extends RoboActivity implements OnMenuItemClickListene
         }
         return false;
     }
+
 
 }

@@ -14,7 +14,7 @@
  * Copyright 2016 ForgeRock AS.
  */
 
-package com.forgerock.authenticator.mechanisms.TOTP;
+package com.forgerock.authenticator.mechanisms.push;
 
 import android.view.View;
 
@@ -23,36 +23,35 @@ import com.forgerock.authenticator.mechanisms.Mechanism;
 import com.forgerock.authenticator.mechanisms.MechanismFactory;
 import com.forgerock.authenticator.mechanisms.MechanismInfo;
 
-
 /**
- * Provides information about the OTP mechanisms.
- * Collects together all the information required to create, store and wire the OTP mechanism into
+ * Provides information about the push mechanism.
+ * Collects together all the information required to create, store and wire the push mechanism into
  * the user interface.
  */
-public class TokenInfo implements MechanismInfo {
+public class PushInfo implements MechanismInfo {
     @Override
     public void bind(View view, Mechanism mechanism) {
-        TokenLayout tokenLayout = (TokenLayout) view;
-        tokenLayout.bind((Token) mechanism);
+        PushLayout tl = (PushLayout) view;
+        tl.bind((Push) mechanism);
     }
 
     @Override
     public int getLayoutType() {
-        return R.layout.token;
+        return R.layout.pushcell;
     }
 
     @Override
     public String getMechanismString() {
-        return "OTP";
+        return "push";
     }
 
     @Override
     public MechanismFactory getFactory() {
-        return new TokenFactory();
+        return new PushFactory();
     }
 
     @Override
     public boolean matchesURI(String uri) {
-        return uri.startsWith("otpauth://");
+        return uri.startsWith("pushauth");
     }
 }

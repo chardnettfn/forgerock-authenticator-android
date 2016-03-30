@@ -11,15 +11,15 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2015-2016 ForgeRock AS.
+ * Copyright 2016 ForgeRock AS.
  */
-package com.forgerock.authenticator.mechanisms.TOTP;
+
+package com.forgerock.authenticator.utils;
 
 import com.forgerock.authenticator.mechanisms.URIMappingException;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -27,16 +27,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Provides the ability to parse URI scheme into a convenient format
- * to use with configuring a {@link Token}
- * to generate OTP codes.
- *
- * The configuration URI is based on the format defined by the original
- * Google Authenticator project:
- *
- * https://github.com/google/google-authenticator/wiki/Key-Uri-Format
+ * Base class for converting mechanism URIs to useful data. Extracts common information (scheme, type,
+ * version, issuer and account name). All information stored as parameters are converted to a map.
+ * Subclasses on this class must implement validate(), which verifies that all required information
+ * is present.
  */
-class OTPAuthMapper {
+public abstract class UriParser {
     /** The protocol of the URI */
     public static final String SCHEME = "scheme";
 
@@ -45,33 +41,16 @@ class OTPAuthMapper {
     /** The URI API Version */
     public static final String VERSION = "version";
 
-    /** The IDP that issed the URI */
+    /** The IDP that issued the URI */
     public static final String ISSUER = "issuer";
 
-    /** The identity name */
-    public static final String LABEL = "accountname";
-
-    /** The secret used for generating the OTP */
-    public static final String SECRET = "secret";
-
-    /** The algorithm used for generating the OTP */
-    public static final String ALGORITHM = "algorithm";
-
-    /** The number of digits that the OTP should be */
-    public static final String DIGITS = "digits";
-
-    /** The counter used to keep track of how many codes have been generated using this mechanism */
-    public static final String COUNTER = "counter";
-
-    /** The frequency with which the OTP updates */
-    public static final String PERIOD = "period";
+    /** The identity account name */
+    public static final String ACCOUNT_NAME = "accountname";
 
     private static final String SLASH = "/";
-    private static final String[] ALLOWED_TYPES = new String[]{"hotp", "totp"};
-
 
     /**
-     * Call through to {@link OTPAuthMapper#map(URI)}
+     * Call through to {@link UriParser#map(URI)}
      *
      * @param uriScheme Non null.
      * @return Non null, possibly empty Map.
@@ -84,6 +63,7 @@ class OTPAuthMapper {
             throw new URIMappingException("Failed to parse URI", e);
         }
     }
+
 
     /**
      * Parse the URI into a more useful Map format with known keys.
@@ -103,10 +83,10 @@ class OTPAuthMapper {
         String path = stripSlash(uri.getPath());
         String[] pathParts = split(path, ":");
         if (pathParts == null) {
-            r.put(LABEL, path);
+            r.put(ACCOUNT_NAME, path);
         } else {
             r.put(ISSUER, pathParts[0]);
-            r.put(LABEL, pathParts[1]);
+            r.put(ACCOUNT_NAME, pathParts[1]);
         }
 
         Collection<String> queryParts = Collections.emptySet();
@@ -126,38 +106,11 @@ class OTPAuthMapper {
      * Validates the parsed URI values based on the requirements of the current
      * Google Authenticator specification.
      *
-     * @param values Non null.
-     * @return A non null Map.
+     * @param values The non null map of values stored in the parameters in the URI.
+     * @return The same map of values, with a transform applied if required.
      * @throws URIMappingException If there were any validation errors.
      */
-    private Map<String, String> validate(Map<String, String> values) throws URIMappingException {
-        // Validate Type
-        String type = values.get(TYPE);
-        boolean validType = false;
-        for (String allowedType : ALLOWED_TYPES) {
-            if (allowedType.equalsIgnoreCase(type)) {
-                validType = true;
-                break;
-            }
-        }
-        if (!validType) {
-            throw new URIMappingException(MessageFormat.format("Type {0} was not valid", type));
-        }
-
-        // Secret is REQUIRED
-        if (!values.containsKey(SECRET)) {
-            throw new URIMappingException("Secret is required");
-        }
-
-        // Counter is REQUIRED
-        if (type.equalsIgnoreCase(ALLOWED_TYPES[0])) {
-            if (!values.containsKey(COUNTER)) {
-                throw new URIMappingException("Counter is required when in hotp mode");
-            }
-        }
-
-        return values;
-    }
+    protected abstract Map<String, String> validate(Map<String, String> values) throws URIMappingException;
 
     private static String[] split(String s, String sep) {
         int index = s.indexOf(sep);

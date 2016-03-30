@@ -16,7 +16,7 @@
  * Portions Copyright 2014 Nathaniel McCallum, Red Hat
  */
 
-package com.forgerock.authenticator.mechanisms.TOTP;
+package com.forgerock.authenticator.mechanisms.oath;
 
 /**
  * Represents a currently active token.

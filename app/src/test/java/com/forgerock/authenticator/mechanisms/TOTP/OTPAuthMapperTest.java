@@ -13,7 +13,7 @@
  *
  * Copyright 2015 ForgeRock AS.
  */
-package com.forgerock.authenticator.mechanisms.TOTP;
+package com.forgerock.authenticator.mechanisms.oath;
 
 import com.forgerock.authenticator.mechanisms.URIMappingException;
 

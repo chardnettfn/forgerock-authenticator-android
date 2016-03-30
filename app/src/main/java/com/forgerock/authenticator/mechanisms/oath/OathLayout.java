@@ -14,7 +14,7 @@
  * Copyright 2015-2016 ForgeRock AS.
  */
 
-package com.forgerock.authenticator.mechanisms.TOTP;
+package com.forgerock.authenticator.mechanisms.oath;
 
 import android.content.Context;
 import android.content.Intent;
@@ -43,7 +43,7 @@ import org.slf4j.LoggerFactory;
  * Handles the display of a Token in a list.
  * Some common features of this may be able to be broken out.
  */
-class TokenLayout extends FrameLayout implements View.OnClickListener, Runnable, MechanismLayout<Token> {
+class OathLayout extends FrameLayout implements View.OnClickListener, Runnable, MechanismLayout<Oath> {
     private ProgressCircle mProgressInner;
     private ProgressCircle mProgressOuter;
     private ImageView mImage;
@@ -54,25 +54,25 @@ class TokenLayout extends FrameLayout implements View.OnClickListener, Runnable,
     private PopupMenu mPopupMenu;
 
     private TokenCode mCodes;
-    private Token.TokenType mType;
+    private Oath.TokenType mType;
     private String mPlaceholder;
     private long mStartTime;
-    private Logger logger = LoggerFactory.getLogger(TokenLayout.class);
+    private Logger logger = LoggerFactory.getLogger(OathLayout.class);
 
 
     /**
      * Creates this layout using the provided context.
      * @param context The context this layout exists within.
      */
-    public TokenLayout(Context context) {
+    public OathLayout(Context context) {
         super(context);
     }
 
-    public TokenLayout(Context context, AttributeSet attrs) {
+    public OathLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 
-    public TokenLayout(Context context, AttributeSet attrs, int defStyle) {
+    public OathLayout(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
     }
 
@@ -89,13 +89,18 @@ class TokenLayout extends FrameLayout implements View.OnClickListener, Runnable,
         mMenu = (ImageView) findViewById(R.id.menu);
 
         mPopupMenu = new PopupMenu(getContext(), mMenu);
-        mMenu.setOnClickListener(this);
+        mMenu.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mPopupMenu.show();
+            }
+        });
     }
 
     @Override
-    public void bind(final Token token) {
+    public void bind(final Oath oath) {
         final Context context = this.getContext();
-        bindData(token, R.menu.token, new PopupMenu.OnMenuItemClickListener() {
+        bindData(oath, R.menu.token, new PopupMenu.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
                 Intent i;
@@ -105,7 +110,7 @@ class TokenLayout extends FrameLayout implements View.OnClickListener, Runnable,
                     case R.id.action_delete:
                         i = new Intent(context, DeleteMechanismActivity.class);
                         try {
-                            i.putExtra(DeleteMechanismActivity.ROW_ID, token.getRowId());
+                            i.putExtra(DeleteMechanismActivity.MECHANISM_ID, oath.getId());
                             context.startActivity(i);
                         } catch (NotStoredException e) {
                             logger.error("Mechanism to delete did not contain row id.", e);
@@ -121,15 +126,15 @@ class TokenLayout extends FrameLayout implements View.OnClickListener, Runnable,
             @Override
             public void onClick(View v) {
                 // Increment the token.
-                TokenCode codes = token.generateCodes();
-                new IdentityDatabase(v.getContext()).updateMechanism(token);
+                TokenCode codes = oath.generateCodes();
+                new IdentityDatabase(v.getContext()).updateMechanism(oath);
 
-                ((TokenLayout) v).start(token.getType(), codes, true);
+                ((OathLayout) v).start(oath.getType(), codes, true);
             }
         });
     }
 
-    private void bindData(Token token, int menu, PopupMenu.OnMenuItemClickListener micl) {
+    private void bindData(Oath oath, int menu, PopupMenu.OnMenuItemClickListener micl) {
         mCodes = null;
 
         // Setup menu.
@@ -147,23 +152,23 @@ class TokenLayout extends FrameLayout implements View.OnClickListener, Runnable,
         mProgressOuter.setVisibility(View.GONE);
 
         // Get the code placeholder.
-        char[] placeholder = new char[token.getDigits()];
+        char[] placeholder = new char[oath.getDigits()];
         for (int i = 0; i < placeholder.length; i++)
             placeholder[i] = '-';
         mPlaceholder = new String(placeholder);
 
         // Show the image.
         Picasso.with(getContext())
-                .load(token.getOwner().getImage())
+                .load(oath.getOwner().getImage())
                 .placeholder(R.drawable.forgerock_logo)
                 .into(mImage);
 
         // Set the labels.
-        mLabel.setText(token.getOwner().getLabel());
-        mIssuer.setText(token.getOwner().getIssuer());
+        mLabel.setText(oath.getOwner().getAccountName());
+        mIssuer.setText(oath.getOwner().getIssuer());
         mCode.setText(mPlaceholder);
         if (mIssuer.getText().length() == 0) {
-            mIssuer.setText(token.getOwner().getLabel());
+            mIssuer.setText(oath.getOwner().getAccountName());
             mLabel.setVisibility(View.GONE);
         } else {
             mLabel.setVisibility(View.VISIBLE);
@@ -177,7 +182,7 @@ class TokenLayout extends FrameLayout implements View.OnClickListener, Runnable,
         view.startAnimation(a);
     }
 
-    private void start(Token.TokenType type, TokenCode codes, boolean animate) {
+    private void start(Oath.TokenType type, TokenCode codes, boolean animate) {
         mCodes = codes;
         mType = type;
 
@@ -202,11 +207,6 @@ class TokenLayout extends FrameLayout implements View.OnClickListener, Runnable,
     }
 
     @Override
-    public void onClick(View v) {
-        mPopupMenu.show();
-    }
-
-    @Override
     public void run() {
         // Get the current data
         String code = mCodes == null ? null : mCodes.getCurrentCode();
@@ -218,7 +218,7 @@ class TokenLayout extends FrameLayout implements View.OnClickListener, Runnable,
             // Update the fields
             mCode.setText(code);
             mProgressInner.setProgress(mCodes.getCurrentProgress());
-            if (mType != Token.TokenType.HOTP)
+            if (mType != Oath.TokenType.HOTP)
                 mProgressOuter.setProgress(mCodes.getTotalProgress());
 
             postDelayed(this, 100);
@@ -229,5 +229,10 @@ class TokenLayout extends FrameLayout implements View.OnClickListener, Runnable,
         mProgressInner.setVisibility(View.GONE);
         mProgressOuter.setVisibility(View.GONE);
         animate(mImage, R.anim.token_image_fadein, true);
+    }
+
+    @Override
+    public void onClick(View v) {
+        // Currently do nothing
     }
 }

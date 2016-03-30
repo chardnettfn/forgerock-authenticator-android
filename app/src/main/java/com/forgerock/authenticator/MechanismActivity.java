@@ -33,41 +33,40 @@ import android.widget.GridView;
 import com.forgerock.authenticator.add.ScanActivity;
 import com.forgerock.authenticator.identity.Identity;
 import com.forgerock.authenticator.mechanisms.MechanismAdapter;
+import com.forgerock.authenticator.storage.IdentityDatabase;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import roboguice.RoboGuice;
 import roboguice.activity.RoboActivity;
 
 /**
- * The main entry point for the Authenticator App.
- *
- * Responsible for handling all startup concerns for the app. Key details:
- *
- * <li>check that all required services are present</li>
- * <li>prevent screenshots of the app</li>
- * <li>show the first screen to the user</li>
+ *  * Page for viewing a list of all Identities. Requires IDENTITY_ID to be set in the Intent.
  */
-public class MainActivity extends RoboActivity implements OnMenuItemClickListener {
-    private final Logger logger;
+public class MechanismActivity extends RoboActivity implements OnMenuItemClickListener {
 
+    /** The identity of the ID that this page displays the mechanisms for. */
+    public static final String IDENTITY_ID = "identityid";
+
+    private final Logger logger;
     private MechanismAdapter mechanismAdapter;
     private DataSetObserver dataSetObserver;
 
     /**
      * Default instance of MainActivity will be created by Android framework.
      */
-    public MainActivity() {
-        this(LoggerFactory.getLogger(MainActivity.class));
+    public MechanismActivity() {
+        this(LoggerFactory.getLogger(MechanismActivity.class));
     }
 
     /**
      * Dependencies exposed for unit testing as required.
-     * 
+     *
      * @param logger Non null logging instance.
      */
     @VisibleForTesting
-    public MainActivity(final Logger logger) {
+    public MechanismActivity(final Logger logger) {
         this.logger = logger;
     }
 
@@ -75,10 +74,17 @@ public class MainActivity extends RoboActivity implements OnMenuItemClickListene
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        onNewIntent(getIntent());
-        setContentView(R.layout.main);
+        long identityId = getIntent().getLongExtra(IDENTITY_ID, -1);
+        assert identityId >= 0;
 
-        mechanismAdapter = new MechanismAdapter(this, Identity.builder().build());
+        Identity identity = RoboGuice.getInjector(this).getInstance(IdentityDatabase.class).getIdentity(identityId);
+        assert identity != null;
+
+        onNewIntent(getIntent());
+
+        setContentView(R.layout.mechanism);
+
+        mechanismAdapter = new MechanismAdapter(this, identity);
         ((GridView) findViewById(R.id.grid)).setAdapter(mechanismAdapter);
 
         // Don't permit screenshots since these might contain OTP codes.
@@ -134,5 +140,6 @@ public class MainActivity extends RoboActivity implements OnMenuItemClickListene
         }
         return false;
     }
+
 
 }

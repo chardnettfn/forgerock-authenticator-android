@@ -14,7 +14,7 @@
  * Copyright 2015-2016 ForgeRock AS.
  */
 
-package com.forgerock.authenticator.mechanisms;
+package com.forgerock.authenticator.identity;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -22,7 +22,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 
-import com.forgerock.authenticator.identity.Identity;
+import com.forgerock.authenticator.R;
 import com.forgerock.authenticator.storage.DatabaseListener;
 import com.forgerock.authenticator.storage.IdentityDatabase;
 import com.forgerock.authenticator.storage.NotStoredException;
@@ -30,38 +30,29 @@ import com.forgerock.authenticator.storage.NotStoredException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import roboguice.RoboGuice;
 
 /**
- * Class for displaying a list of mechanisms belonging to a particular identity.
- * Keeps itself in sync the database by listening to it for updates.
+ * Class for displaying the complete list of Identities,
  */
-public class MechanismAdapter extends BaseAdapter implements DatabaseListener {
+public class IdentityAdapter extends BaseAdapter implements DatabaseListener {
     private final IdentityDatabase identityDatabase;
     private final LayoutInflater mLayoutInflater;
-    private final Identity owner;
-    private List<Mechanism> mechanismList;
-    private List<Integer> layoutTypes;
-    private Logger logger = LoggerFactory.getLogger(MechanismAdapter.class);
+    private List<Identity> identityList;
+    private Logger logger = LoggerFactory.getLogger(IdentityAdapter.class);
+
 
     /**
-     * Creates an adapter which contains all of the mechanisms related to a particular identity.
-     * @param context
-     * @param owner
+     * Creates the adapter, and sets up the database connection.
+     * @param context The context the adapter is being created in.
      */
-    public MechanismAdapter(Context context, Identity owner) {
+    public IdentityAdapter(Context context) {
         identityDatabase = getIdentityDatabase(context);
         identityDatabase.addListener(this);
         mLayoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        this.owner = owner;
-        mechanismList = identityDatabase.getMechanisms(owner);
-        layoutTypes = new ArrayList<>();
-        for (MechanismInfo info : MechanismList.getAllMechanisms()) {
-            layoutTypes.add(info.getLayoutType());
-        }
+        identityList = identityDatabase.getIdentities();
     }
 
     /**
@@ -75,12 +66,12 @@ public class MechanismAdapter extends BaseAdapter implements DatabaseListener {
 
     @Override
     public int getCount() {
-        return mechanismList.size();
+        return identityList.size();
     }
 
     @Override
-    public Mechanism getItem(int position) {
-        return mechanismList.get(position);
+    public Identity getItem(int position) {
+        return identityList.get(position);
     }
 
     @Override
@@ -89,7 +80,7 @@ public class MechanismAdapter extends BaseAdapter implements DatabaseListener {
             return getItem(position).getId();
         } catch (NotStoredException e) {
             // This should never happen, as the mechanismList is populated directly from the database.
-            logger.error("Mechanism loaded from database did not contain row id.", e);
+            logger.error("Identity loaded from database did not contain row id.", e);
             return -1;
         }
     }
@@ -97,28 +88,17 @@ public class MechanismAdapter extends BaseAdapter implements DatabaseListener {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         if (convertView == null) {
-            int typeIndex = getItemViewType(position);
-            convertView = mLayoutInflater.inflate(layoutTypes.get(typeIndex), parent, false);
+            convertView = mLayoutInflater.inflate(R.layout.identitycell, parent, false);
         }
 
-        Mechanism mechanism = getItem(position);
-        mechanism.getInfo().bind(convertView, mechanism);
+        Identity identity = getItem(position);
+        ((IdentityLayout) convertView).bind(identity);
         return convertView;
     }
 
     @Override
-    public int getViewTypeCount() {
-        return layoutTypes.size();
-    }
-
-    @Override
-    public int getItemViewType(int position) {
-        return layoutTypes.indexOf(getItem(position).getInfo().getLayoutType());
-    }
-
-    @Override
     public void onUpdate() {
-        mechanismList = identityDatabase.getMechanisms(owner);
+        identityList = identityDatabase.getIdentities();
         notifyDataSetChanged();
     }
 }

@@ -18,19 +18,41 @@ package com.forgerock.authenticator.identity;
 
 import android.net.Uri;
 
+import com.forgerock.authenticator.storage.NotStoredException;
+
 /**
  * Identity is responsible for modelling the information that makes up part of a users identity in
  * the context of logging into that users account.
  */
 public class Identity {
+    private long id = -1;
     private String issuer;
-    private String label;
+    private String accountName;
     private Uri image;
 
-    private Identity(String issuer, String label, Uri image) {
+    private Identity(String issuer, String accountName, Uri image) {
         this.issuer = issuer;
-        this.label = label;
+        this.accountName = accountName;
         this.image = image;
+    }
+
+    /**
+     * Returns the id that corresponds to this Identity.
+     * @return The storage id that relates to this Identity.
+     */
+    public long getId() throws NotStoredException {
+        if (id == -1) {
+            throw new NotStoredException("The mechanism has not yet been stored.");
+        }
+        return id;
+    }
+
+    /**
+     * Sets the storage id for this Identity.
+     * @param id The id that the storage mechanism uses to identify this Identity.
+     */
+    public void setId(long id) {
+        this.id = id;
     }
 
     /**
@@ -51,10 +73,10 @@ public class Identity {
 
     /**
      * Returns the name of this Identity.
-     * @return The label if it has been assigned or an empty String.
+     * @return The account name if it has been assigned or an empty String.
      */
-    public String getLabel() {
-        return label != null ? label : "";
+    public String getAccountName() {
+        return accountName != null ? accountName : "";
     }
 
     /**
@@ -70,7 +92,7 @@ public class Identity {
      */
     public static class Builder {
         private String issuer;
-        private String label;
+        private String accountName;
         private Uri image;
 
         /**
@@ -84,10 +106,10 @@ public class Identity {
 
         /**
          * Sets the name of the identity.
-         * @param label The identity name.
+         * @param accountName The identity name.
          */
-        public Builder setLabel(String label) {
-            this.label = label != null ? label : "";
+        public Builder setAccountName(String accountName) {
+            this.accountName = accountName != null ? accountName : "";
             return this;
         }
 
@@ -105,7 +127,7 @@ public class Identity {
          * @return The identity.
          */
         public Identity build() {
-            return new Identity(issuer, label, image);
+            return new Identity(issuer, accountName, image);
         }
     }
 }

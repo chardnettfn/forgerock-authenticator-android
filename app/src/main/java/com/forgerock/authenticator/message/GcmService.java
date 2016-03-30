@@ -22,10 +22,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.VisibleForTesting;
+
+import com.forgerock.authenticator.mechanisms.push.PushAuthActivity;
 import com.forgerock.authenticator.utils.ContextService;
 import com.forgerock.authenticator.utils.IntentFactory;
 import com.forgerock.authenticator.utils.NotificationFactory;
 import com.google.android.gms.gcm.GcmListenerService;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,7 +42,7 @@ import org.slf4j.LoggerFactory;
  */
 public class GcmService extends GcmListenerService {
     // Place holder for the moment, to be set to something stable
-    private static int messageId = 2;
+    private static int messageCount = 2;
 
     private final Logger logger;
     private final IntentFactory intentFactory;
@@ -71,6 +74,7 @@ public class GcmService extends GcmListenerService {
 
     @Override
     public void onMessageReceived(String from, Bundle data) {
+        String messageId = data.getString("messageId");
         String message = data.getString("message");
 
         // TODO: Message contents should not be printed to system log
@@ -79,12 +83,12 @@ public class GcmService extends GcmListenerService {
 
         // TODO: Validate that the message is a correctly formed message from the server.
 
-        handleMessage(message);
+        handleMessage(messageId, message);
     }
 
-    private void handleMessage(String message) {
+    private void handleMessage(String messageId, String message) {
 
-        int id = messageId++;
+        int id = messageCount++;
         // TODO: Change activity a list of "unread" messages when there is more than one
 
         /**
@@ -93,8 +97,9 @@ public class GcmService extends GcmListenerService {
          * stable in the downstream message. This will allow us to possibly clear out a
          * notification from the users device if they decide to cancel the login request.
          */
-        Intent intent = intentFactory.generateInternal(this, NewMessageActivity.class);
+        Intent intent = intentFactory.generateInternal(this, PushAuthActivity.class);
         intent.putExtra(MessageConstants.TITLE, "New Message Received");
+        intent.putExtra(MessageConstants.MESSAGE_ID, messageId);
         intent.putExtra(MessageConstants.MESSAGE, message);
 
         intent.addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);

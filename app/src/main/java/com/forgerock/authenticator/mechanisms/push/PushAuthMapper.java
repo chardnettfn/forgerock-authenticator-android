@@ -14,28 +14,21 @@
  * Copyright 2016 ForgeRock AS.
  */
 
-package com.forgerock.authenticator.mechanisms;
+package com.forgerock.authenticator.mechanisms.push;
 
-import com.forgerock.authenticator.mechanisms.oath.OathInfo;
-import com.forgerock.authenticator.mechanisms.push.PushInfo;
+import com.forgerock.authenticator.mechanisms.URIMappingException;
+import com.forgerock.authenticator.utils.UriParser;
+
+import java.util.Map;
 
 /**
- * Provides a complete list of all possible mechanisms
+ * Provides the ability to parse URI scheme into a convenient format
+ * to use with configuring a {@link Push} to receive push notifications.
  */
-public final class MechanismList {
+public class PushAuthMapper extends UriParser {
 
-    private MechanismList() {
-        //noop
-    }
-
-    /**
-     * Should contain an instance of all possible MechanismInfos.
-     * @return The list of MechanismInfos.
-     */
-    public static MechanismInfo[] getAllMechanisms() {
-        return new MechanismInfo[] {
-                new OathInfo(),
-                new PushInfo()
-        };
+    @Override
+    protected Map<String, String> validate(Map<String, String> values) throws URIMappingException {
+        return values;
     }
 }

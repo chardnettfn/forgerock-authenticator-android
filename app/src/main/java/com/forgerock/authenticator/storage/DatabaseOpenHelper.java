@@ -42,19 +42,19 @@ class DatabaseOpenHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         db.execSQL("CREATE TABLE " + IdentityDatabase.IDENTITY_TABLE_NAME + " (" +
                 IdentityDatabase.ISSUER + " TEXT, " +
-                IdentityDatabase.LABEL + " TEXT, " +
+                IdentityDatabase.ACCOUNT_NAME + " TEXT, " +
                 IdentityDatabase.IMAGE + " TEXT, " +
-                "PRIMARY KEY(" + IdentityDatabase.ISSUER + ", " + IdentityDatabase.LABEL + "));");
+                "PRIMARY KEY(" + IdentityDatabase.ISSUER + ", " + IdentityDatabase.ACCOUNT_NAME + "));");
 
         db.execSQL("CREATE TABLE " + IdentityDatabase.MECHANISM_TABLE_NAME + " (" +
                 IdentityDatabase.ID_ISSUER + " TEXT, " +
-                IdentityDatabase.ID_LABEL + " TEXT, " +
+                IdentityDatabase.ID_ACCOUNT_NAME + " TEXT, " +
                 IdentityDatabase.TYPE + " TEXT, " +
                 IdentityDatabase.VERSION + " INTEGER, " +
                 IdentityDatabase.OPTIONS + " TEXT, " +
-                "FOREIGN KEY(" + IdentityDatabase.ID_ISSUER + ", " + IdentityDatabase.ID_LABEL + ") " +
+                "FOREIGN KEY(" + IdentityDatabase.ID_ISSUER + ", " + IdentityDatabase.ID_ACCOUNT_NAME + ") " +
                 "REFERENCES " + IdentityDatabase.IDENTITY_TABLE_NAME
-                + "(" + IdentityDatabase.ISSUER + ", " + IdentityDatabase.LABEL + "));");
+                + "(" + IdentityDatabase.ISSUER + ", " + IdentityDatabase.ACCOUNT_NAME + "));");
 
     }
 

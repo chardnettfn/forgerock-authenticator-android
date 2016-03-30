@@ -35,12 +35,12 @@ import roboguice.activity.RoboActivity;
 
 /**
  * Activity responsible for verifying that a user wishes to delete a mechanism, then deleting it.
- * The rowId of the mechanism to delete must be passed in using the Intent.
+ * The id of the mechanism to delete must be passed in using the Intent.
  */
 public class DeleteMechanismActivity extends RoboActivity {
 
-    /** Used to pass in the RowId of the Mechanism to delete */
-    public static final String ROW_ID = "rowid";
+    /** Used to pass in the id of the Mechanism to delete */
+    public static final String MECHANISM_ID = "mechanismid";
 
     private Logger logger;
     @Override
@@ -49,20 +49,20 @@ public class DeleteMechanismActivity extends RoboActivity {
         logger = LoggerFactory.getLogger(DeleteMechanismActivity.class);
 
 
-        final long rowId = getIntent().getLongExtra(ROW_ID, -1);
-        assert rowId >= 0;
+        final long mechanismId = getIntent().getLongExtra(MECHANISM_ID, -1);
+        assert mechanismId >= 0;
 
         setContentView(R.layout.delete);
         Mechanism token;
         try {
-            token = getIdentityDatabase().getMechanism(rowId);
+            token = getIdentityDatabase().getMechanism(mechanismId);
         } catch (MechanismCreationException e) {
             logger.error("Failed to find Mechainsm to delete", e);
             finish();
             return;
         }
         ((TextView) findViewById(R.id.issuer)).setText(token.getOwner().getIssuer());
-        ((TextView) findViewById(R.id.label)).setText(token.getOwner().getLabel());
+        ((TextView) findViewById(R.id.label)).setText(token.getOwner().getAccountName());
         Picasso.with(this)
                 .load(token.getOwner().getImage())
                 .placeholder(R.drawable.forgerock_logo)
@@ -78,7 +78,7 @@ public class DeleteMechanismActivity extends RoboActivity {
         findViewById(R.id.delete).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                getIdentityDatabase().deleteMechanism(rowId);
+                getIdentityDatabase().deleteMechanism(mechanismId);
                 finish();
             }
         });

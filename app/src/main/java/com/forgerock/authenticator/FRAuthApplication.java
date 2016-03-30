@@ -17,6 +17,14 @@
 package com.forgerock.authenticator;
 
 import android.app.Application;
+import android.content.Intent;
+import android.os.Bundle;
+import android.widget.Toast;
+
+import com.forgerock.authenticator.message.GcmRegistrationService;
+import com.forgerock.authenticator.utils.TestNGCheck;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
 
 import roboguice.RoboGuice;
 
@@ -30,5 +38,36 @@ import roboguice.RoboGuice;
 public class FRAuthApplication extends Application {
     static {
         RoboGuice.setUseAnnotationDatabases(false);
+    }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        // // TODO: AME-9928 check should be performed in on-resume as well.
+        if (checkPlayServices()) {
+            startService(new Intent(this, GcmRegistrationService.class));
+        }
+
+        // Notify developer that they have included TestNG on classpath.
+        // TODO: AME-9927 should update or resolve this check
+        if (TestNGCheck.isTestNGOnClassPath()) {
+            Toast.makeText(getApplicationContext(), "Compiled with test libraries", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    // TODO: AME-9928 should seek to upgrade this functionality
+    private boolean checkPlayServices() {
+        GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
+        int resultCode = apiAvailability.isGooglePlayServicesAvailable(this);
+        if (resultCode != ConnectionResult.SUCCESS) {
+            if (apiAvailability.isUserResolvableError(resultCode)) {
+                apiAvailability.showErrorNotification(this, resultCode);
+            } else {
+                Toast.makeText(getApplicationContext(),
+                        "Error: Google Play Services failed to load.", Toast.LENGTH_LONG).show();
+            }
+            return false;
+        }
+        return true;
     }
 }

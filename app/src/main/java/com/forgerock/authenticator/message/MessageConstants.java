@@ -34,5 +34,6 @@ public final class MessageConstants {
      * for the user.
      */
     public static final String TITLE = "title";
+    public static final String MESSAGE_ID = "messageId";
     public static final String MESSAGE = "message";
 }

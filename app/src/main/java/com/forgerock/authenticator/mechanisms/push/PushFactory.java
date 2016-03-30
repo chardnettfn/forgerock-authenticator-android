@@ -11,60 +11,58 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2015-2016 ForgeRock AS.
+ * Copyright 2016 ForgeRock AS.
  */
 
-package com.forgerock.authenticator.mechanisms.TOTP;
+package com.forgerock.authenticator.mechanisms.push;
 
 import com.forgerock.authenticator.identity.Identity;
 import com.forgerock.authenticator.mechanisms.Mechanism;
-import com.forgerock.authenticator.mechanisms.MechanismFactory;
 import com.forgerock.authenticator.mechanisms.MechanismCreationException;
+import com.forgerock.authenticator.mechanisms.MechanismFactory;
 import com.forgerock.authenticator.mechanisms.URIMappingException;
 
 import java.util.Map;
 
 /**
- * Responsible for generating instances of {@link Token}.
+ * Responsible for generating instances of {@link Push}.
  *
- * Understands the concept of a version number associated with a Token
+ * Understands the concept of a version number associated with a Push mechanism
  * and will parse the URI according to this.
  */
-class TokenFactory implements MechanismFactory {
-    private final OTPAuthMapper mapper = new OTPAuthMapper();
+public class PushFactory implements MechanismFactory {
+    private PushAuthMapper mapper = new PushAuthMapper();
 
     @Override
-    public Mechanism createFromUri(String uri) throws MechanismCreationException, URIMappingException {
-
+    public Mechanism createFromUri(String uri) throws URIMappingException, MechanismCreationException {
         Map<String, String> values = mapper.map(uri);
-        int version = Integer.parseInt(get(values, OTPAuthMapper.VERSION, "1"));
+        int version;
+        try {
+            version = Integer.parseInt(get(values, PushAuthMapper.VERSION, "1"));
+        } catch (NumberFormatException e) {
+            throw new MechanismCreationException("Expected valid integer, found " +
+                    get(values, PushAuthMapper.VERSION, "1"), e);
+        }
         if (version == 1) {
-
             Identity identity = Identity.builder()
-                    .setIssuer(get(values, OTPAuthMapper.ISSUER, ""))
-                    .setLabel(get(values, OTPAuthMapper.LABEL, ""))
+                    .setIssuer(get(values, PushAuthMapper.ISSUER, ""))
+                    .setAccountName(get(values, PushAuthMapper.ACCOUNT_NAME, ""))
                     .setImage(get(values, "image", null))
                     .build();
 
-            Token token = Token.getBuilder()
+            Push pushAuth = Push.builder()
                     .setOwner(identity)
-                    .setAlgorithm(get(values, OTPAuthMapper.ALGORITHM, "sha1"))
-                    .setType(values.get(OTPAuthMapper.TYPE))
-                    .setCounter(get(values, OTPAuthMapper.COUNTER, "0"))
-                    .setDigits(get(values, OTPAuthMapper.DIGITS, "6"))
-                    .setPeriod(get(values, OTPAuthMapper.PERIOD, "30"))
-                    .setSecret(get(values, OTPAuthMapper.SECRET, ""))
                     .build();
-            return token;
+            return pushAuth;
         } else {
             throw new MechanismCreationException("Unknown version: " + version);
         }
-    }
 
+    }
     @Override
     public Mechanism createFromParameters(int version, Identity owner, Map<String, String> map) throws MechanismCreationException {
         if (version == 1) {
-            return Token.getBuilder()
+            return Push.builder()
                     .setOwner(owner)
                     .setOptions(map)
                     .build();

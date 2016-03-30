@@ -13,7 +13,7 @@
  *
  * Copyright 2015 ForgeRock AS.
  */
-package com.forgerock.authenticator.mechanisms.TOTP;
+package com.forgerock.authenticator.mechanisms.oath;
 
 import com.forgerock.authenticator.mechanisms.MechanismCreationException;
 
@@ -39,7 +39,7 @@ public class TokenFactoryTest {
         String uri = "otpauth://totp/Forgerock:user.0?secret=ONSWG4TFOQ=====&version=1";
         Token token = (Token) factory.createFromUri(uri);
         assertEquals(token.getType(), Token.TokenType.TOTP);
-        assertEquals(token.getOwner().getLabel(), "user.0");
+        assertEquals(token.getOwner().getAccountName(), "user.0");
     }
 
     @Test
@@ -47,7 +47,7 @@ public class TokenFactoryTest {
         String uri = "otpauth://totp/Forgerock:user.0?secret=ONSWG4TFOQ=====";
         Token token = (Token) factory.createFromUri(uri);
         assertEquals(token.getType(), Token.TokenType.TOTP);
-        assertEquals(token.getOwner().getLabel(), "user.0");
+        assertEquals(token.getOwner().getAccountName(), "user.0");
     }
 
     @Test
