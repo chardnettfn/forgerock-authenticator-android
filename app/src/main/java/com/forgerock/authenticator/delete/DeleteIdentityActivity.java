@@ -59,7 +59,7 @@ public class DeleteIdentityActivity extends BaseIdentityActivity {
         ((TextView) findViewById(R.id.label)).setText(identity.getAccountName());
         Picasso.with(this)
                 .load(identity.getImage())
-                .placeholder(R.drawable.forgerock_logo)
+                .placeholder(R.drawable.forgerock_placeholder)
                 .into((ImageView) findViewById(R.id.image));
 
         findViewById(R.id.cancel).setOnClickListener(new View.OnClickListener() {

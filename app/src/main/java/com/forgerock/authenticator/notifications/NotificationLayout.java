@@ -26,6 +26,9 @@ import android.widget.TextView;
 import com.forgerock.authenticator.R;
 import com.forgerock.authenticator.mechanisms.push.PushAuthActivity;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+
 /**
  * Individual entry which displays information about a given Notification.
  */
@@ -67,7 +70,7 @@ public class NotificationLayout extends FrameLayout {
         TextView timeView = (TextView) findViewById(R.id.time);
         issuerView.setText(notification.getMechanism().getOwner().getIssuer());
         messageView.setText("Login requested");
-        timeView.setText("10 Minutes ago");
+        timeView.setText(calendarToTime(notification.getTimeAdded()));
         final Context context = getContext();
 
         setOnClickListener(new View.OnClickListener() {
@@ -78,5 +81,11 @@ public class NotificationLayout extends FrameLayout {
                 context.startActivity(intent);
             }
         });
+    }
+
+
+    private String calendarToTime(Calendar calendar) {
+        SimpleDateFormat format1 = new SimpleDateFormat("yyyy.MM.dd G 'at' HH:mm:ss z");
+        return format1.format(calendar.getTime());
     }
 }

@@ -61,7 +61,7 @@ public class DeleteMechanismActivity extends BaseMechanismActivity {
         ((TextView) findViewById(R.id.label)).setText(mechanism.getOwner().getAccountName());
         Picasso.with(this)
                 .load(mechanism.getOwner().getImage())
-                .placeholder(R.drawable.forgerock_logo)
+                .placeholder(R.drawable.forgerock_placeholder)
                 .into((ImageView) findViewById(R.id.image));
 
         findViewById(R.id.cancel).setOnClickListener(new View.OnClickListener() {

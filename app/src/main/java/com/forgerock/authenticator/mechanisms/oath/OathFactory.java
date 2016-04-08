@@ -68,7 +68,8 @@ class OathFactory implements MechanismFactory {
                     .setCounter(get(values, OathAuthMapper.COUNTER, "0"))
                     .setDigits(get(values, OathAuthMapper.DIGITS, "6"))
                     .setPeriod(get(values, OathAuthMapper.PERIOD, "30"))
-                    .setSecret(get(values, OathAuthMapper.SECRET, ""));
+                    .setSecret(get(values, OathAuthMapper.SECRET, ""))
+                    .setMechanismUID(identityModel.getNewMechanismUID());
 
             Mechanism oathAuth = identity.addMechanism(context, oathBuilder);
             return oathAuth;

@@ -32,10 +32,16 @@ public interface MechanismInfo {
     void bind(View view, Mechanism mechanism);
 
     /**
-     * Get the layout id for this layout type.
+     * Get the layout id for this Mechanism type.
      * @return The layout id.
      */
     int getLayoutType();
+
+    /**
+     * Get the drawable id for this Mechanism type.
+     * @return
+     */
+    int getIcon();
 
     /**
      * Get the string used to represent this type in the database.

@@ -19,10 +19,13 @@ package com.forgerock.authenticator.mechanisms.base;
 import android.content.Context;
 
 import com.forgerock.authenticator.identity.Identity;
+import com.forgerock.authenticator.mechanisms.InvalidNotificationException;
 import com.forgerock.authenticator.mechanisms.MechanismCreationException;
 import com.forgerock.authenticator.model.ModelObject;
+import com.forgerock.authenticator.model.SortedList;
 import com.forgerock.authenticator.notifications.Notification;
 import com.forgerock.authenticator.storage.IdentityDatabase;
+import com.forgerock.authenticator.storage.IdentityModel;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,7 +41,7 @@ import roboguice.RoboGuice;
  * A mechanism used for authentication.
  * Encapsulates the related settings, as well as an owning Identity and may have a unique UID set.
  */
-public abstract class Mechanism extends ModelObject {
+public abstract class Mechanism extends ModelObject<Mechanism> {
     private long id = NOT_STORED;
     private final int mechanismUID;
     private final Identity owner;
@@ -53,7 +56,7 @@ public abstract class Mechanism extends ModelObject {
      * @param mechanismUID The ID used to identify the Mechanism to external systems.
      */
     protected Mechanism(Identity owner, long id, int mechanismUID) {
-        notificationList = new ArrayList<>();
+        notificationList = new SortedList<>();
         this.owner = owner;
         this.mechanismUID = mechanismUID;
         this.id = id;
@@ -65,11 +68,13 @@ public abstract class Mechanism extends ModelObject {
      * @param notificationBuilder An incomplete builder for a non stored notification.
      * @return The notification that has been added to the data model.
      */
-    public Notification addNotification(Context context, Notification.NotificationBuilder notificationBuilder) {
+    public Notification addNotification(Context context, Notification.NotificationBuilder notificationBuilder)
+            throws InvalidNotificationException {
         Notification notification = notificationBuilder.setMechanism(this).build();
         if (!notificationList.contains(notification)) {
             notification.save(context);
             notificationList.add(notification);
+            RoboGuice.getInjector(context).getInstance(IdentityModel.class).notifyNotificationChanged();
         }
         return notification;
     }
@@ -80,6 +85,30 @@ public abstract class Mechanism extends ModelObject {
      */
     public List<Notification> getNotifications() {
         return Collections.unmodifiableList(notificationList);
+    }
+
+    /**
+     * Delete all notifications from this Mechanism.
+     * @param context The context the Notifications are being cleared from.
+     */
+    public void clearNotifications(Context context) {
+        List<Notification> deleteList = new ArrayList<>(notificationList);
+        for (Notification notification : deleteList) {
+            notification.delete(context);
+            notificationList.remove(notification);
+        }
+        RoboGuice.getInjector(context).getInstance(IdentityModel.class).notifyNotificationChanged();
+    }
+
+    /**
+     * Delete a single notification from this Mechanism.
+     * @param context The context that the notification is being deleted from.
+     * @param notification The notification to delete.
+     */
+    public void removeNotification(Context context, Notification notification) {
+        notification.delete(context);
+        notificationList.remove(notification);
+        RoboGuice.getInjector(context).getInstance(IdentityModel.class).notifyNotificationChanged();
     }
 
     /**
@@ -166,13 +195,24 @@ public abstract class Mechanism extends ModelObject {
 
     private void populateNotifications(List<Notification.NotificationBuilder> notificationBuilders) {
         for (Notification.NotificationBuilder notificationBuilder : notificationBuilders) {
-            Notification notification = notificationBuilder.setMechanism(this).build();
+            Notification notification = null;
+            try {
+                notification = notificationBuilder.setMechanism(this).build();
+            } catch (InvalidNotificationException e) {
+                logger.error("Tried to load incorrectly assigned Notification from storage. This should never happen.");
+            }
+
             if (notification.isStored()) {
-                notificationList.add(notificationBuilder.setMechanism(this).build());
+                notificationList.add(notification);
             } else {
                 logger.error("Tried to populate notification list with Notification that has not been stored.");
             }
         }
+    }
+
+    @Override
+    public int compareTo(Mechanism another) {
+        return getInfo().getMechanismString().compareTo(another.getInfo().getMechanismString());
     }
 
     /**

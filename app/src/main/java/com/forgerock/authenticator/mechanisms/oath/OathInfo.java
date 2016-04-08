@@ -42,6 +42,11 @@ public class OathInfo implements MechanismInfo {
     }
 
     @Override
+    public int getIcon() {
+        return R.drawable.forgerock_icon_oath;
+    }
+
+    @Override
     public String getMechanismString() {
         return "OTP";
     }

@@ -43,15 +43,8 @@ public class Settings {
         // Load settings from SharedPreferences, or initialise to defaults otherwise
         cameraEnabled = sharedPreferences.getBoolean(CAMERA_ENABLED_SETTING, true);
 
-        if (sharedPreferences.contains(CAMERA_ENABLED_SETTING)) {
+        if (!sharedPreferences.contains(CAMERA_ENABLED_SETTING)) {
             sharedPreferences.edit().putBoolean(CAMERA_ENABLED_SETTING, cameraEnabled).apply();
-        }
-
-        // TODO: determine if TouchID is available, default to that
-        touchIdEnabled = sharedPreferences.getBoolean(TOUCH_ID_ENABLED_SETTING, false);
-
-        if (sharedPreferences.contains(TOUCH_ID_ENABLED_SETTING)) {
-            sharedPreferences.edit().putBoolean(TOUCH_ID_ENABLED_SETTING, cameraEnabled).apply();
         }
     }
 
@@ -70,22 +63,5 @@ public class Settings {
      */
     public boolean isCameraEnabled() {
         return cameraEnabled;
-    }
-
-    /**
-     * Set whether use of touch id is enabled.
-     * @param enabled True if touch id should be enabled, false otherwise.
-     */
-    public void setTouchIdEnabled(boolean enabled) {
-        sharedPreferences.edit().putBoolean(TOUCH_ID_ENABLED_SETTING, enabled).apply();
-        touchIdEnabled = enabled;
-    }
-
-    /**
-     * Returns whether touch id is enabled.
-     * @return True if touch id is enabled, false otherwise.
-     */
-    public boolean isTouchIdEnabled() {
-        return touchIdEnabled;
     }
 }

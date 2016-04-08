@@ -26,16 +26,16 @@
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="180dp"
-        android:background="@color/sea_green">
+        android:background="@color/account_background">
         <Space
             android:layout_width="match_parent"
             android:layout_height="20dp" />
-        <ImageView
+        <com.forgerock.authenticator.ui.CircleImageView
             android:id="@+id/image"
             android:layout_width="96dp"
             android:layout_height="96dp"
             android:layout_gravity="center_horizontal"
-            android:src="@drawable/forgerock_logo"
+            android:src="@drawable/forgerock_placeholder"
             android:scaleType="fitCenter"
             android:layout_weight="5"
             />
@@ -87,7 +87,7 @@
         <GridView
             android:id="@+id/grid"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:columnWidth="250dp"
             android:gravity="center"
             android:horizontalSpacing="8dp"
@@ -96,67 +96,5 @@
             android:verticalSpacing="8dp"
             tools:layout_height="80dp"
             />
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="@android:color/darker_gray"/>
-        <Space
-            android:layout_width="match_parent"
-            android:layout_height="20dp" />
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="@android:color/darker_gray"/>
-        <LinearLayout
-            android:id="@+id/activity"
-            android:background="@color/white"
-            android:layout_width="match_parent"
-            android:layout_height="60dp">
-            <ImageView
-                android:src="@drawable/forgerock_icon_activity"
-                android:layout_gravity="center_vertical"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="10dp"
-                android:layout_marginRight="10dp" />
-            <TextView
-                android:layout_gravity="center_vertical"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Activity"/>
-        </LinearLayout>
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="@color/white">
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_marginLeft="50dp"
-            android:background="@android:color/darker_gray"/>
-        </LinearLayout>
-        <LinearLayout
-            android:id="@+id/account_management"
-            android:background="@color/white"
-            android:layout_width="match_parent"
-            android:layout_height="60dp">
-            <ImageView
-                android:src="@drawable/forgerock_icon_activity"
-                android:layout_gravity="center_vertical"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="10dp"
-                android:layout_marginRight="10dp" />
-            <TextView
-                android:layout_gravity="center_vertical"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Account Management"/>
-        </LinearLayout>
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="@android:color/darker_gray"/>
     </LinearLayout>
 </LinearLayout>

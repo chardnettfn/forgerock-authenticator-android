@@ -22,6 +22,7 @@ import android.net.Uri;
 import com.forgerock.authenticator.mechanisms.MechanismCreationException;
 import com.forgerock.authenticator.mechanisms.base.Mechanism;
 import com.forgerock.authenticator.model.ModelObject;
+import com.forgerock.authenticator.model.SortedList;
 import com.forgerock.authenticator.storage.IdentityDatabase;
 import com.forgerock.authenticator.storage.IdentityModel;
 
@@ -39,8 +40,8 @@ import roboguice.RoboGuice;
  * Identity is responsible for modelling the information that makes up part of a users identity in
  * the context of logging into that users account.
  */
-public final class Identity extends ModelObject {
-    private long id;
+public final class Identity extends ModelObject<Identity> {
+    private long id = NOT_STORED;
     private final String issuer;
     private final String accountName;
     private final Uri image;
@@ -53,7 +54,7 @@ public final class Identity extends ModelObject {
         this.issuer = issuer;
         this.accountName = accountName;
         this.image = image;
-        this.mechanismList = new ArrayList<>();
+        this.mechanismList = new SortedList<>();
     }
 
     /**
@@ -205,6 +206,16 @@ public final class Identity extends ModelObject {
                 logger.error("Something went wrong while loading Mechanism.", e);
             }
         }
+        Collections.sort(mechanismList);
+    }
+
+    @Override
+    public int compareTo(Identity another) {
+        int compareIssuer = issuer.compareTo(another.issuer);
+        if (compareIssuer == 0) {
+            return accountName.compareTo(another.accountName);
+        }
+        return compareIssuer;
     }
 
     /**

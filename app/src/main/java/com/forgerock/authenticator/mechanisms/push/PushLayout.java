@@ -19,14 +19,17 @@ package com.forgerock.authenticator.mechanisms.push;
 import android.content.Context;
 import android.content.Intent;
 import android.util.AttributeSet;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
-import android.widget.TextView;
+import android.widget.ImageView;
+import android.widget.PopupMenu;
 
 import com.forgerock.authenticator.NotificationActivity;
 import com.forgerock.authenticator.R;
+import com.forgerock.authenticator.delete.DeleteMechanismActivity;
+import com.forgerock.authenticator.ui.MechanismIcon;
 import com.forgerock.authenticator.mechanisms.base.MechanismLayout;
-import com.forgerock.authenticator.message.MessageConstants;
 
 /**
  * Handles the display of a Push mechanism in a list.
@@ -47,11 +50,8 @@ public class PushLayout extends FrameLayout implements MechanismLayout<Push> {
 
     @Override
     public void bind(final Push mechanism) {
-        TextView issuer = (TextView) findViewById(R.id.issuer);
-        TextView label = (TextView) findViewById(R.id.label);
-
-        issuer.setText(mechanism.getOwner().getIssuer());
-        label.setText(mechanism.getOwner().getAccountName());
+        MechanismIcon icon = (MechanismIcon) findViewById(R.id.icon);
+        icon.setMechanism(mechanism);
 
         setOnClickListener(new OnClickListener() {
             @Override
@@ -60,6 +60,37 @@ public class PushLayout extends FrameLayout implements MechanismLayout<Push> {
                 Intent intent = new Intent(context, NotificationActivity.class);
                 intent.putExtra(NotificationActivity.IDENTITY_REFERENCE, mechanism.getOwner().getOpaqueReference());
                 context.startActivity(intent);
+            }
+        });
+
+        ImageView menu = (ImageView) findViewById(R.id.menu);
+        final PopupMenu popupMenu = new PopupMenu(getContext(), menu);
+        menu.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                popupMenu.show();
+            }
+        });
+
+        // Setup menu.
+        popupMenu.getMenu().clear();
+        popupMenu.getMenuInflater().inflate(R.menu.token, popupMenu.getMenu());
+        final Context context = getContext();
+        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                Intent i;
+
+                switch (item.getItemId()) {
+
+                    case R.id.action_delete:
+                        i = new Intent(context, DeleteMechanismActivity.class);
+                        i.putExtra(DeleteMechanismActivity.MECHANISM_REFERENCE, mechanism.getOpaqueReference());
+                        context.startActivity(i);
+                        break;
+                }
+
+                return true;
             }
         });
     }

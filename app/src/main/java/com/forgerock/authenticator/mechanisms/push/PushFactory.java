@@ -68,7 +68,7 @@ public class PushFactory implements MechanismFactory {
 
             Push.PushBuilder pushBuilder = Push.builder()
                     .setMechanismUID(5);
-            //TODO: Get real authentication UID
+            //TODO: Generate real mechanism UID using IdentityModel
 
             Mechanism pushAuth = identity.addMechanism(context, pushBuilder);
 

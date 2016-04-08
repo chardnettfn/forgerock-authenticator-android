@@ -25,7 +25,7 @@
         android:layout_width="96dp"
         android:layout_height="96dp"
         android:layout_gravity="left"
-        android:src="@drawable/forgerock_logo"
+        android:src="@drawable/forgerock_placeholder"
         android:scaleType="fitCenter"
         />
 

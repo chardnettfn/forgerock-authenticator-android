@@ -21,41 +21,30 @@ import android.content.Intent;
 import android.util.AttributeSet;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 
+import com.forgerock.authenticator.ui.MechanismIcon;
 import com.forgerock.authenticator.ui.ProgressCircle;
 import com.forgerock.authenticator.R;
 import com.forgerock.authenticator.delete.DeleteMechanismActivity;
 import com.forgerock.authenticator.mechanisms.base.MechanismLayout;
-import com.forgerock.authenticator.storage.IdentityDatabase;
-import com.squareup.picasso.Picasso;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Handles the display of a Token in a list.
  * Some common features of this may be able to be broken out.
  */
-public class OathLayout extends FrameLayout implements View.OnClickListener, Runnable, MechanismLayout<Oath> {
-    private ProgressCircle mProgressInner;
+public class OathLayout extends FrameLayout implements MechanismLayout<Oath> {
     private ProgressCircle mProgressOuter;
-    private ImageView mImage;
     private TextView mCode;
-    private TextView mIssuer;
-    private TextView mLabel;
     private ImageView mMenu;
     private PopupMenu mPopupMenu;
 
     private TokenCode mCodes;
-    private Oath.TokenType mType;
     private String mPlaceholder;
-    private long mStartTime;
+    private ImageView refresh;
 
     /**
      * Creates this layout using the provided context.
@@ -77,13 +66,10 @@ public class OathLayout extends FrameLayout implements View.OnClickListener, Run
     protected void onFinishInflate() {
         super.onFinishInflate();
 
-        mProgressInner = (ProgressCircle) findViewById(R.id.progressInner);
         mProgressOuter = (ProgressCircle) findViewById(R.id.progressOuter);
-        mImage = (ImageView) findViewById(R.id.image);
         mCode = (TextView) findViewById(R.id.code);
-        mIssuer = (TextView) findViewById(R.id.issuer);
-        mLabel = (TextView) findViewById(R.id.label);
         mMenu = (ImageView) findViewById(R.id.menu);
+        refresh = (ImageView) findViewById(R.id.refresh);
 
         mPopupMenu = new PopupMenu(getContext(), mMenu);
         mMenu.setOnClickListener(new OnClickListener() {
@@ -96,8 +82,20 @@ public class OathLayout extends FrameLayout implements View.OnClickListener, Run
 
     @Override
     public void bind(final Oath oath) {
+
         final Context context = this.getContext();
-        bindData(oath, R.menu.token, new PopupMenu.OnMenuItemClickListener() {
+        mCodes = null;
+        // Cancel all active animations.
+        setEnabled(true);
+        mProgressOuter.clearAnimation();
+
+        MechanismIcon icon = (MechanismIcon) findViewById(R.id.icon);
+        icon.setMechanism(oath);
+
+        // Setup menu.
+        mPopupMenu.getMenu().clear();
+        mPopupMenu.getMenuInflater().inflate(R.menu.token, mPopupMenu.getMenu());
+        mPopupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
                 Intent i;
@@ -115,117 +113,80 @@ public class OathLayout extends FrameLayout implements View.OnClickListener, Run
             }
         });
 
+        switch (oath.getType()) {
+            case HOTP:
+                setupHOTP(oath);
+                break;
+            case TOTP:
+                setupTOTP(oath);
+                break;
+        }
+    }
+
+    private void setupTOTP(final Oath oath) {
+        mProgressOuter.setVisibility(View.VISIBLE);
+        refresh.setVisibility(View.GONE);
+        mCodes = oath.generateNextCode();
+
+        Runnable totpRunnable = new Runnable() {
+            @Override
+            public void run() {
+                // Get the current data
+                if (!mCodes.isValid()) {
+                    mCodes = oath.generateNextCode();
+                }
+
+                String code = mCodes.getCurrentCode();
+
+                // Update the fields
+                mCode.setText(code);
+                mProgressOuter.setProgress(mCodes.getCurrentProgress());
+                postDelayed(this, 100);
+            }
+        };
+        post(totpRunnable);
+    }
+
+    private void setupHOTP(final Oath oath) {
+
+        mProgressOuter.setVisibility(View.GONE);
+        refresh.setVisibility(View.VISIBLE);
+
+        // Get the code placeholder.
+        StringBuilder placeholderBuilder = new StringBuilder();
+        for (int i = 0; i < oath.getDigits(); i++) {
+            placeholderBuilder.append('●');
+            if (i == oath.getDigits() / 2 - 1) {
+                placeholderBuilder.append(' ');
+            }
+        }
+        mPlaceholder = new String(placeholderBuilder);
+
+        // Set the labels.
+        mCode.setText(mPlaceholder);
+
+        // Set onClick behaviour
+        final Context context = getContext();
+        final View view = this;
+
         setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // Increment the token.
-                TokenCode codes = oath.generateCodes();
-                oath.save(context); //TODO: move this inside generateCodes()
+                TokenCode code = oath.generateNextCode();
+                oath.save(context); //TODO: move this inside generateNextCode()
 
-                ((OathLayout) v).start(oath.getType(), codes, true);
+                mCode.setText(code.getCurrentCode());
+
+                setEnabled(false);
+                postDelayed(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        view.setEnabled(true);
+                    }
+                }, 5000);
             }
         });
-    }
-
-    private void bindData(Oath oath, int menu, PopupMenu.OnMenuItemClickListener micl) {
-        mCodes = null;
-
-        // Setup menu.
-        mPopupMenu.getMenu().clear();
-        mPopupMenu.getMenuInflater().inflate(menu, mPopupMenu.getMenu());
-        mPopupMenu.setOnMenuItemClickListener(micl);
-
-        // Cancel all active animations.
-        setEnabled(true);
-        removeCallbacks(this);
-        mImage.clearAnimation();
-        mProgressInner.clearAnimation();
-        mProgressOuter.clearAnimation();
-        mProgressInner.setVisibility(View.GONE);
-        mProgressOuter.setVisibility(View.GONE);
-
-        // Get the code placeholder.
-        char[] placeholder = new char[oath.getDigits()];
-        for (int i = 0; i < placeholder.length; i++)
-            placeholder[i] = '-';
-        mPlaceholder = new String(placeholder);
-
-        // Show the image.
-        Picasso.with(getContext())
-                .load(oath.getOwner().getImage())
-                .placeholder(R.drawable.forgerock_logo)
-                .into(mImage);
-
-        // Set the labels.
-        mLabel.setText(oath.getOwner().getAccountName());
-        mIssuer.setText(oath.getOwner().getIssuer());
-        mCode.setText(mPlaceholder);
-        if (mIssuer.getText().length() == 0) {
-            mIssuer.setText(oath.getOwner().getAccountName());
-            mLabel.setVisibility(View.GONE);
-        } else {
-            mLabel.setVisibility(View.VISIBLE);
-        }
-    }
-
-    private void animate(View view, int anim, boolean animate) {
-        Animation a = AnimationUtils.loadAnimation(view.getContext(), anim);
-        if (!animate)
-            a.setDuration(0);
-        view.startAnimation(a);
-    }
-
-    private void start(Oath.TokenType type, TokenCode codes, boolean animate) {
-        mCodes = codes;
-        mType = type;
-
-        // Start animations.
-        mProgressInner.setVisibility(View.VISIBLE);
-        animate(mProgressInner, R.anim.fadein, animate);
-        animate(mImage, R.anim.token_image_fadeout, animate);
-
-        // Handle type-specific UI.
-        switch (type) {
-            case HOTP:
-                setEnabled(false);
-                break;
-            case TOTP:
-                mProgressOuter.setVisibility(View.VISIBLE);
-                animate(mProgressOuter, R.anim.fadein, animate);
-                break;
-        }
-
-        mStartTime = System.currentTimeMillis();
-        post(this);
-    }
-
-    @Override
-    public void run() {
-        // Get the current data
-        String code = mCodes == null ? null : mCodes.getCurrentCode();
-        if (code != null) {
-            // Determine whether to enable/disable the view.
-            if (!isEnabled())
-                setEnabled(System.currentTimeMillis() - mStartTime > 5000);
-
-            // Update the fields
-            mCode.setText(code);
-            mProgressInner.setProgress(mCodes.getCurrentProgress());
-            if (mType != Oath.TokenType.HOTP)
-                mProgressOuter.setProgress(mCodes.getTotalProgress());
-
-            postDelayed(this, 100);
-            return;
-        }
-
-        mCode.setText(mPlaceholder);
-        mProgressInner.setVisibility(View.GONE);
-        mProgressOuter.setVisibility(View.GONE);
-        animate(mImage, R.anim.token_image_fadein, true);
-    }
-
-    @Override
-    public void onClick(View v) {
-        // Currently do nothing
     }
 }

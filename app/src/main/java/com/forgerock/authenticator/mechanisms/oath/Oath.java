@@ -128,7 +128,7 @@ public class Oath extends Mechanism {
     /**
      * Generates a new set of codes for this Token.
      */
-    public TokenCode generateCodes() {
+    public TokenCode generateNextCode() {
         long cur = System.currentTimeMillis();
 
         switch (type) {
@@ -140,10 +140,7 @@ public class Oath extends Mechanism {
             long counter = cur / 1000 / period;
             return new TokenCode(getHOTP(counter + 0),
                                  (counter + 0) * period * 1000,
-                                 (counter + 1) * period * 1000,
-                   new TokenCode(getHOTP(counter + 1),
-                                 (counter + 1) * period * 1000,
-                                 (counter + 2) * period * 1000));
+                                 (counter + 1) * period * 1000);
         }
 
         return null;

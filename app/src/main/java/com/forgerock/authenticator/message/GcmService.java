@@ -23,10 +23,10 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.VisibleForTesting;
 
+import com.forgerock.authenticator.mechanisms.InvalidNotificationException;
 import com.forgerock.authenticator.mechanisms.base.Mechanism;
 import com.forgerock.authenticator.mechanisms.push.PushAuthActivity;
-import com.forgerock.authenticator.notifications.Notification.NotificationBuilder;
-import com.forgerock.authenticator.storage.IdentityModel;
+import com.forgerock.authenticator.notifications.PushNotification;
 import com.forgerock.authenticator.utils.ContextService;
 import com.forgerock.authenticator.utils.IntentFactory;
 import com.forgerock.authenticator.utils.NotificationFactory;
@@ -37,8 +37,6 @@ import org.slf4j.LoggerFactory;
 import java.util.Calendar;
 import java.util.List;
 import java.util.TimeZone;
-
-import roboguice.RoboGuice;
 
 
 /**
@@ -118,12 +116,18 @@ public class GcmService extends RoboGcmListenerService {
             return;
         }
 
-        NotificationBuilder notificationBuilder =
-                com.forgerock.authenticator.notifications.Notification.builder()
+        PushNotification.PushNotificationBuilder notificationBuilder =
+                PushNotification.builder()
                         .setTimeAdded(Calendar.getInstance(TimeZone.getTimeZone("UTC")))
                         .setTimeExpired(Calendar.getInstance(TimeZone.getTimeZone("UTC")))
                         .setMessageId(messageId);
-        com.forgerock.authenticator.notifications.Notification notificationData = mechanism.addNotification(this, notificationBuilder);
+        com.forgerock.authenticator.notifications.Notification notificationData;
+        try {
+            notificationData = mechanism.addNotification(this, notificationBuilder);
+        } catch (InvalidNotificationException e) {
+            logger.error("Received message mapped invalid Notification to Mechanism. Skipping...");
+            return;
+        }
 
         /**
          * TODO: Update ID of Intent to match Notification

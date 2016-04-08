@@ -16,14 +16,20 @@
 
 package com.forgerock.authenticator;
 
+import android.app.ActionBar;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.Switch;
 
 import com.forgerock.authenticator.baseactivities.BaseActivity;
+import com.forgerock.authenticator.mechanisms.base.Mechanism;
 import com.forgerock.authenticator.storage.Settings;
 
 import roboguice.RoboGuice;
@@ -42,21 +48,10 @@ public class SettingsActivity extends BaseActivity {
 
         final Switch cameraButton = (Switch) findViewById(R.id.camera_button);
         cameraButton.setChecked(settings.isCameraEnabled());
-        cameraButton.setOnClickListener(new View.OnClickListener() {
+        cameraButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
-            public void onClick(View v) {
-                settings.setCameraEnabled(cameraButton.isChecked());
-            }
-        });
-
-
-        // Todo: detect if touch id is available - if not, hide the button
-        final Switch touchIDButton = (Switch) findViewById(R.id.touch_id_button);
-        touchIDButton.setChecked(settings.isTouchIdEnabled());
-        cameraButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                settings.setTouchIdEnabled(touchIDButton.isChecked());
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                settings.setCameraEnabled(isChecked);
             }
         });
 
@@ -68,5 +63,45 @@ public class SettingsActivity extends BaseActivity {
                 startActivity(new Intent(context, AboutActivity.class));
             }
         });
+
+        final Button clearNotificationHistory = (Button) findViewById(R.id.clear_notifications_button);
+        clearNotificationHistory.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                for (Mechanism mechanism : identityModel.getMechanisms()) {
+                    mechanism.clearNotifications(context);
+                    new AlertDialog.Builder(context)
+                            .setIcon(android.R.drawable.ic_dialog_alert)
+                            .setTitle("History cleared")
+                            .setMessage("All Notifications have been deleted")
+                            .setPositiveButton("Ok", new DialogInterface.OnClickListener()
+                            {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    finish();
+                                }
+
+                            })
+                            .show();
+                }
+            }
+        });
+
+        ActionBar actionBar = getActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayUseLogoEnabled(false);
+            actionBar.setDisplayHomeAsUpEnabled(true);
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                finish();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 }

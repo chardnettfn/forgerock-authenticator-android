@@ -25,6 +25,7 @@ import com.forgerock.authenticator.notifications.Notification;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Class which represents the data model, and handles deciding when the database should be updated.
@@ -32,6 +33,7 @@ import java.util.List;
  */
 public class IdentityModel {
     private List<Identity> identities;
+    private List<IdentityModelListener> listeners;
 
     /**
      * Load the model from the database.
@@ -39,6 +41,7 @@ public class IdentityModel {
      */
     public IdentityModel(Context context) {
         IdentityDatabase database = new IdentityDatabase(context);
+        listeners = new ArrayList<>();
         identities = database.getModel();
         validateModel(identities);
     }
@@ -136,6 +139,27 @@ public class IdentityModel {
     }
 
     /**
+     * Generate a new, unique ID for a Mechanism.
+     * @return The new mechanism UID.
+     */
+    public int getNewMechanismUID() {
+        int uid = 0; //TODO: Make UID larger, and random
+        while (isExistingMechanismUID(uid)) {
+            uid++;
+        }
+        return uid;
+    }
+
+    private boolean isExistingMechanismUID(int uid) {
+        for (Mechanism mechanism : getMechanisms()) {
+            if (mechanism.getMechanismUID() == uid) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Get all notifications stored in the model.
      * @return The complete list of notifications.
      */
@@ -167,5 +191,30 @@ public class IdentityModel {
     public void removeIdentity(Context context, Identity identity) {
         identity.delete(context);
         identities.remove(identity);
+    }
+
+    /**
+     * Add a listener to this model.
+     * @param listener The listener to add.
+     */
+    public void addListener(IdentityModelListener listener) {
+        listeners.add(listener);
+    }
+
+    /**
+     * Remove a listener from the model.
+     * @param listener The listener to remove.
+     */
+    public void removeListener(IdentityModelListener listener) {
+        listeners.remove(listener);
+    }
+
+    /**
+     * Used to notify all listeners that a notification has been added or removed.
+     */
+    public void notifyNotificationChanged() {
+        for (IdentityModelListener listener : listeners) {
+            listener.notificationChanged();
+        }
     }
 }

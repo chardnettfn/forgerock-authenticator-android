@@ -18,13 +18,13 @@ package com.forgerock.authenticator.notifications;
 
 import android.content.Context;
 
+import com.forgerock.authenticator.mechanisms.InvalidNotificationException;
 import com.forgerock.authenticator.mechanisms.base.Mechanism;
 import com.forgerock.authenticator.model.ModelObject;
 import com.forgerock.authenticator.storage.IdentityDatabase;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.TimeZone;
 
@@ -34,21 +34,21 @@ import roboguice.RoboGuice;
  * Model class which represents a message that was received from an external source. Can provide a
  * generic map of relevant information for storage. Is intended for a given Mechanism.
  */
-public class Notification extends ModelObject {
+public abstract class Notification extends ModelObject<Notification> {
     private final Mechanism parent;
     private final Calendar timeAdded;
     private final Calendar timeExpired;
-    private boolean wasSuccessful;
-    private static final String MESSAGE_ID = "messageId";
-    private long id = NOT_STORED;
-    private final String messageId;
 
-    private Notification(Mechanism mechanism, long id, Calendar timeAdded, Calendar timeExpired, boolean wasSuccessful, String messageId) {
+    private boolean accepted;
+    private boolean active;
+    private long id = NOT_STORED;
+
+    protected Notification(Mechanism mechanism, long id, Calendar timeAdded, Calendar timeExpired, boolean accepted, boolean active) {
         parent = mechanism;
         this.timeAdded = timeAdded;
         this.timeExpired = timeExpired;
-        this.wasSuccessful = wasSuccessful;
-        this.messageId = messageId;
+        this.accepted = accepted;
+        this.active = active;
         this.id = id;
     }
 
@@ -80,29 +80,16 @@ public class Notification extends ModelObject {
      * Determine whether the authentication the notification is related to succeeded.
      * @return True if the authentication succeeded, false otherwise.
      */
-    public boolean wasSuccessful() {
-        return wasSuccessful;
+    public boolean wasAccepted() {
+        return accepted;
     }
 
     /**
-     * Get the message id that was received with this notification. This will one day be moved
-     * to a subclass.
-     * @return The messageId used by GCM.
-     */
-    public String getMessageId() {
-        return messageId;
-    }
-
-    /**
-     * Get all data related to this notification that does not have assocaited fields in the database.
+     * Get all data related to this notification that does not have associated fields in the database.
      * The map passed out should be accepted by the builder to recreate this object.
      * @return The map of data.
      */
-    public Map<String, String> getData() {
-        Map<String, String> data = new HashMap<>();
-        data.put(MESSAGE_ID, messageId);
-        return data;
-    }
+    public abstract Map<String, String> getData();
 
     @Override
     public boolean isStored() {
@@ -121,7 +108,8 @@ public class Notification extends ModelObject {
     @Override
     public void delete(Context context) {
         if (id != NOT_STORED) {
-            throw new RuntimeException("Not implemented.");
+            RoboGuice.getInjector(context).getInstance(IdentityDatabase.class).deleteNotification(id);
+            id = NOT_STORED;
         }
     }
 
@@ -146,69 +134,113 @@ public class Notification extends ModelObject {
         return false;
     }
 
+
     /**
-     * Get a builder for a Notification.
-     * @return The Notification builder.
+     * Determines if the Notification is still active.
+     * @return True if the Notification is active, false otherwise.
      */
-    public static NotificationBuilder builder() {
-        return new NotificationBuilder();
+    public final boolean isActive() {
+        return active;
+    }
+
+    /**
+     *
+     * @param context The context the notification is being accepted from.
+     * @return True if the accept succeeded, false otherwise.
+     */
+    public final boolean accept(Context context) {
+        if (isActive() && acceptImpl()) {
+            active = false;
+            accepted = true;
+            save(context);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Implementation of the behaviour to perform upon accepting the authentication request.
+     * @return True if the operation successfully completed, false otherwise.
+     */
+    protected abstract boolean acceptImpl();
+
+    /**
+     *
+     * @param context The context the notification is being accepted from.
+     * @return True if the deny succeeded, false otherwise.
+     */
+    public final boolean deny(Context context) {
+        if (isActive() && denyImpl()) {
+            active = false;
+            accepted = false;
+            save(context);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Implementation of the behaviour to perform upon denying the authentication request.
+     * @return True if the operation successfully completed, false otherwise.
+     */
+    protected abstract boolean denyImpl();
+
+    @Override
+    public int compareTo(Notification another) {
+        return Long.compare(another.timeAdded.getTimeInMillis(), timeAdded.getTimeInMillis());
     }
 
     /**
      * Builder class responsible for producing Notifications.
      */
-    public static class NotificationBuilder {
-        private Mechanism parent;
-        private Calendar timeAdded = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-        private boolean wasSuccessful = false;
-        private Calendar timeExpired = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-        private String messageId;
-        private long id = NOT_STORED;
+    public abstract static class NotificationBuilder<T extends NotificationBuilder> {
+        protected Mechanism parent;
+        protected Calendar timeAdded = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+        protected boolean accepted = false;
+        protected Calendar timeExpired = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+        protected long id = NOT_STORED;
+
+        protected abstract T getThis();
+
+        protected abstract Class<? extends Mechanism> getMechanismClass();
 
         /**
          * Sets the mechanism which this notification in intended for.
          * @param mechanism The mechanism.
          */
-        public NotificationBuilder setMechanism(Mechanism mechanism) {
+        public T setMechanism(Mechanism mechanism) throws InvalidNotificationException {
+            if (!getMechanismClass().isInstance(mechanism)) {
+                throw new InvalidNotificationException("Tried to attach notification to incorrect type of Mechanism");
+            }
             this.parent = mechanism;
-            return this;
+            return getThis();
         }
 
         /**
          * Sets the date that the notification was received.
          * @param timeAdded The date received in UTC.
          */
-        public NotificationBuilder setTimeAdded(Calendar timeAdded) {
+        public T setTimeAdded(Calendar timeAdded) {
             this.timeAdded = timeAdded;
-            return this;
+            return getThis();
         }
 
         /**
          * Sets the date that the notification will automatically fail.
          * @param timeExpired The expiry date.
          */
-        public NotificationBuilder setTimeExpired(Calendar timeExpired) {
+        public T setTimeExpired(Calendar timeExpired) {
             this.timeExpired = timeExpired;
-            return this;
+            return getThis();
         }
 
         /**
-         * Sets whether the authentication the notification is related to succeeded.
-         * @param successful True if the authentication succeeded, false otherwise.
+         * Sets whether the authentication the notification is related to was accepted.
+         * @param successful True if the authentication was accepted, false otherwise.
          */
-        public NotificationBuilder setSuccessful(boolean successful) {
-            this.wasSuccessful = successful;
-            return this;
-        }
-
-        /**
-         * Sets the message id that was received with this notification. This will one day be moved
-         * to a subclass.
-         * @param messageId The messageId that was received.
-         */
-        public NotificationBuilder setMessageId(String messageId) {
-            this.messageId = messageId;
-            return this;
+        public T setAccepted(boolean successful) {
+            this.accepted = successful;
+            return getThis();
         }
 
         /**
@@ -216,27 +248,22 @@ public class Notification extends ModelObject {
          * consists of messageId.
          * @param data The data from the database.
          */
-        public NotificationBuilder setData(Map<String, String> data) {
-            this.messageId = data.get(MESSAGE_ID);
-            return this;
-        }
+        public abstract T setData(Map<String, String> data);
 
         /**
          * Sets the storage id of this Identity. Should not be set manually, or if the Identity is
          * not stored.
          * @param id The storage id.
          */
-        public NotificationBuilder setId(long id) {
+        public T setId(long id) {
             this.id = id;
-            return this;
+            return getThis();
         }
 
         /**
          * Build the notification.
          * @return The final notification.
          */
-        public Notification build() {
-            return new Notification(parent, id, timeAdded, timeExpired, wasSuccessful, messageId);
-        }
+        public abstract Notification build();
     }
 }

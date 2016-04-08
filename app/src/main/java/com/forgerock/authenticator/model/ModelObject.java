@@ -25,8 +25,7 @@ import java.util.ArrayList;
 /**
  * Base class for objects which are a part of the Identity Model.
  */
-public abstract class ModelObject {
-
+public abstract class ModelObject<T> implements Comparable<T> {
     /**
      * Default value for ids, indicating that the object has not been stored.
      */

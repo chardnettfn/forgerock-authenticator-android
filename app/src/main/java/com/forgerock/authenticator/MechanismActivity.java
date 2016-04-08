@@ -16,17 +16,19 @@
 
 package com.forgerock.authenticator;
 
-import android.content.Context;
-import android.content.Intent;
-import android.database.DataSetObserver;
+import android.app.ActionBar;
 import android.os.Bundle;
-import android.view.View;
+import android.view.MenuItem;
 import android.widget.GridView;
 import android.widget.TextView;
 
 import com.forgerock.authenticator.baseactivities.BaseIdentityActivity;
 import com.forgerock.authenticator.identity.Identity;
 import com.forgerock.authenticator.mechanisms.MechanismAdapter;
+import com.forgerock.authenticator.storage.IdentityModel;
+import com.forgerock.authenticator.storage.IdentityModelListener;
+
+import roboguice.RoboGuice;
 
 /**
  * Page for viewing the mechanisms relating to an identity.
@@ -34,7 +36,7 @@ import com.forgerock.authenticator.mechanisms.MechanismAdapter;
 public class MechanismActivity extends BaseIdentityActivity {
 
     private MechanismAdapter mechanismAdapter;
-    private DataSetObserver dataSetObserver;
+    private IdentityModelListener listener;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -54,47 +56,53 @@ public class MechanismActivity extends BaseIdentityActivity {
 
         ((GridView) findViewById(R.id.grid)).setAdapter(mechanismAdapter);
 
-        final Context context = this;
-
-        View activity = findViewById(R.id.activity);
-        activity.setOnClickListener(new View.OnClickListener() {
+        listener = new IdentityModelListener() {
             @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(context, NotificationActivity.class);
-                intent.putExtra(NotificationActivity.IDENTITY_REFERENCE, identity.getOpaqueReference());
-                startActivity(intent);
-            }
-        });
-
-        dataSetObserver = new DataSetObserver() {
-            @Override
-            public void onChanged() {
-                super.onChanged();
-                if (mechanismAdapter.getCount() == 0) {
-                    findViewById(android.R.id.empty).setVisibility(View.VISIBLE);
-                } else {
-                    findViewById(android.R.id.empty).setVisibility(View.GONE);
-                }
+            public void notificationChanged() {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        mechanismAdapter.notifyDataSetChanged();
+                    }
+                });
             }
         };
-        mechanismAdapter.registerDataSetObserver(dataSetObserver);
+        identityModel.addListener(listener);
+
+        ActionBar actionBar = getActionBar();
+        if (actionBar != null) {
+            actionBar.setTitle("Account");
+            actionBar.setDisplayUseLogoEnabled(false);
+            actionBar.setDisplayHomeAsUpEnabled(true);
+        }
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        //mechanismAdapter.notifyDataSetChanged();
+        mechanismAdapter.notifyDataSetChanged();
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        //mechanismAdapter.notifyDataSetChanged();
+        mechanismAdapter.notifyDataSetChanged();
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-       // mechanismAdapter.unregisterDataSetObserver(dataSetObserver);
+        identityModel.removeListener(listener);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                finish();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 }

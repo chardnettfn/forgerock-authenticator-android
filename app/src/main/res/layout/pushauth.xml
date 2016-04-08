@@ -16,16 +16,16 @@
   -->
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-	android:orientation="vertical"
-	android:layout_width="match_parent"
-	android:layout_height="match_parent"
-	>
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="180dp"
-        android:background="@color/sea_green">
+        android:background="@color/account_background">
 
         <ImageButton
             android:id="@+id/cancel"
@@ -39,13 +39,13 @@
         <Space
             android:layout_width="match_parent"
             android:layout_height="20dp" />
-        <ImageView
+        <com.forgerock.authenticator.ui.CircleImageView
             android:id="@+id/image"
             android:layout_width="96dp"
             android:layout_height="96dp"
             android:padding="10dp"
             android:layout_gravity="center_horizontal"
-            android:src="@drawable/forgerock_logo"
+            android:src="@drawable/forgerock_placeholder"
             android:scaleType="fitCenter"
             android:layout_weight="5"
             />
@@ -55,7 +55,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:text="Log into ForgeRock?"
+            tools:text="Log into placeholder?"
             android:textSize="15sp"
             android:layout_weight="1"
             />
@@ -85,6 +85,8 @@
                     <com.forgerock.authenticator.ui.ConfirmationSwipeBar
                         android:id="@+id/slideToConfirm"
                         android:gravity="center_horizontal"
+                        android:paddingLeft="30dip"
+                        android:paddingRight="30dip"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="0.5"
@@ -92,7 +94,7 @@
                         android:max="100"
                         android:progress="0"
                         android:progressDrawable="@android:color/darker_gray"
-                        android:thumb="@drawable/ic_launcher" />
+                        android:thumb="@drawable/forgerock_icon_switch_off" />
                     <Space
                         android:layout_width="1dp"
                         android:layout_height="1dp"

@@ -23,6 +23,8 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.widget.SeekBar;
 
+import com.forgerock.authenticator.R;
+
 /**
  * UI element which is a bar which can be swiped from left to right. When the right side is reached,
  * and the user releases their finger, the action is complete. A listener can be set which will
@@ -69,6 +71,11 @@ public class ConfirmationSwipeBar extends SeekBar {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress,
                                           boolean fromUser) {
+                if (seekBar.getProgress() == 100) {
+                    setThumb(getResources().getDrawable(R.drawable.forgerock_icon_switch_on));
+                } else {
+                    setThumb(getResources().getDrawable(R.drawable.forgerock_icon_switch_off));
+                }
             }
         });
     }

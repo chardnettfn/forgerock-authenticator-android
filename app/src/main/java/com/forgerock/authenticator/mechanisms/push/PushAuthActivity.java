@@ -17,6 +17,7 @@
 package com.forgerock.authenticator.mechanisms.push;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -26,25 +27,11 @@ import android.widget.TextView;
 
 import com.forgerock.authenticator.baseactivities.BaseNotificationActivity;
 import com.forgerock.authenticator.notifications.Notification;
-import com.forgerock.authenticator.storage.IdentityModel;
 import com.forgerock.authenticator.ui.ConfirmationSwipeBar;
 import com.forgerock.authenticator.R;
-import com.forgerock.authenticator.message.MessageConstants;
 
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.ArrayList;
-
-import roboguice.RoboGuice;
-import roboguice.activity.RoboActivity;
 
 /**
  * Activity which allows the user to approve or reject a request for authentication that has been
@@ -61,14 +48,16 @@ public class PushAuthActivity extends BaseNotificationActivity {
         setContentView(R.layout.pushauth);
 
         final Notification notification = getNotification();
+        final Context context = this;
 
         TextView questionView = (TextView) findViewById(R.id.question);
         questionView.setText("Log into " + notification.getMechanism().getOwner().getIssuer() + "?");
 
-        ImageButton button = (ImageButton) findViewById(R.id.cancel);
-        button.setOnClickListener(new View.OnClickListener() {
+        ImageButton cancelButton = (ImageButton) findViewById(R.id.cancel);
+        cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                notification.getMechanism().removeNotification(context, notification); // TODO: remove this when history is being used
                 finish();
             }
         });
@@ -77,7 +66,7 @@ public class PushAuthActivity extends BaseNotificationActivity {
         swipeToConfirm.setListener(new ConfirmationSwipeBar.ConfirmationSwipeBarListener() {
             @Override
             public void onConfirm() {
-                new RespondToMessageTask(notification.getMessageId()).execute();
+                new RespondToMessageTask(context, notification).execute();
             }
         });
     }
@@ -85,54 +74,27 @@ public class PushAuthActivity extends BaseNotificationActivity {
     /**
      * Class responsible for making a request to OpenAM to complete the authentication request.
      */
-    private class RespondToMessageTask extends AsyncTask<Void, Void, Integer> {
-        private String messageId;
+    private class RespondToMessageTask extends AsyncTask<Void, Void, Boolean> {
+        private Notification notification;
+        private Context context;
 
         /**
          * Creates the task, setting the message id it is associated with.
-         * @param messageId The message id that is being responded to.
+         * @param notification The notification that is being responded to.
          */
-        public RespondToMessageTask(String messageId) {
-            this.messageId = messageId;
+        public RespondToMessageTask(Context context, Notification notification) {
+            this.notification = notification;
+            this.context = context;
         }
 
         @Override
-        protected Integer doInBackground(Void... params) {
-            // Local code used
-            int returnCode = 404;
-            HttpURLConnection connection = null;
-            try {
-                URL url = new URL("http://openam.example.com:8080/openam/json/push/gcm/message?_action=send");
-                connection = (HttpURLConnection) url.openConnection();
-                connection.setDoOutput(true);
-                connection.setDoInput(true);
-                connection.setRequestMethod("POST");
-                connection.setRequestProperty("Content-Type", "application/json");
-                connection.connect();
-
-                JSONObject message = new JSONObject();
-                message.put("messageId", messageId);
-
-                OutputStream os = connection.getOutputStream();
-                OutputStreamWriter osw = new OutputStreamWriter(os, "UTF-8");
-                osw.write(message.toString());
-                osw.flush();
-                osw.close();
-                returnCode = connection.getResponseCode();
-            } catch (IOException | JSONException e) {
-                logger.error("Response to server failed.", e);
-            }
-            finally {
-                if(connection != null) {
-                    connection.disconnect();
-                }
-            }
-            return returnCode;
+        protected Boolean doInBackground(Void... params) {
+            return notification.accept(getBaseContext());
         }
 
         @Override
-        protected void onPostExecute(Integer responseCode) {
-            if (responseCode != 200) {
+        protected void onPostExecute(Boolean success) {
+            if (!success) {
                 new AlertDialog.Builder(PushAuthActivity.this)
                         .setTitle("Error")
                         .setMessage("Failed to connect to server")
@@ -145,6 +107,7 @@ public class PushAuthActivity extends BaseNotificationActivity {
                         .setIcon(android.R.drawable.ic_dialog_alert)
                         .show();
             } else {
+                notification.getMechanism().removeNotification(context, notification); // TODO: remove this when history is being used
                 finish();
             }
         }

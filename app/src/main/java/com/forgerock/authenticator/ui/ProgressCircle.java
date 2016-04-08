@@ -42,6 +42,8 @@ public class ProgressCircle extends View {
     private boolean mHollow;
     private float   mPadding;
     private float   mStrokeWidth;
+    private int normalColor;
+    private int warningColor;
 
     public ProgressCircle(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
@@ -59,6 +61,9 @@ public class ProgressCircle extends View {
     }
 
     private void setup(Context context, AttributeSet attrs) {
+        normalColor = getContext().getResources().getColor(R.color.normal_timer_color);
+        warningColor = getContext().getResources().getColor(R.color.warning_timer_color);
+
         DisplayMetrics dm = getResources().getDisplayMetrics();
         mPadding = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 2, dm);
         mStrokeWidth = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 4, dm);
@@ -106,11 +111,11 @@ public class ProgressCircle extends View {
         mProgress = progress;
 
         int percent = mProgress * 100 / getMax();
-        if (percent > 25 || mProgress == 0)
-            mPaint.setARGB(0x99, 0x33, 0x33, 0x33);
-        else
-            mPaint.setARGB(0x99, 0xff, 0xe0 * percent / 25, 0x00);
-
+        if (percent < 90 || mProgress == 0) {
+            mPaint.setColor(normalColor);
+        } else {
+            mPaint.setColor(warningColor);
+        }
         invalidate();
     }
 

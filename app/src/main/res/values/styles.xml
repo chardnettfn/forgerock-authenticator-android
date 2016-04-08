@@ -30,6 +30,8 @@
     <!-- Application theme. -->
     <style name="AppTheme" parent="AppBaseTheme">
         <!-- All customizations that are NOT specific to a particular API-level can go here. -->
+        <item name="android:homeAsUpIndicator">@drawable/common_full_open_on_phone</item>
+        <item name="android:icon">@android:color/transparent</item>
     </style>
 
     <style name="Divider">

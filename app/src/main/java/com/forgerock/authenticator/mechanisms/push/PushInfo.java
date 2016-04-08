@@ -41,6 +41,11 @@ public class PushInfo implements MechanismInfo {
     }
 
     @Override
+    public int getIcon() {
+        return R.drawable.forgerock_icon_notification;
+    }
+
+    @Override
     public String getMechanismString() {
         return "push";
     }

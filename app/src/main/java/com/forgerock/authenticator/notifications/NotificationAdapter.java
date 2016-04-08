@@ -71,4 +71,10 @@ public class NotificationAdapter extends BaseAdapter {
         ((NotificationLayout) convertView).bind(not);
         return convertView;
     }
+
+    @Override
+    public void notifyDataSetChanged() {
+        notificationList = identityModel.getNotifications();
+        super.notifyDataSetChanged();
+    }
 }

@@ -16,11 +16,19 @@
 
   Portions Copyright 2013 Nathaniel McCallum, Red Hat
 -->
-<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
     <item
         android:id="@+id/action_scan"
+        android:icon="@drawable/forgerock_icon_qr"
         android:showAsAction="ifRoom"
-        android:icon="@drawable/qrcode"
         android:title="@string/scan_qr_code" />
+
+    <item
+        android:id="@+id/action_settings"
+        android:icon="@drawable/forgerock_icon_settings"
+        android:showAsAction="ifRoom"
+        android:title="Settings" />
+
 </menu>
 

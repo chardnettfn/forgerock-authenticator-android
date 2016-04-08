@@ -26,6 +26,7 @@ import com.forgerock.authenticator.mechanisms.CoreMechanismFactory;
 import com.forgerock.authenticator.mechanisms.base.Mechanism;
 import com.forgerock.authenticator.mechanisms.MechanismCreationException;
 import com.forgerock.authenticator.notifications.Notification;
+import com.forgerock.authenticator.notifications.PushNotification;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -162,7 +163,7 @@ public class IdentityDatabase {
     public long addNotification(Notification notification) {
         long timeAdded = notification.getTimeAdded().getTimeInMillis();
         long timeExpired = notification.getTimeExpired().getTimeInMillis();
-        int wasSuccessful = notification.wasSuccessful() ? 1 : 0;
+        int wasSuccessful = notification.wasAccepted() ? 1 : 0;
         int mechanismUID = notification.getMechanism().getMechanismUID();
         String data = gson.toJson(notification.getData());
 
@@ -204,6 +205,14 @@ public class IdentityDatabase {
      */
     public void deleteIdentity(long identityId) {
         database.delete(IDENTITY_TABLE_NAME, "rowId = " + identityId, null);
+    }
+
+    /**
+     * Delete the notification uniquely identified by an id.
+     * @param notificationId The id of the notification to delete.
+     */
+    public void deleteNotification(long notificationId) {
+        database.delete(NOTIFICATION_TABLE_NAME, "rowId = " + notificationId, null);
     }
 
     private List<Identity.IdentityBuilder> getIdentityBuilders() {
@@ -256,8 +265,6 @@ public class IdentityDatabase {
         }
         return result;
     }
-
-
 
     private Mechanism.PartialMechanismBuilder cursorToMechanismBuilder(Cursor cursor) throws MechanismCreationException {
         String type = cursor.getString(cursor.getColumnIndex(TYPE));
@@ -314,8 +321,9 @@ public class IdentityDatabase {
         Map<String, String> data =
                 gson.fromJson(cursor.getString(cursor.getColumnIndex(DATA)), mapType);
 
-        Notification.NotificationBuilder notificationBuilder = Notification.builder()
-                .setSuccessful(successful)
+        // TODO: When more types of Notification are possible, get base builder from Mechanism, or possibly use a factory.
+        PushNotification.PushNotificationBuilder notificationBuilder = PushNotification.builder()
+                .setAccepted(successful)
                 .setTimeAdded(addedTime)
                 .setTimeExpired(expiryTime)
                 .setData(data)

@@ -25,17 +25,12 @@ class TokenCode {
     private final String code;
     private final long start;
     private final long until;
-    private TokenCode next;
 
     public TokenCode(String code, long start, long until) {
-        this.code = code;
+        this.code = code.substring(0, code.length() / 2) + " " +
+                "" + code.substring(code.length() / 2, code.length());
         this.start = start;
         this.until = until;
-    }
-
-    public TokenCode(String code, long start, long until, TokenCode next) {
-        this(code, start, until);
-        this.next = next;
     }
 
     /**
@@ -43,43 +38,22 @@ class TokenCode {
      * @return The currently active token.
      */
     public String getCurrentCode() {
-        TokenCode active = getActive(System.currentTimeMillis());
-        if (active == null)
-            return null;
-        return active.code;
+        return code;
     }
 
-    public int getTotalProgress() {
+    public boolean isValid() {
         long cur = System.currentTimeMillis();
-        long total = getLast().until - start;
-        long state = total - (cur - start);
-        return (int) (state * 1000 / total);
+
+        return cur < until;
     }
+
 
     public int getCurrentProgress() {
         long cur = System.currentTimeMillis();
-        TokenCode active = getActive(cur);
-        if (active == null)
-            return 0;
 
-        long total = active.until - active.start;
-        long state = total - (cur - active.start);
+        long total = until - start;
+        long state = cur - start;
         return (int) (state * 1000 / total);
     }
 
-    private TokenCode getActive(long curTime) {
-        if (curTime >= start && curTime < until)
-            return this;
-
-        if (next == null)
-            return null;
-
-        return this.next.getActive(curTime);
-    }
-
-    private TokenCode getLast() {
-        if (next == null)
-            return this;
-        return this.next.getLast();
-    }
 }

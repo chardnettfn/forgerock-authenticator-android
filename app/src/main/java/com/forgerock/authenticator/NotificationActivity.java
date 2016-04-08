@@ -16,14 +16,20 @@
 
 package com.forgerock.authenticator;
 
+import android.app.ActionBar;
 import android.database.DataSetObserver;
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.GridView;
 
 import com.forgerock.authenticator.baseactivities.BaseIdentityActivity;
 import com.forgerock.authenticator.identity.Identity;
 import com.forgerock.authenticator.notifications.NotificationAdapter;
+import com.forgerock.authenticator.storage.IdentityModel;
+import com.forgerock.authenticator.storage.IdentityModelListener;
+
+import roboguice.RoboGuice;
 
 /**
  * Page for viewing a list of Notifications relating to a mechanism.
@@ -32,6 +38,7 @@ public class NotificationActivity extends BaseIdentityActivity { //TODO: change 
 
     private NotificationAdapter notificationAdapter;
     private DataSetObserver dataSetObserver;
+    private IdentityModelListener listener;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -57,6 +64,26 @@ public class NotificationActivity extends BaseIdentityActivity { //TODO: change 
             }
         };
         notificationAdapter.registerDataSetObserver(dataSetObserver);
+
+        listener = new IdentityModelListener() {
+            @Override
+            public void notificationChanged() {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        notificationAdapter.notifyDataSetChanged();
+                    }
+                });
+            }
+        };
+        identityModel.addListener(listener);
+
+        ActionBar actionBar = getActionBar();
+        if (actionBar != null) {
+            actionBar.setTitle("Push Authentication");
+            actionBar.setDisplayUseLogoEnabled(false);
+            actionBar.setDisplayHomeAsUpEnabled(true);
+        }
     }
 
     @Override
@@ -75,5 +102,17 @@ public class NotificationActivity extends BaseIdentityActivity { //TODO: change 
     public void onDestroy() {
         super.onDestroy();
         notificationAdapter.unregisterDataSetObserver(dataSetObserver);
+        identityModel.removeListener(listener);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                finish();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 }
