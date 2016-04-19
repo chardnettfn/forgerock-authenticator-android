@@ -57,7 +57,7 @@ public class PushAuthActivity extends BaseNotificationActivity {
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                notification.getMechanism().removeNotification(context, notification); // TODO: remove this when history is being used
+                notification.deny(context);
                 finish();
             }
         });
@@ -89,7 +89,7 @@ public class PushAuthActivity extends BaseNotificationActivity {
 
         @Override
         protected Boolean doInBackground(Void... params) {
-            return notification.accept(getBaseContext());
+            return notification.accept(context);
         }
 
         @Override
@@ -107,7 +107,6 @@ public class PushAuthActivity extends BaseNotificationActivity {
                         .setIcon(android.R.drawable.ic_dialog_alert)
                         .show();
             } else {
-                notification.getMechanism().removeNotification(context, notification); // TODO: remove this when history is being used
                 finish();
             }
         }

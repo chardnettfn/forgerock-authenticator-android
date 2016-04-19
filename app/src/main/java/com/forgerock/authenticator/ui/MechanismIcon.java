@@ -29,6 +29,7 @@ import android.widget.TextView;
 
 import com.forgerock.authenticator.R;
 import com.forgerock.authenticator.mechanisms.base.Mechanism;
+import com.forgerock.authenticator.notifications.Notification;
 
 /**
  * UI element which is an icon representation of a Mechanism. Contains both the icon for the
@@ -78,7 +79,14 @@ public class MechanismIcon extends FrameLayout {
     public void setMechanism(Mechanism mechanism) {
         ImageView icon = (ImageView) findViewById(R.id.icon_image);
         icon.setImageDrawable(getResources().getDrawable(mechanism.getInfo().getIcon()));
-        setNotificationNumber(mechanism.getNotifications().size());
+
+        int activeNotifications = 0;
+        for (Notification notification : mechanism.getNotifications()) {
+            if (notification.isActive()) {
+                activeNotifications++;
+            }
+        }
+        setNotificationNumber(activeNotifications);
     }
 
     private void setNotificationNumber(int notificationNumber) {

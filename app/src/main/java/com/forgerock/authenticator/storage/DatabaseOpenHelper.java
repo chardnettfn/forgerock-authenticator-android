@@ -62,7 +62,8 @@ class DatabaseOpenHelper extends SQLiteOpenHelper {
                 IdentityDatabase.ADDED_TIME + " TEXT, " +
                 IdentityDatabase.EXPIRY_TIME + " TEXT, " +
                 IdentityDatabase.DATA + " TEXT, " +
-                IdentityDatabase.SUCCESSFUL + " INT, " +
+                IdentityDatabase.APPROVED + " INT, " +
+                IdentityDatabase.PENDING + " INT, " +
                 "FOREIGN KEY(" + IdentityDatabase.MECHANISM_UID + ") " +
                 "REFERENCES " + IdentityDatabase.MECHANISM_TABLE_NAME
                 + "(" + IdentityDatabase.MECHANISM_UID + "));");

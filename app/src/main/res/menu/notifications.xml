@@ -14,28 +14,12 @@
   ~
   ~ Copyright 2016 ForgeRock AS.
   -->
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <item
+        android:id="@+id/action_clear_history"
+        android:showAsAction="never"
+        android:title="Clear history" />
 
-<RelativeLayout
-    android:orientation="vertical"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+</menu>
 
-    <TextView
-        android:id="@+id/empty"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:padding="8dp"
-        android:gravity="center"
-        android:text="No notifications received"
-        />
-
-    <ExpandableListView
-        android:id="@+id/notification_list"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:groupIndicator="@android:color/transparent">
-
-    </ExpandableListView>
-</RelativeLayout>

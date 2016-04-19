@@ -133,10 +133,10 @@ public class IdentityActivity extends BaseActivity {
             }
         });
 
-        menu.findItem(R.id.action_settings).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+        menu.findItem(R.id.action_about).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                startActivity(new Intent(context, SettingsActivity.class));
+                startActivity(new Intent(context, AboutActivity.class));
                 return true;
             }
         });

@@ -24,6 +24,7 @@
     <color name="notification_badge">#FF4829</color>
     <color name="off_white">#f7f7f7</color>
     <color name="light_gray">#eee</color>
+    <color name="dark_gray">#555</color>
     <color name="border_gray">#ddd</color>
 
 </resources>

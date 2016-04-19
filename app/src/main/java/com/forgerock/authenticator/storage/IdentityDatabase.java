@@ -81,7 +81,9 @@ public class IdentityDatabase {
     /** The data that is relevant to the notification (e.g. messageId) */
     static final String DATA = "data";
     /** Whether the notification was successful or not, for historical purposes */
-    static final String SUCCESSFUL = "successful";
+    static final String APPROVED = "approved";
+    /** Whether the notification has been handled, for historical purposes */
+    static final String PENDING = "pending";
 
 
     private final Gson gson = new Gson();
@@ -163,16 +165,18 @@ public class IdentityDatabase {
     public long addNotification(Notification notification) {
         long timeAdded = notification.getTimeAdded().getTimeInMillis();
         long timeExpired = notification.getTimeExpired().getTimeInMillis();
-        int wasSuccessful = notification.wasAccepted() ? 1 : 0;
+        int wasApproved = notification.wasApproved() ? 1 : 0;
+        int isPending = notification.isPending() ? 1 : 0;
         int mechanismUID = notification.getMechanism().getMechanismUID();
         String data = gson.toJson(notification.getData());
 
         ContentValues values = new ContentValues();
         values.put(ADDED_TIME, timeAdded);
         values.put(EXPIRY_TIME, timeExpired);
-        values.put(SUCCESSFUL, wasSuccessful);
+        values.put(APPROVED, wasApproved);
         values.put(MECHANISM_UID, mechanismUID);
         values.put(DATA, data);
+        values.put(PENDING, isPending);
 
         long rowId = database.insert(NOTIFICATION_TABLE_NAME, null, values);
         return rowId;
@@ -189,6 +193,23 @@ public class IdentityDatabase {
         values.put(OPTIONS, options);
         String[] selectionArgs = { Long.toString(mechanismId) };
         database.update(MECHANISM_TABLE_NAME, values, "rowId = ?", selectionArgs);
+    }
+
+    /**
+     * Update the notification in the database. Does not create it if it does not exist.
+     * @param notificationId The id of the notification to update.
+     * @param notification The notification to update it with.
+     */
+    public void updateNotification(long notificationId, Notification notification) {
+        ContentValues values = new ContentValues();
+
+        int wasApproved = notification.wasApproved() ? 1 : 0;
+        int isPending = notification.isPending() ? 1 : 0;
+
+        values.put(PENDING, isPending);
+        values.put(APPROVED, wasApproved);
+        String[] selectionArgs = { Long.toString(notificationId) };
+        database.update(NOTIFICATION_TABLE_NAME, values, "rowId = ?", selectionArgs);
     }
 
     /**
@@ -315,7 +336,8 @@ public class IdentityDatabase {
         addedTime.setTimeInMillis(cursor.getLong(cursor.getColumnIndex(ADDED_TIME)));
         Calendar expiryTime = Calendar.getInstance();
         expiryTime.setTimeInMillis(cursor.getLong(cursor.getColumnIndex(EXPIRY_TIME)));
-        boolean successful = cursor.getLong(cursor.getColumnIndex(SUCCESSFUL)) == 1;
+        boolean approved = cursor.getLong(cursor.getColumnIndex(APPROVED)) == 1;
+        boolean pending = cursor.getLong(cursor.getColumnIndex(PENDING)) == 1;
         Type mapType = new TypeToken<Map<String, String>>() {
         }.getType();
         Map<String, String> data =
@@ -323,11 +345,12 @@ public class IdentityDatabase {
 
         // TODO: When more types of Notification are possible, get base builder from Mechanism, or possibly use a factory.
         PushNotification.PushNotificationBuilder notificationBuilder = PushNotification.builder()
-                .setAccepted(successful)
+                .setApproved(approved)
                 .setTimeAdded(addedTime)
                 .setTimeExpired(expiryTime)
                 .setData(data)
-                .setId(rowid);
+                .setId(rowid)
+                .setPending(pending);
         return notificationBuilder;
     }
 }

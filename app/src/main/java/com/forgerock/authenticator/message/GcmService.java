@@ -116,10 +116,14 @@ public class GcmService extends RoboGcmListenerService {
             return;
         }
 
+        Calendar timeReceived = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+        Calendar timeExpired = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+        timeExpired.setTimeInMillis(timeReceived.getTimeInMillis() + 3600000);
+
         PushNotification.PushNotificationBuilder notificationBuilder =
                 PushNotification.builder()
-                        .setTimeAdded(Calendar.getInstance(TimeZone.getTimeZone("UTC")))
-                        .setTimeExpired(Calendar.getInstance(TimeZone.getTimeZone("UTC")))
+                        .setTimeAdded(timeReceived)
+                        .setTimeExpired(timeExpired)
                         .setMessageId(messageId);
         com.forgerock.authenticator.notifications.Notification notificationData;
         try {

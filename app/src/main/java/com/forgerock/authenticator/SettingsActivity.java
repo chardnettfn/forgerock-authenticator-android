@@ -30,10 +30,6 @@ import android.widget.Switch;
 
 import com.forgerock.authenticator.baseactivities.BaseActivity;
 import com.forgerock.authenticator.mechanisms.base.Mechanism;
-import com.forgerock.authenticator.storage.Settings;
-
-import roboguice.RoboGuice;
-import roboguice.activity.RoboActivity;
 
 /**
  * Page for viewing and changing settings related to the app, as well as displaying extra information.
@@ -69,7 +65,7 @@ public class SettingsActivity extends BaseActivity {
             @Override
             public void onClick(View v) {
                 for (Mechanism mechanism : identityModel.getMechanisms()) {
-                    mechanism.clearNotifications(context);
+                    mechanism.clearInactiveNotifications(context);
                     new AlertDialog.Builder(context)
                             .setIcon(android.R.drawable.ic_dialog_alert)
                             .setTitle("History cleared")

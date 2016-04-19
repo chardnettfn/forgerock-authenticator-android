@@ -88,14 +88,16 @@ public abstract class Mechanism extends ModelObject<Mechanism> {
     }
 
     /**
-     * Delete all notifications from this Mechanism.
+     * Delete inactive notifications from this Mechanism.
      * @param context The context the Notifications are being cleared from.
      */
-    public void clearNotifications(Context context) {
+    public void clearInactiveNotifications(Context context) {
         List<Notification> deleteList = new ArrayList<>(notificationList);
         for (Notification notification : deleteList) {
-            notification.delete(context);
-            notificationList.remove(notification);
+            if (!notification.isActive()){
+                notification.delete(context);
+                notificationList.remove(notification);
+            }
         }
         RoboGuice.getInjector(context).getInstance(IdentityModel.class).notifyNotificationChanged();
     }

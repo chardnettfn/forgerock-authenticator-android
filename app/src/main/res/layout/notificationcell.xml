@@ -17,40 +17,54 @@
 <com.forgerock.authenticator.notifications.NotificationLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="78dp"
     android:background="@drawable/token"
     >
-    <ImageView
-        android:id="@+id/image"
-        android:layout_width="96dp"
-        android:layout_height="96dp"
-        android:layout_gravity="left"
-        android:src="@drawable/forgerock_placeholder"
-        android:scaleType="fitCenter"
-        />
-
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="96dp"
-        android:layout_marginTop="10dp"
-        android:paddingLeft="8dp"
-        android:paddingRight="32dp"
-        android:orientation="vertical">
-        <TextView
-            android:id="@+id/issuer"
-            android:text="issuer"
+        android:layout_height="match_parent">
+        <ImageView
+            android:id="@+id/image"
+            android:layout_width="78dp"
+            android:layout_height="78dp"
+            android:padding="20dp"
+            android:layout_gravity="left"
+            android:src="@drawable/forgerock_icon_pending"
+            android:scaleType="fitCenter"
+            />
+
+        <LinearLayout
+            android:id="@+id/text"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-        <TextView
-            android:id="@+id/message"
-            android:text="message"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:layout_toRightOf="@id/image"
+            android:layout_toEndOf="@id/image"
+            android:layout_centerVertical="true"
+            android:orientation="vertical">
+            <TextView
+                android:id="@+id/info"
+                android:text="Authentication Request"
+                android:textStyle="bold"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+            <TextView
+                android:id="@+id/status"
+                android:text="Pending"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+        </LinearLayout>
+
         <TextView
             android:id="@+id/time"
-            android:text="time"
+            android:text="10 minutes ago"
+            android:gravity="end"
+            android:layout_toRightOf="@+id/text"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-    </LinearLayout>
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_centerVertical="true" />
+    </RelativeLayout>
 </com.forgerock.authenticator.notifications.NotificationLayout>

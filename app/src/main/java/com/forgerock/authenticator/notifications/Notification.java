@@ -39,16 +39,16 @@ public abstract class Notification extends ModelObject<Notification> {
     private final Calendar timeAdded;
     private final Calendar timeExpired;
 
-    private boolean accepted;
-    private boolean active;
+    private boolean approved;
+    private boolean pending;
     private long id = NOT_STORED;
 
-    protected Notification(Mechanism mechanism, long id, Calendar timeAdded, Calendar timeExpired, boolean accepted, boolean active) {
+    protected Notification(Mechanism mechanism, long id, Calendar timeAdded, Calendar timeExpired, boolean approved, boolean pending) {
         parent = mechanism;
         this.timeAdded = timeAdded;
         this.timeExpired = timeExpired;
-        this.accepted = accepted;
-        this.active = active;
+        this.approved = approved;
+        this.pending = pending;
         this.id = id;
     }
 
@@ -80,13 +80,13 @@ public abstract class Notification extends ModelObject<Notification> {
      * Determine whether the authentication the notification is related to succeeded.
      * @return True if the authentication succeeded, false otherwise.
      */
-    public boolean wasAccepted() {
-        return accepted;
+    public boolean wasApproved() {
+        return approved;
     }
 
     /**
      * Get all data related to this notification that does not have associated fields in the database.
-     * The map passed out should be accepted by the builder to recreate this object.
+     * The map passed out should be approved by the builder to recreate this object.
      * @return The map of data.
      */
     public abstract Map<String, String> getData();
@@ -101,7 +101,7 @@ public abstract class Notification extends ModelObject<Notification> {
         if (id == NOT_STORED) {
             id = RoboGuice.getInjector(context).getInstance(IdentityDatabase.class).addNotification(this);
         } else {
-            // handle updates
+            RoboGuice.getInjector(context).getInstance(IdentityDatabase.class).updateNotification(id, this);
         }
     }
 
@@ -136,22 +136,39 @@ public abstract class Notification extends ModelObject<Notification> {
 
 
     /**
-     * Determines if the Notification is still active.
-     * @return True if the Notification is active, false otherwise.
+     * Determines if the Notification has been interacted with by the user.
+     * @return True if the Notification has not been interacted with, false otherwise.
+     */
+    public final boolean isPending() {
+        return pending;
+    }
+
+    /**
+     * Determine if the notification is active or not.
+     * @return True if the notification is active, false if it is a history element.
      */
     public final boolean isActive() {
-        return active;
+        return isPending() && !isExpired();
+    }
+
+    /**
+     * Determine if the notification has expired.
+     * @return True if the notification has expired, false otherwise.
+     */
+    public final boolean isExpired() {
+        return timeExpired.getTimeInMillis() < Calendar.getInstance(TimeZone.getTimeZone("UTC"))
+                .getTimeInMillis();
     }
 
     /**
      *
-     * @param context The context the notification is being accepted from.
+     * @param context The context the notification is being approved from.
      * @return True if the accept succeeded, false otherwise.
      */
     public final boolean accept(Context context) {
-        if (isActive() && acceptImpl()) {
-            active = false;
-            accepted = true;
+        if (isPending() && acceptImpl()) {
+            pending = false;
+            approved = true;
             save(context);
             return true;
         }
@@ -166,13 +183,13 @@ public abstract class Notification extends ModelObject<Notification> {
 
     /**
      *
-     * @param context The context the notification is being accepted from.
+     * @param context The context the notification is being approved from.
      * @return True if the deny succeeded, false otherwise.
      */
     public final boolean deny(Context context) {
-        if (isActive() && denyImpl()) {
-            active = false;
-            accepted = false;
+        if (isPending() && denyImpl()) {
+            pending = false;
+            approved = false;
             save(context);
             return true;
         }
@@ -196,9 +213,10 @@ public abstract class Notification extends ModelObject<Notification> {
     public abstract static class NotificationBuilder<T extends NotificationBuilder> {
         protected Mechanism parent;
         protected Calendar timeAdded = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-        protected boolean accepted = false;
+        protected boolean approved = false;
         protected Calendar timeExpired = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
         protected long id = NOT_STORED;
+        protected boolean pending = true;
 
         protected abstract T getThis();
 
@@ -235,11 +253,20 @@ public abstract class Notification extends ModelObject<Notification> {
         }
 
         /**
-         * Sets whether the authentication the notification is related to was accepted.
-         * @param successful True if the authentication was accepted, false otherwise.
+         * Sets whether the authentication the notification is related to was approved.
+         * @param approved True if the authentication was approved, false otherwise.
          */
-        public T setAccepted(boolean successful) {
-            this.accepted = successful;
+        public T setApproved(boolean approved) {
+            this.approved = approved;
+            return getThis();
+        }
+
+        /**
+         * Sets whether the authentication the notification is related to has been handled.
+         * @param pending True if the authentication has not been handled, false otherwise.
+         */
+        public T setPending(boolean pending) {
+            this.pending = pending;
             return getThis();
         }
 

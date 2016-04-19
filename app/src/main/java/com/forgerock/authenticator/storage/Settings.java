@@ -26,12 +26,10 @@ import android.content.SharedPreferences;
 public class Settings {
     private static final String SETTINGS_NAME = "fr_auth_settings";
     private static final String CAMERA_ENABLED_SETTING = "camera_enabled";
-    private static final String TOUCH_ID_ENABLED_SETTING = "touch_id_enabled";
 
     private final SharedPreferences sharedPreferences;
 
     private boolean cameraEnabled;
-    private boolean touchIdEnabled;
 
     /**
      * Load the settings from SharedPreferences, or set default values if they are not there.

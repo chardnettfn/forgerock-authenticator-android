@@ -20,9 +20,11 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
+import android.widget.BaseExpandableListAdapter;
+import android.widget.TextView;
 
 import com.forgerock.authenticator.R;
+import com.forgerock.authenticator.model.SortedList;
 import com.forgerock.authenticator.storage.IdentityModel;
 
 import java.util.List;
@@ -32,10 +34,11 @@ import roboguice.RoboGuice;
 /**
  * Class for linking the complete list of Notifications with a series of layouts which display each one.
  */
-public class NotificationAdapter extends BaseAdapter {
+public class NotificationAdapter extends BaseExpandableListAdapter {
     private final IdentityModel identityModel;
     private final LayoutInflater mLayoutInflater;
-    private List<Notification> notificationList;
+    private List<Notification> pendingList;
+    private List<Notification> historyList;
 
     /**
      * Creates the adapter, and finds the data model.
@@ -43,38 +46,108 @@ public class NotificationAdapter extends BaseAdapter {
     public NotificationAdapter(Context context) {
         identityModel = RoboGuice.getInjector(context).getInstance(IdentityModel.class);
         mLayoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        notificationList = identityModel.getNotifications();
+        pendingList = new SortedList<>();
+        historyList = new SortedList<>();
+        reloadData();
     }
 
     @Override
-    public int getCount() {
-        return notificationList.size();
+    public int getGroupCount() {
+        if (pendingList.isEmpty() && historyList.isEmpty()) {
+            return 0;
+        }
+        if (pendingList.isEmpty() || historyList.isEmpty()) {
+            return 1;
+        }
+        return 2;
     }
 
     @Override
-    public Notification getItem(int position) {
-        return notificationList.get(position);
+    public int getChildrenCount(int groupPosition) {
+        return getGroup(groupPosition).size();
     }
 
     @Override
-    public long getItemId(int position) {
-        return 0;
+    public List<Notification> getGroup(int groupPosition) {
+        if (groupPosition == 0) {
+            if (pendingList.isEmpty()) {
+                return historyList;
+            }
+            return pendingList;
+        }
+        return historyList;
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public Notification getChild(int groupPosition, int childPosition) {
+        return getGroup(groupPosition).get(childPosition);
+    }
+
+    @Override
+    public long getGroupId(int groupPosition) {
+        return groupPosition;
+    }
+
+    @Override
+    public long getChildId(int groupPosition, int childPosition) {
+        return childPosition;
+    }
+
+    @Override
+    public boolean hasStableIds() {
+        return false;
+    }
+
+    @Override
+    public View getGroupView(int groupPosition, boolean isExpanded, View convertView, ViewGroup parent) {
+        if (convertView == null) {
+            convertView = mLayoutInflater.inflate(R.layout.notificationtitle, parent, false);
+        }
+
+        String title = "History";
+        if (groupPosition == 0) {
+            if (pendingList.isEmpty()) {
+                title = "History";
+            } else {
+                title = "Pending";
+            }
+        }
+        ((TextView) convertView.findViewById(R.id.heading_title)).setText(title);
+        convertView.bringToFront();
+        return convertView;
+    }
+
+    @Override
+    public View getChildView(int groupPosition, int childPosition, boolean isLastChild, View convertView, ViewGroup parent) {
         if (convertView == null) {
             convertView = mLayoutInflater.inflate(R.layout.notificationcell, parent, false);
         }
 
-        Notification not = getItem(position);
+        Notification not = getChild(groupPosition, childPosition);
         ((NotificationLayout) convertView).bind(not);
         return convertView;
     }
 
     @Override
+    public boolean isChildSelectable(int groupPosition, int childPosition) {
+        return false;
+    }
+
+    @Override
     public void notifyDataSetChanged() {
-        notificationList = identityModel.getNotifications();
+        reloadData();
         super.notifyDataSetChanged();
+    }
+
+    private void reloadData() {
+        pendingList.clear();
+        historyList.clear();
+        for (Notification notification : identityModel.getNotifications()) {
+            if (notification.isActive()) {
+                pendingList.add(notification);
+            } else {
+                historyList.add(notification);
+            }
+        }
     }
 }

@@ -93,7 +93,7 @@
             android:horizontalSpacing="8dp"
             android:numColumns="auto_fit"
             android:stretchMode="columnWidth"
-            android:verticalSpacing="8dp"
+            android:verticalSpacing="1dp"
             tools:layout_height="80dp"
             />
     </LinearLayout>
