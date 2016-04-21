@@ -56,6 +56,7 @@ public abstract class Mechanism extends ModelObject<Mechanism> {
      * @param mechanismUID The ID used to identify the Mechanism to external systems.
      */
     protected Mechanism(Identity owner, long id, int mechanismUID) {
+        super(owner.getModel());
         notificationList = new SortedList<>();
         this.owner = owner;
         this.mechanismUID = mechanismUID;
@@ -64,17 +65,16 @@ public abstract class Mechanism extends ModelObject<Mechanism> {
 
     /**
      * Adds the provided notification to this Mechanism, and therefore to the larger data model.
-     * @param context The context that the notification is being added from.
      * @param notificationBuilder An incomplete builder for a non stored notification.
      * @return The notification that has been added to the data model.
      */
-    public Notification addNotification(Context context, Notification.NotificationBuilder notificationBuilder)
+    public Notification addNotification(Notification.NotificationBuilder notificationBuilder)
             throws InvalidNotificationException {
-        Notification notification = notificationBuilder.setMechanism(this).build();
+        Notification notification = notificationBuilder.build(this);
         if (!notificationList.contains(notification)) {
-            notification.save(context);
+            notification.save();
             notificationList.add(notification);
-            RoboGuice.getInjector(context).getInstance(IdentityModel.class).notifyNotificationChanged();
+            getModel().notifyNotificationChanged();
         }
         return notification;
     }
@@ -89,28 +89,26 @@ public abstract class Mechanism extends ModelObject<Mechanism> {
 
     /**
      * Delete inactive notifications from this Mechanism.
-     * @param context The context the Notifications are being cleared from.
      */
-    public void clearInactiveNotifications(Context context) {
+    public void clearInactiveNotifications() {
         List<Notification> deleteList = new ArrayList<>(notificationList);
         for (Notification notification : deleteList) {
             if (!notification.isActive()){
-                notification.delete(context);
+                notification.delete();
                 notificationList.remove(notification);
             }
         }
-        RoboGuice.getInjector(context).getInstance(IdentityModel.class).notifyNotificationChanged();
+        getModel().notifyNotificationChanged();
     }
 
     /**
      * Delete a single notification from this Mechanism.
-     * @param context The context that the notification is being deleted from.
      * @param notification The notification to delete.
      */
-    public void removeNotification(Context context, Notification notification) {
-        notification.delete(context);
+    public void removeNotification(Notification notification) {
+        notification.delete();
         notificationList.remove(notification);
-        RoboGuice.getInjector(context).getInstance(IdentityModel.class).notifyNotificationChanged();
+        getModel().notifyNotificationChanged();
     }
 
     /**
@@ -154,21 +152,21 @@ public abstract class Mechanism extends ModelObject<Mechanism> {
     }
 
     @Override
-    public void save(Context context) {
+    public void save() {
         if (!isStored()) {
-            id = RoboGuice.getInjector(context).getInstance(IdentityDatabase.class).addMechanism(this);
+            id = getModel().getIdentityDatabase().addMechanism(this);
         } else {
-            RoboGuice.getInjector(context).getInstance(IdentityDatabase.class).updateMechanism(id, this);
+            getModel().getIdentityDatabase().updateMechanism(id, this);
         }
     }
 
     @Override
-    public void delete(Context context) {
+    public void delete() {
         for (Notification notification : notificationList) {
-            notification.delete(context);
+            notification.delete();
         }
         if (isStored()) {
-            RoboGuice.getInjector(context).getInstance(IdentityDatabase.class).deleteMechanism(id);
+            getModel().getIdentityDatabase().deleteMechanism(id);
         }
     }
 
@@ -183,9 +181,8 @@ public abstract class Mechanism extends ModelObject<Mechanism> {
 
     @Override
     public ArrayList<String> getOpaqueReference() {
-        //TODO: Maybe take a hash of the fixed values being stored? Maybe UID could be generated for all mechanisms?
         ArrayList<String> ownerReference = getOwner().getOpaqueReference();
-        ownerReference.add(Long.toString(id));
+        ownerReference.add(Long.toString(mechanismUID));
         return ownerReference;
     }
 
@@ -202,7 +199,7 @@ public abstract class Mechanism extends ModelObject<Mechanism> {
         for (Notification.NotificationBuilder notificationBuilder : notificationBuilders) {
             Notification notification = null;
             try {
-                notification = notificationBuilder.setMechanism(this).build();
+                notification = notificationBuilder.build(this);
             } catch (InvalidNotificationException e) {
                 logger.error("Tried to load incorrectly assigned Notification from storage. This should never happen.");
             }
@@ -280,8 +277,8 @@ public abstract class Mechanism extends ModelObject<Mechanism> {
          * Produces the Mechanism object that was being constructed.
          * @return The mechanism.
          */
-        public final Mechanism build() throws MechanismCreationException {
-            Mechanism newMechanism = buildImpl();
+        public final Mechanism build(Identity owner) throws MechanismCreationException {
+            Mechanism newMechanism = buildImpl(owner);
             newMechanism.populateNotifications(notificationBuilders);
             return newMechanism;
         }
@@ -291,6 +288,6 @@ public abstract class Mechanism extends ModelObject<Mechanism> {
          * notifications being set properly, due to bi-directional dependence.
          * @return The mechanism.
          */
-        protected abstract Mechanism buildImpl() throws MechanismCreationException;
+        protected abstract Mechanism buildImpl(Identity owner) throws MechanismCreationException;
     }
 }

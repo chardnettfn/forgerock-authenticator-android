@@ -12,6 +12,7 @@ import android.widget.TextView;
 
 import com.forgerock.authenticator.MechanismActivity;
 import com.forgerock.authenticator.R;
+import com.forgerock.authenticator.baseactivities.BaseIdentityActivity;
 import com.forgerock.authenticator.delete.DeleteIdentityActivity;
 import com.forgerock.authenticator.ui.MechanismIcon;
 import com.squareup.picasso.Picasso;
@@ -55,9 +56,7 @@ public class IdentityLayout extends RelativeLayout {
         setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(getContext(), MechanismActivity.class);
-                intent.putExtra(MechanismActivity.IDENTITY_REFERENCE, identity.getOpaqueReference());
-                getContext().startActivity(intent);
+                BaseIdentityActivity.start(getContext(), MechanismActivity.class, identity);
             }
         });
 
@@ -77,17 +76,9 @@ public class IdentityLayout extends RelativeLayout {
         popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                Intent i;
-
-                switch (item.getItemId()) {
-
-                    case R.id.action_delete:
-                        i = new Intent(context, DeleteIdentityActivity.class);
-                        i.putExtra(DeleteIdentityActivity.IDENTITY_REFERENCE, identity.getOpaqueReference());
-                        context.startActivity(i);
-                        break;
+                if (item.getItemId() == R.id.action_delete) {
+                    BaseIdentityActivity.start(context, DeleteIdentityActivity.class, identity);
                 }
-
                 return true;
             }
         });

@@ -24,6 +24,7 @@ import com.forgerock.authenticator.mechanisms.MechanismCreationException;
 import com.forgerock.authenticator.mechanisms.base.Mechanism;
 import com.forgerock.authenticator.mechanisms.base.MechanismFactory;
 import com.forgerock.authenticator.mechanisms.base.UriParser;
+import com.forgerock.authenticator.storage.IdentityModel;
 import com.forgerock.authenticator.utils.MessageUtils;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
@@ -44,23 +45,27 @@ import java.util.Map;
  */
 public class PushFactory extends MechanismFactory {
     private PushAuthMapper mapper = new PushAuthMapper();
+    private InstanceID instanceID;
+
+    protected PushFactory(Context context, IdentityModel model, InstanceID instanceID) {
+        super(context, model);
+        this.instanceID = instanceID;
+    }
 
     @Override
-    protected Mechanism.PartialMechanismBuilder createFromUriParameters
-            (Context context, int version, int mechanismUID, Map<String, String> map)
-            throws MechanismCreationException {
+    protected Mechanism.PartialMechanismBuilder createFromUriParameters(
+            int version, int mechanismUID, Map<String, String> map) throws MechanismCreationException {
         if (version == 1) {
             String messageId = get(map, PushAuthMapper.MESSAGE_ID, null);
 
 
             // TODO: AME-9928 check should be performed in on-resume as well.
-            if (!checkPlayServices(context)) {
+            if (!checkPlayServices()) {
                 throw new MechanismCreationException("Google play services not enabled");
             }
             String token;
             try {
-                InstanceID instanceId = InstanceID.getInstance(context);
-                token = instanceId.getToken(context.getString(R.string.gcm_defaultSenderId),
+                token = instanceID.getToken(getContext().getString(R.string.gcm_defaultSenderId),
                         GoogleCloudMessaging.INSTANCE_ID_SCOPE, null);
             } catch (IOException e) {
                 throw new MechanismCreationException("Failed to retrieve GCM token.", e);
@@ -109,7 +114,8 @@ public class PushFactory extends MechanismFactory {
     }
 
     // TODO: AME-9928 should seek to upgrade this functionality
-    private boolean checkPlayServices(Context context) {
+    private boolean checkPlayServices() {
+        Context context = getContext();
         GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
         int resultCode = apiAvailability.isGooglePlayServicesAvailable(context);
         if (resultCode != ConnectionResult.SUCCESS) {

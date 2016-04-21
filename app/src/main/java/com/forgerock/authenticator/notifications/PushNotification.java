@@ -114,7 +114,7 @@ public class PushNotification extends Notification {
         }
 
         @Override
-        public PushNotification build() {
+        public PushNotification buildImpl() {
             return new PushNotification(parent, id, timeAdded, timeExpired, approved, pending, messageId);
         }
     }

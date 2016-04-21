@@ -16,8 +16,11 @@
 
 package com.forgerock.authenticator.baseactivities;
 
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 
+import com.forgerock.authenticator.MechanismActivity;
 import com.forgerock.authenticator.identity.Identity;
 import com.forgerock.authenticator.storage.IdentityModel;
 
@@ -31,7 +34,7 @@ import roboguice.activity.RoboActivity;
  */
 public class BaseIdentityActivity extends BaseActivity {
     /** The key to use to put the opaque reference into the Intent. */
-    public static final String IDENTITY_REFERENCE = "identityReference";
+    private static final String IDENTITY_REFERENCE = "identityReference";
 
     private Identity identity;
 
@@ -49,5 +52,20 @@ public class BaseIdentityActivity extends BaseActivity {
 
         ArrayList<String> identityReference = getIntent().getStringArrayListExtra(IDENTITY_REFERENCE);
         identity = identityModel.getIdentity(identityReference);
+    }
+
+    /**
+     * Method used for starting an activity that uses an Identity. Handles passing the Identity
+     * through to the Activity.
+     * @param context The context that the activity is being started from.
+     * @param identityActivity The class of activity to start.
+     * @param identity The identity to pass.
+     */
+    public static void start(Context context,
+                             Class<? extends BaseIdentityActivity> identityActivity,
+                             Identity identity) {
+        Intent intent = new Intent(context, identityActivity);
+        intent.putExtra(IDENTITY_REFERENCE, identity.getOpaqueReference());
+        context.startActivity(intent);
     }
 }

@@ -17,6 +17,7 @@
 package com.forgerock.authenticator.mechanisms.base;
 
 import android.content.Context;
+import android.support.annotation.VisibleForTesting;
 
 import com.forgerock.authenticator.identity.Identity;
 import com.forgerock.authenticator.mechanisms.MechanismCreationException;
@@ -34,6 +35,22 @@ import roboguice.RoboGuice;
  */
 public abstract class MechanismFactory {
 
+    private Context context;
+    private IdentityModel identityModel;
+
+    protected MechanismFactory(Context context, IdentityModel model) {
+        this.context = context;
+        identityModel = model;
+    }
+
+    /**
+     * Get a context that this factory was created from.
+     * @return The creating context.
+     */
+    protected Context getContext() {
+        return context;
+    }
+
     /**
      * Convert a URL to the Mechanism it represents, including extracting the owner.
      * Also adds it to the model.
@@ -42,7 +59,7 @@ public abstract class MechanismFactory {
      * @throws URIMappingException If the URL was not parsed correctly.
      * @throws MechanismCreationException If the data was not valid to create a Mechanism.
      */
-    public final Mechanism createFromUri(Context context, String uri) throws URIMappingException, MechanismCreationException {
+    public final Mechanism createFromUri(String uri) throws URIMappingException, MechanismCreationException {
         Map<String, String> values = getParser().map(uri);
         String issuer = get(values, UriParser.ISSUER, "");
         String accountName = get(values, UriParser.ACCOUNT_NAME, "");
@@ -55,24 +72,21 @@ public abstract class MechanismFactory {
                     get(values, PushAuthMapper.VERSION, "1"), e);
         }
 
-        IdentityModel identityModel = RoboGuice.getInjector(context).getInstance(IdentityModel.class);
-
         Identity identity = identityModel.getIdentity(issuer, accountName);
 
         if (identity == null) {
-            identity = Identity.builder()
+            Identity.IdentityBuilder builder = Identity.builder()
                     .setIssuer(issuer)
                     .setAccountName(accountName)
-                    .setImage(image)
-                    .build();
-            identityModel.addIdentity(context, identity);
+                    .setImage(image);
+            identity = identityModel.addIdentity(builder);
         }
 
         int mechanismUID = identityModel.getNewMechanismUID();
 
-        PartialMechanismBuilder builder = createFromUriParameters(context, version, mechanismUID, values)
+        Mechanism.PartialMechanismBuilder builder = createFromUriParameters(version, mechanismUID, values)
                 .setMechanismUID(mechanismUID);
-        Mechanism mechanism = identity.addMechanism(context, builder);
+        Mechanism mechanism = identity.addMechanism(builder);
         return mechanism;
     }
 
@@ -86,9 +100,8 @@ public abstract class MechanismFactory {
      * @return The incomplete MechanismBuilder.
      * @throws MechanismCreationException If anything goes wrong.
      */
-    protected abstract PartialMechanismBuilder createFromUriParameters(
-            Context context, int version, int mechanismUID, Map<String, String> map)
-            throws MechanismCreationException;
+    protected abstract Mechanism.PartialMechanismBuilder createFromUriParameters(
+            int version, int mechanismUID, Map<String, String> map)  throws MechanismCreationException;
 
     /**
      * Return the UriParser subclass used by the factory for a particular Mechanism type.

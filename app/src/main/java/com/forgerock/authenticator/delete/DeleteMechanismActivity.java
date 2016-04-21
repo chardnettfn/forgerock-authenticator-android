@@ -74,7 +74,7 @@ public class DeleteMechanismActivity extends BaseMechanismActivity {
         findViewById(R.id.delete).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                owner.removeMechanism(v.getContext(), mechanism);
+                owner.removeMechanism(mechanism);
                 finish();
             }
         });

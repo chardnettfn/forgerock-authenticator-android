@@ -26,6 +26,7 @@ import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 
+import com.forgerock.authenticator.baseactivities.BaseMechanismActivity;
 import com.forgerock.authenticator.ui.MechanismIcon;
 import com.forgerock.authenticator.ui.ProgressCircle;
 import com.forgerock.authenticator.R;
@@ -98,17 +99,9 @@ public class OathLayout extends FrameLayout implements MechanismLayout<Oath> {
         mPopupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                Intent i;
-
-                switch (item.getItemId()) {
-
-                    case R.id.action_delete:
-                        i = new Intent(context, DeleteMechanismActivity.class);
-                        i.putExtra(DeleteMechanismActivity.MECHANISM_REFERENCE, oath.getOpaqueReference());
-                        context.startActivity(i);
-                        break;
+                if (item.getItemId() == R.id.action_delete) {
+                    BaseMechanismActivity.start(context, DeleteMechanismActivity.class, oath);
                 }
-
                 return true;
             }
         });
@@ -174,7 +167,6 @@ public class OathLayout extends FrameLayout implements MechanismLayout<Oath> {
             public void onClick(View v) {
                 // Increment the token.
                 TokenCode code = oath.generateNextCode();
-                oath.save(context); //TODO: move this inside generateNextCode()
 
                 mCode.setText(code.getCurrentCode());
 

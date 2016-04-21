@@ -43,3 +43,13 @@ license: MIT License
 
 A repackage of SLF4J with a basic Android implementation which hooks into Java Util Logging.
 
+Robolectric Android Unit Test framework
+---------------------
+
+project: http://robolectric.org/
+resource: https://bintray.com/bintray/jcenter/org.robolectric%3Arobolectric/view
+github: https://github.com/robolectric/robolectric
+license: MIT License
+
+Robolectric is a testing framework that mocks out the Android SDK, which allows for more complete
+testing. Should be kept up to date to keep up with Android versions.

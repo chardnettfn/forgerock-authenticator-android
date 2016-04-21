@@ -16,12 +16,15 @@
 
 package com.forgerock.authenticator.mechanisms.push;
 
+import android.content.Context;
 import android.view.View;
 
 import com.forgerock.authenticator.R;
 import com.forgerock.authenticator.mechanisms.base.Mechanism;
 import com.forgerock.authenticator.mechanisms.base.MechanismFactory;
 import com.forgerock.authenticator.mechanisms.base.MechanismInfo;
+import com.forgerock.authenticator.storage.IdentityModel;
+import com.google.android.gms.iid.InstanceID;
 
 /**
  * Provides information about the push mechanism.
@@ -51,8 +54,8 @@ public class PushInfo implements MechanismInfo {
     }
 
     @Override
-    public MechanismFactory getFactory() {
-        return new PushFactory();
+    public MechanismFactory getFactory(Context context, IdentityModel model) {
+        return new PushFactory(context, model, InstanceID.getInstance(context));
     }
 
     @Override

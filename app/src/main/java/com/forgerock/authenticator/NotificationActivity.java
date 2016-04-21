@@ -28,6 +28,7 @@ import android.view.View;
 import android.widget.ExpandableListView;
 
 import com.forgerock.authenticator.baseactivities.BaseIdentityActivity;
+import com.forgerock.authenticator.baseactivities.BaseMechanismActivity;
 import com.forgerock.authenticator.identity.Identity;
 import com.forgerock.authenticator.mechanisms.base.Mechanism;
 import com.forgerock.authenticator.notifications.NotificationAdapter;
@@ -36,11 +37,12 @@ import com.forgerock.authenticator.storage.IdentityModelListener;
 /**
  * Page for viewing a list of Notifications relating to a mechanism.
  */
-public class NotificationActivity extends BaseIdentityActivity { //TODO: change this to extend BaseMechanismActivity
+public class NotificationActivity extends BaseMechanismActivity {
 
     private NotificationAdapter notificationAdapter;
     private DataSetObserver dataSetObserver;
     private IdentityModelListener listener;
+    private Mechanism mechanism;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -48,10 +50,10 @@ public class NotificationActivity extends BaseIdentityActivity { //TODO: change 
 
         setContentView(R.layout.notifications);
 
-        final Identity identity = getIdentity();
-        assert identity != null;
+        mechanism = getMechanism();
+        assert mechanism != null;
 
-        notificationAdapter = new NotificationAdapter(this);
+        notificationAdapter = new NotificationAdapter(this, mechanism);
         final ExpandableListView list = (ExpandableListView) findViewById(R.id.notification_list);
         list.setAdapter(notificationAdapter);
         for (int i = 0; i < notificationAdapter.getGroupCount(); i++) {
@@ -141,15 +143,13 @@ public class NotificationActivity extends BaseIdentityActivity { //TODO: change 
         menu.findItem(R.id.action_clear_history).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                for (Mechanism mechanism : identityModel.getMechanisms()) {
-                    mechanism.clearInactiveNotifications(context);
-                    new AlertDialog.Builder(context)
-                            .setIcon(android.R.drawable.ic_dialog_alert)
-                            .setTitle("History cleared")
-                            .setMessage("The history has been deleted")
-                            .setPositiveButton("Ok", null)
-                            .show();
-                }
+                mechanism.clearInactiveNotifications();
+                new AlertDialog.Builder(context)
+                        .setIcon(android.R.drawable.ic_dialog_alert)
+                        .setTitle("History cleared")
+                        .setMessage("The history has been deleted")
+                        .setPositiveButton("Ok", null)
+                        .show();
                 return true;
             }
         });

@@ -16,9 +16,12 @@
 
 package com.forgerock.authenticator.baseactivities;
 
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 
 import com.forgerock.authenticator.identity.Identity;
+import com.forgerock.authenticator.mechanisms.base.Mechanism;
 import com.forgerock.authenticator.notifications.Notification;
 import com.forgerock.authenticator.storage.IdentityModel;
 
@@ -32,7 +35,7 @@ import roboguice.activity.RoboActivity;
  */
 public class BaseNotificationActivity extends BaseActivity {
     /** The key to use to put the opaque reference into the Intent. */
-    public static final String NOTIFICATION_REFERENCE = "notificationReference";
+    private static final String NOTIFICATION_REFERENCE = "notificationReference";
 
     private Notification notification;
 
@@ -50,5 +53,30 @@ public class BaseNotificationActivity extends BaseActivity {
 
         ArrayList<String> notificationReference = getIntent().getStringArrayListExtra(NOTIFICATION_REFERENCE);
         notification = identityModel.getNotification(notificationReference);
+    }
+
+    /**
+     * Method used for starting an activity that uses a Notification. Handles passing the
+     * Notification through to the Activity.
+     * @param context The context that the activity is being started from.
+     * @param notificationActivity The class of activity to start.
+     * @param notification The notification to pass.
+     */
+    public static void start(Context context,
+                             Class<? extends BaseNotificationActivity> notificationActivity,
+                             Notification notification) {
+        Intent intent = new Intent(context, notificationActivity);
+        setupIntent(intent, notification);
+        context.startActivity(intent);
+    }
+
+    /**
+     * Loads an intent with the required information to start an activity that needs a Notification.
+     * @param intent The intent to set up with the information.
+     * @param notification The notification to pass.
+     */
+    public static void setupIntent(Intent intent,
+                             Notification notification) {
+        intent.putExtra(NOTIFICATION_REFERENCE, notification.getOpaqueReference());
     }
 }

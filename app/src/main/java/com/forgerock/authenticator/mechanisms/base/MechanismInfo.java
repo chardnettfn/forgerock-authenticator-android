@@ -16,7 +16,10 @@
 
 package com.forgerock.authenticator.mechanisms.base;
 
+import android.content.Context;
 import android.view.View;
+
+import com.forgerock.authenticator.storage.IdentityModel;
 
 /**
  * Provides information about a type of mechanism.
@@ -53,7 +56,7 @@ public interface MechanismInfo {
      * Get the factory appropriate for this mechanism.
      * @return The mechanism factory.
      */
-    MechanismFactory getFactory();
+    MechanismFactory getFactory(Context context, IdentityModel model);
 
     /**
      * Determines if the provided URI is for this type of mechanism.

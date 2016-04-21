@@ -22,6 +22,7 @@ import com.forgerock.authenticator.identity.Identity;
 import com.forgerock.authenticator.mechanisms.base.Mechanism;
 import com.forgerock.authenticator.mechanisms.base.MechanismInfo;
 import com.forgerock.authenticator.mechanisms.MechanismCreationException;
+import com.forgerock.authenticator.storage.IdentityModel;
 import com.google.android.apps.authenticator.Base32String;
 import com.google.android.apps.authenticator.Base32String.DecodingException;
 
@@ -134,6 +135,7 @@ public class Oath extends Mechanism {
         switch (type) {
         case HOTP:
             counter++;
+            save();
             return new TokenCode(getHOTP(counter), cur, cur + (period * 1000));
 
         case TOTP:
@@ -327,7 +329,7 @@ public class Oath extends Mechanism {
          * @return The built Token.
          * @throws MechanismCreationException If an owner was not provided.
          */
-        protected Oath buildImpl() throws MechanismCreationException {
+        protected Oath buildImpl(Identity owner) throws MechanismCreationException {
             return new Oath(owner, id, mechanismUID, type, algo, secret, digits, counter, period);
         }
     }

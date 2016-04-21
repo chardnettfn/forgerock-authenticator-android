@@ -19,6 +19,7 @@ package com.forgerock.authenticator.model;
 import android.content.Context;
 
 import com.forgerock.authenticator.storage.IdentityDatabase;
+import com.forgerock.authenticator.storage.IdentityModel;
 
 import java.util.ArrayList;
 
@@ -31,6 +32,24 @@ public abstract class ModelObject<T> implements Comparable<T> {
      */
     protected static final long NOT_STORED = -1;
 
+    private IdentityModel model;
+
+    /**
+     * Base constructor for ModelObjects.
+     * @param model The containing Model.
+     */
+    public ModelObject(IdentityModel model) {
+        this.model = model;
+    }
+
+    /**
+     * Provides access to the IdentityModel that this object is a part of.
+     * @return The containing Model.
+     */
+    public IdentityModel getModel() {
+        return model;
+    }
+
     /**
      * Determines if the object has been stored.
      * @return True if the object has been stored, false otherwise.
@@ -40,15 +59,13 @@ public abstract class ModelObject<T> implements Comparable<T> {
     /**
      * Adds the object to the database if it has not been stored, otherwise updates it.
      * Should not be called from outside the object model.
-     * @param context The context that the object is being saved from.
      */
-    public abstract void save(Context context);
+    public abstract void save();
 
     /**
      * Deletes the object from the database. Should not be called from outside the object model.
-     * @param context The context that the object is being deleted from.
      */
-    public abstract void delete(Context context);
+    public abstract void delete();
 
     /**
      * Gets an opaque reference to this object.

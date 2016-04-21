@@ -64,8 +64,9 @@ public class TokenFactoryTest {
     @Test
     public void optionStorageShouldBeRepeatable() throws Exception {
         String uri = "otpauth://totp/Forgerock:user.0?secret=ONSWG4TFOQ=====&version=1";
-        Token token = (Token) factory.createFromUri(uri);
-        Token secondToken = (Token) factory.createFromParameters(token.getVersion(), token.getOwner(), token.asMap());
+        Oath token = (Oath) factory.createFromUri(mock(Context.class), uri);
+        Oath secondToken = (Oath) factory.restoreFromParameters(token.getVersion(), token.asMap())
+                .build(token.getOwner());
 
         assertEquals(secondToken.asMap(), token.asMap());
     }

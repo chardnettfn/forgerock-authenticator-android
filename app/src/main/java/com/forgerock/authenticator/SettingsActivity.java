@@ -65,7 +65,7 @@ public class SettingsActivity extends BaseActivity {
             @Override
             public void onClick(View v) {
                 for (Mechanism mechanism : identityModel.getMechanisms()) {
-                    mechanism.clearInactiveNotifications(context);
+                    mechanism.clearInactiveNotifications();
                     new AlertDialog.Builder(context)
                             .setIcon(android.R.drawable.ic_dialog_alert)
                             .setTitle("History cleared")

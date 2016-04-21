@@ -95,23 +95,23 @@ public class IdentityDatabase {
      * Creates a connection to the database using the provided Context.
      * @param context The context that requested the connection.
      */
-    public IdentityDatabase(Context context) {
+    public IdentityDatabase(Context context, CoreMechanismFactory factory) {
         DatabaseOpenHelper databaseOpeHelper = new DatabaseOpenHelper(context);
         database = databaseOpeHelper.getWritableDatabase();
-        coreMechanismFactory = new CoreMechanismFactory();
+        coreMechanismFactory = factory;
     }
 
     /**
      * Loads the complete list of Identities, loaded with the mechanisms and notifications from the database.
      * @return The complete set of data.
      */
-    public List<Identity> getModel() {
+    public List<Identity> getModel(IdentityModel model) {
         List<Identity.IdentityBuilder> identityBuilders = getIdentityBuilders();
 
         List<Identity> identities = new ArrayList<>();
 
         for (Identity.IdentityBuilder identityBuilder : identityBuilders) {
-            identities.add(identityBuilder.build());
+            identities.add(identityBuilder.build(model));
         }
 
         return identities;

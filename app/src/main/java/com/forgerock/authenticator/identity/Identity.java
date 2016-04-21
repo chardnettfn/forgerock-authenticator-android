@@ -16,14 +16,12 @@
 
 package com.forgerock.authenticator.identity;
 
-import android.content.Context;
 import android.net.Uri;
 
 import com.forgerock.authenticator.mechanisms.MechanismCreationException;
 import com.forgerock.authenticator.mechanisms.base.Mechanism;
 import com.forgerock.authenticator.model.ModelObject;
 import com.forgerock.authenticator.model.SortedList;
-import com.forgerock.authenticator.storage.IdentityDatabase;
 import com.forgerock.authenticator.storage.IdentityModel;
 
 import org.slf4j.Logger;
@@ -34,13 +32,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-import roboguice.RoboGuice;
-
 /**
  * Identity is responsible for modelling the information that makes up part of a users identity in
  * the context of logging into that users account.
  */
-public final class Identity extends ModelObject<Identity> {
+public class Identity extends ModelObject<Identity> {
     private long id = NOT_STORED;
     private final String issuer;
     private final String accountName;
@@ -49,7 +45,8 @@ public final class Identity extends ModelObject<Identity> {
     private static final Logger logger = LoggerFactory.getLogger(Identity.class);
 
 
-    private Identity(long id, String issuer, String accountName, Uri image) {
+    private Identity(IdentityModel model, long id, String issuer, String accountName, Uri image) {
+        super(model);
         this.id = id;
         this.issuer = issuer;
         this.accountName = accountName;
@@ -59,15 +56,14 @@ public final class Identity extends ModelObject<Identity> {
 
     /**
      * Adds the provided mechanism to this Identity, and therefore to the larger data model.
-     * @param context The context that the mechanism is being added from.
      * @param builder An incomplete builder for a non stored mechanism.
      * @return The mechanism that has been added to the data model.
      * @throws MechanismCreationException If something went wrong when creating the mechanism.
      */
-    public Mechanism addMechanism(Context context, Mechanism.PartialMechanismBuilder builder) throws MechanismCreationException {
-        Mechanism mechanism = builder.setOwner(this).build();
+    public Mechanism addMechanism(Mechanism.PartialMechanismBuilder builder) throws MechanismCreationException {
+        Mechanism mechanism = builder.build(this);
         if (!mechanism.isStored() && !mechanismList.contains(mechanism)) {
-            mechanism.save(context);
+            mechanism.save();
             mechanismList.add(mechanism);
         }
         return mechanism;
@@ -76,15 +72,14 @@ public final class Identity extends ModelObject<Identity> {
     /**
      * Deletes the provided mechanism, and removes it from this Identity. Deletes this identity if
      * this results in this identity containing no mechanisms.
-     * @param context The context that the mechanism is being deleted from.
      * @param mechanism The mechanism to delete.
      */
-    public void removeMechanism(Context context, Mechanism mechanism) {
-        mechanism.delete(context);
+    public void removeMechanism(Mechanism mechanism) {
+        mechanism.delete();
         mechanismList.remove(mechanism);
 
         if (mechanismList.isEmpty()) {
-            RoboGuice.getInjector(context).getInstance(IdentityModel.class).removeIdentity(context, this);
+            getModel().removeIdentity(this);
         }
     }
 
@@ -152,21 +147,21 @@ public final class Identity extends ModelObject<Identity> {
     }
 
     @Override
-    public void save(Context context) {
+    public void save() {
         if (!isStored()) {
-            id = RoboGuice.getInjector(context).getInstance(IdentityDatabase.class).addIdentity(this);
+            id = getModel().getIdentityDatabase().addIdentity(this);
         } else {
             // TODO: handle updates
         }
     }
 
     @Override
-    public void delete(Context context) {
+    public void delete() {
         for (Mechanism mechanism : mechanismList) {
-            mechanism.delete(context);
+            mechanism.delete();
         }
         if (id != NOT_STORED) {
-            RoboGuice.getInjector(context).getInstance(IdentityDatabase.class).deleteIdentity(id);
+            getModel().getIdentityDatabase().deleteIdentity(id);
             id = NOT_STORED;
         }
     }
@@ -196,7 +191,7 @@ public final class Identity extends ModelObject<Identity> {
     private void populateMechanisms(List<Mechanism.PartialMechanismBuilder> mechanismBuilders) {
         for (Mechanism.PartialMechanismBuilder mechanismBuilder : mechanismBuilders) {
             try {
-                Mechanism mechanism = mechanismBuilder.setOwner(this).build();
+                Mechanism mechanism = mechanismBuilder.build(this);
                 if (mechanism.isStored()) {
                     mechanismList.add(mechanism);
                 } else {
@@ -223,6 +218,7 @@ public final class Identity extends ModelObject<Identity> {
      */
     public static class IdentityBuilder {
         private long id = NOT_STORED;
+        private IdentityModel model;
         private String issuer;
         private String accountName;
         private Uri image;
@@ -278,8 +274,8 @@ public final class Identity extends ModelObject<Identity> {
          * Produces the Identity object that was being constructed.
          * @return The identity.
          */
-        public Identity build() {
-            Identity result =  new Identity(id, issuer, accountName, image);
+        public Identity build(IdentityModel model) {
+            Identity result =  new Identity(model, id, issuer, accountName, image);
             result.populateMechanisms(mechanismBuilders);
             return result;
         }

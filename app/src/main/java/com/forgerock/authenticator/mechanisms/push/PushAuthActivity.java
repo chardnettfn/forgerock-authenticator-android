@@ -57,7 +57,7 @@ public class PushAuthActivity extends BaseNotificationActivity {
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                notification.deny(context);
+                notification.deny();
                 finish();
             }
         });
@@ -89,7 +89,7 @@ public class PushAuthActivity extends BaseNotificationActivity {
 
         @Override
         protected Boolean doInBackground(Void... params) {
-            return notification.accept(context);
+            return notification.accept();
         }
 
         @Override

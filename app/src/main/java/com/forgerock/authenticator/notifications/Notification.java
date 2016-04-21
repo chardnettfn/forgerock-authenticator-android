@@ -44,6 +44,7 @@ public abstract class Notification extends ModelObject<Notification> {
     private long id = NOT_STORED;
 
     protected Notification(Mechanism mechanism, long id, Calendar timeAdded, Calendar timeExpired, boolean approved, boolean pending) {
+        super(mechanism.getModel());
         parent = mechanism;
         this.timeAdded = timeAdded;
         this.timeExpired = timeExpired;
@@ -97,18 +98,18 @@ public abstract class Notification extends ModelObject<Notification> {
     }
 
     @Override
-    public void save(Context context) {
+    public void save() {
         if (id == NOT_STORED) {
-            id = RoboGuice.getInjector(context).getInstance(IdentityDatabase.class).addNotification(this);
+            id = getModel().getIdentityDatabase().addNotification(this);
         } else {
-            RoboGuice.getInjector(context).getInstance(IdentityDatabase.class).updateNotification(id, this);
+            getModel().getIdentityDatabase().updateNotification(id, this);
         }
     }
 
     @Override
-    public void delete(Context context) {
+    public void delete() {
         if (id != NOT_STORED) {
-            RoboGuice.getInjector(context).getInstance(IdentityDatabase.class).deleteNotification(id);
+            getModel().getIdentityDatabase().deleteNotification(id);
             id = NOT_STORED;
         }
     }
@@ -162,14 +163,13 @@ public abstract class Notification extends ModelObject<Notification> {
 
     /**
      *
-     * @param context The context the notification is being approved from.
      * @return True if the accept succeeded, false otherwise.
      */
-    public final boolean accept(Context context) {
+    public final boolean accept() {
         if (isPending() && acceptImpl()) {
             pending = false;
             approved = true;
-            save(context);
+            save();
             return true;
         }
         return false;
@@ -183,14 +183,13 @@ public abstract class Notification extends ModelObject<Notification> {
 
     /**
      *
-     * @param context The context the notification is being approved from.
      * @return True if the deny succeeded, false otherwise.
      */
-    public final boolean deny(Context context) {
+    public final boolean deny() {
         if (isPending() && denyImpl()) {
             pending = false;
             approved = false;
-            save(context);
+            save();
             return true;
         }
         return false;
@@ -226,11 +225,8 @@ public abstract class Notification extends ModelObject<Notification> {
          * Sets the mechanism which this notification in intended for.
          * @param mechanism The mechanism.
          */
-        public T setMechanism(Mechanism mechanism) throws InvalidNotificationException {
-            if (!getMechanismClass().isInstance(mechanism)) {
-                throw new InvalidNotificationException("Tried to attach notification to incorrect type of Mechanism");
-            }
-            this.parent = mechanism;
+        public T setMechanism(Mechanism mechanism) {
+
             return getThis();
         }
 
@@ -291,6 +287,14 @@ public abstract class Notification extends ModelObject<Notification> {
          * Build the notification.
          * @return The final notification.
          */
-        public abstract Notification build();
+        public Notification build(Mechanism mechanism) throws InvalidNotificationException {
+            if (!getMechanismClass().isInstance(mechanism)) {
+                throw new InvalidNotificationException("Tried to attach notification to incorrect type of Mechanism");
+            }
+            this.parent = mechanism;
+            return buildImpl();
+        }
+
+        public abstract Notification buildImpl();
     }
 }

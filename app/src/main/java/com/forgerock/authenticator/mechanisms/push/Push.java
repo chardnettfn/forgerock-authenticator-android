@@ -109,7 +109,7 @@ public class Push extends Mechanism {
          * @return The built Token.
          * @throws MechanismCreationException If an owner was not provided.
          */
-        protected Push buildImpl() throws MechanismCreationException {
+        protected Push buildImpl(Identity owner) throws MechanismCreationException {
             return new Push(owner, id, mechanismUID, endpoint);
         }
 

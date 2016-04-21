@@ -72,7 +72,7 @@ public class DeleteIdentityActivity extends BaseIdentityActivity {
         findViewById(R.id.delete).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                identityModel.removeIdentity(v.getContext(), identity);
+                identityModel.removeIdentity(identity);
                 finish();
             }
         });

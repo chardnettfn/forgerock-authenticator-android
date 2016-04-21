@@ -17,8 +17,10 @@
 package com.forgerock.authenticator.storage;
 
 import android.content.Context;
+import android.support.annotation.VisibleForTesting;
 
 import com.forgerock.authenticator.identity.Identity;
+import com.forgerock.authenticator.mechanisms.CoreMechanismFactory;
 import com.forgerock.authenticator.mechanisms.base.Mechanism;
 import com.forgerock.authenticator.model.ModelObject;
 import com.forgerock.authenticator.notifications.Notification;
@@ -34,16 +36,29 @@ import java.util.Random;
 public class IdentityModel {
     private List<Identity> identities;
     private List<IdentityModelListener> listeners;
+    private IdentityDatabase identityDatabase;
 
     /**
      * Load the model from the database.
      * @param context The context that the model is being loaded from.
      */
     public IdentityModel(Context context) {
-        IdentityDatabase database = new IdentityDatabase(context);
+        identityDatabase = new IdentityDatabase(context, new CoreMechanismFactory(context, this));
         listeners = new ArrayList<>();
-        identities = database.getModel();
+        identities = identityDatabase.getModel(this);
         validateModel(identities);
+    }
+
+    @VisibleForTesting
+    public IdentityModel(IdentityDatabase database) {
+        identityDatabase = database;
+        listeners = new ArrayList<>();
+        identities = identityDatabase.getModel(this);
+        validateModel(identities);
+    }
+
+    public IdentityDatabase getIdentityDatabase() {
+        return identityDatabase;
     }
 
     /**
@@ -173,23 +188,23 @@ public class IdentityModel {
 
     /**
      * Add an identity to the model, and save them to the database.
-     * @param context The context the identity is being added from.
      * @param newIdentity The identity to add.
      */
-    public void addIdentity(Context context, Identity newIdentity) {
-        if (!identities.contains(newIdentity)) {
-            identities.add(newIdentity);
+    public Identity addIdentity(Identity.IdentityBuilder newIdentity) {
+        Identity identity = newIdentity.build(this);
+        if (!identities.contains(identity)) {
+            identities.add(identity);
         }
-        newIdentity.save(context);
+        identity.save();
+        return identity;
     }
 
     /**
      * Delete an identity from the model, and delete them from the database.
-     * @param context The context the identity is being removed from.
      * @param identity The identity to delete.
      */
-    public void removeIdentity(Context context, Identity identity) {
-        identity.delete(context);
+    public void removeIdentity(Identity identity) {
+        identity.delete();
         identities.remove(identity);
     }
 

@@ -25,6 +25,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.forgerock.authenticator.R;
+import com.forgerock.authenticator.baseactivities.BaseNotificationActivity;
 import com.forgerock.authenticator.mechanisms.push.PushAuthActivity;
 
 import java.text.SimpleDateFormat;
@@ -75,11 +76,11 @@ public class NotificationLayout extends FrameLayout {
         setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(context, PushAuthActivity.class);
-                intent.putExtra(PushAuthActivity.NOTIFICATION_REFERENCE, notification.getOpaqueReference());
-                context.startActivity(intent);
+                BaseNotificationActivity.start(context, PushAuthActivity.class, notification);
             }
         });
+
+        setClickable(notification.isActive());
 
         ImageView statusImage = (ImageView) findViewById(R.id.image);
         TextView statusText = (TextView) findViewById(R.id.status);

@@ -16,8 +16,11 @@
 
 package com.forgerock.authenticator.baseactivities;
 
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 
+import com.forgerock.authenticator.MechanismActivity;
 import com.forgerock.authenticator.identity.Identity;
 import com.forgerock.authenticator.mechanisms.base.Mechanism;
 import com.forgerock.authenticator.storage.IdentityModel;
@@ -32,7 +35,7 @@ import roboguice.activity.RoboActivity;
  */
 public class BaseMechanismActivity extends BaseActivity {
     /** The key to use to put the opaque reference into the Intent. */
-    public static final String MECHANISM_REFERENCE = "mechanismReference";
+    private static final String MECHANISM_REFERENCE = "mechanismReference";
 
     private Mechanism mechanism;
 
@@ -50,5 +53,20 @@ public class BaseMechanismActivity extends BaseActivity {
 
         ArrayList<String> mechanismReference = getIntent().getStringArrayListExtra(MECHANISM_REFERENCE);
         mechanism = identityModel.getMechanism(mechanismReference);
+    }
+
+    /**
+     * Method used for starting an activity that uses a Mechanism. Handles passing the Mechanism
+     * through to the Activity.
+     * @param context The context that the activity is being started from.
+     * @param mechanismActivity The class of activity to start.
+     * @param mechanism The mechanism to pass.
+     */
+    public static void start(Context context,
+                             Class<? extends BaseMechanismActivity> mechanismActivity,
+                             Mechanism mechanism) {
+        Intent intent = new Intent(context, mechanismActivity);
+        intent.putExtra(MECHANISM_REFERENCE, mechanism.getOpaqueReference());
+        context.startActivity(intent);
     }
 }

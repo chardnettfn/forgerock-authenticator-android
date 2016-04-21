@@ -21,6 +21,7 @@ import android.content.Context;
 import com.forgerock.authenticator.mechanisms.base.Mechanism;
 import com.forgerock.authenticator.mechanisms.base.MechanismFactory;
 import com.forgerock.authenticator.mechanisms.base.MechanismInfo;
+import com.forgerock.authenticator.storage.IdentityModel;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -35,15 +36,15 @@ public class CoreMechanismFactory {
     /**
      * Creates the CoreMechanismFactory and loads the available mechanism information.
      */
-    public CoreMechanismFactory() {
+    public CoreMechanismFactory(Context context, IdentityModel model) {
         factories = new HashMap<>();
         for (MechanismInfo info : MechanismList.getAllMechanisms()) {
-            addFactory(info);
+            addFactory(info, context, model);
         }
     }
 
-    private void addFactory(MechanismInfo info) {
-        factories.put(info.getMechanismString(), info.getFactory());
+    private void addFactory(MechanismInfo info, Context context, IdentityModel model) {
+        factories.put(info.getMechanismString(), info.getFactory(context, model));
     }
 
     /**
@@ -53,10 +54,10 @@ public class CoreMechanismFactory {
      * @throws URIMappingException If the URL was not parsed correctly.
      * @throws MechanismCreationException If the data was not valid to create a Mechanism.
      */
-    public Mechanism createFromUri(Context context, String uri) throws URIMappingException, MechanismCreationException {
+    public Mechanism createFromUri(String uri) throws URIMappingException, MechanismCreationException {
         for (MechanismInfo info : MechanismList.getAllMechanisms()) {
             if (info.matchesURI(uri)) {
-                return factories.get(info.getMechanismString()).createFromUri(context, uri);
+                return factories.get(info.getMechanismString()).createFromUri(uri);
             }
         }
         throw new MechanismCreationException("Unknown URI structure");

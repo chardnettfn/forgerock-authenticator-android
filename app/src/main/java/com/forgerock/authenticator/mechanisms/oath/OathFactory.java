@@ -17,11 +17,13 @@
 package com.forgerock.authenticator.mechanisms.oath;
 
 import android.content.Context;
+import android.support.annotation.VisibleForTesting;
 
 import com.forgerock.authenticator.mechanisms.MechanismCreationException;
 import com.forgerock.authenticator.mechanisms.base.Mechanism;
 import com.forgerock.authenticator.mechanisms.base.MechanismFactory;
 import com.forgerock.authenticator.mechanisms.base.UriParser;
+import com.forgerock.authenticator.storage.IdentityModel;
 
 import java.util.Map;
 
@@ -34,10 +36,13 @@ import java.util.Map;
 class OathFactory extends MechanismFactory {
     private final OathAuthMapper mapper = new OathAuthMapper();
 
+    protected OathFactory(Context context, IdentityModel model) {
+        super(context, model);
+    }
+
     @Override
     protected Mechanism.PartialMechanismBuilder createFromUriParameters(
-            Context context, int version, int mechanismUID, Map<String, String> map)
-            throws MechanismCreationException {
+        int version, int mechanismUID, Map<String, String> map) throws MechanismCreationException {
         if (version == 1) {
             Oath.OathBuilder oathBuilder = Oath.getBuilder()
                     .setAlgorithm(get(map, OathAuthMapper.ALGORITHM, "sha1"))

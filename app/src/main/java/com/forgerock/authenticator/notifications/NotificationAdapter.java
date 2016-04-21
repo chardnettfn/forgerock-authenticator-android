@@ -24,6 +24,7 @@ import android.widget.BaseExpandableListAdapter;
 import android.widget.TextView;
 
 import com.forgerock.authenticator.R;
+import com.forgerock.authenticator.mechanisms.base.Mechanism;
 import com.forgerock.authenticator.model.SortedList;
 import com.forgerock.authenticator.storage.IdentityModel;
 
@@ -35,7 +36,7 @@ import roboguice.RoboGuice;
  * Class for linking the complete list of Notifications with a series of layouts which display each one.
  */
 public class NotificationAdapter extends BaseExpandableListAdapter {
-    private final IdentityModel identityModel;
+    private Mechanism mechanism;
     private final LayoutInflater mLayoutInflater;
     private List<Notification> pendingList;
     private List<Notification> historyList;
@@ -43,8 +44,8 @@ public class NotificationAdapter extends BaseExpandableListAdapter {
     /**
      * Creates the adapter, and finds the data model.
      */
-    public NotificationAdapter(Context context) {
-        identityModel = RoboGuice.getInjector(context).getInstance(IdentityModel.class);
+    public NotificationAdapter(Context context, Mechanism mechanism) {
+        this.mechanism = mechanism;
         mLayoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         pendingList = new SortedList<>();
         historyList = new SortedList<>();
@@ -142,7 +143,7 @@ public class NotificationAdapter extends BaseExpandableListAdapter {
     private void reloadData() {
         pendingList.clear();
         historyList.clear();
-        for (Notification notification : identityModel.getNotifications()) {
+        for (Notification notification : mechanism.getNotifications()) {
             if (notification.isActive()) {
                 pendingList.add(notification);
             } else {

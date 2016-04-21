@@ -23,6 +23,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.VisibleForTesting;
 
+import com.forgerock.authenticator.baseactivities.BaseNotificationActivity;
 import com.forgerock.authenticator.mechanisms.InvalidNotificationException;
 import com.forgerock.authenticator.mechanisms.base.Mechanism;
 import com.forgerock.authenticator.mechanisms.push.PushAuthActivity;
@@ -136,7 +137,7 @@ public class GcmService extends RoboGcmListenerService {
                         .setMessageId(messageId);
         com.forgerock.authenticator.notifications.Notification notificationData;
         try {
-            notificationData = mechanism.addNotification(this, notificationBuilder);
+            notificationData = mechanism.addNotification(notificationBuilder);
         } catch (InvalidNotificationException e) {
             logger.error("Received message mapped invalid Notification to Mechanism. Skipping...");
             return;
@@ -149,7 +150,7 @@ public class GcmService extends RoboGcmListenerService {
          * notification from the users device if they decide to cancel the login request.
          */
         Intent intent = intentFactory.generateInternal(this, PushAuthActivity.class);
-        intent.putExtra(PushAuthActivity.NOTIFICATION_REFERENCE, notificationData.getOpaqueReference());
+        BaseNotificationActivity.setupIntent(intent, notificationData);
 
         intent.addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
 

@@ -41,9 +41,7 @@ public class AuthGuiceModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        bind(IdentityDatabase.class).toInstance(new IdentityDatabase(context));
         bind(IdentityModel.class).toInstance(new IdentityModel(context));
         bind(Settings.class).toInstance(new Settings(context));
-        bind(CoreMechanismFactory.class).toInstance(new CoreMechanismFactory());
     }
 }

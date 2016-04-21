@@ -16,13 +16,14 @@
 
 package com.forgerock.authenticator.mechanisms.oath;
 
+import android.content.Context;
 import android.view.View;
 
 import com.forgerock.authenticator.R;
 import com.forgerock.authenticator.mechanisms.base.Mechanism;
 import com.forgerock.authenticator.mechanisms.base.MechanismFactory;
 import com.forgerock.authenticator.mechanisms.base.MechanismInfo;
-
+import com.forgerock.authenticator.storage.IdentityModel;
 
 /**
  * Provides information about the OTP mechanisms.
@@ -52,8 +53,8 @@ public class OathInfo implements MechanismInfo {
     }
 
     @Override
-    public MechanismFactory getFactory() {
-        return new OathFactory();
+    public MechanismFactory getFactory(Context context, IdentityModel model) {
+        return new OathFactory(context, model);
     }
 
     @Override

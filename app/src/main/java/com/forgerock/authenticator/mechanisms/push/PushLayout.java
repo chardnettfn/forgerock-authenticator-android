@@ -27,6 +27,7 @@ import android.widget.PopupMenu;
 
 import com.forgerock.authenticator.NotificationActivity;
 import com.forgerock.authenticator.R;
+import com.forgerock.authenticator.baseactivities.BaseMechanismActivity;
 import com.forgerock.authenticator.delete.DeleteMechanismActivity;
 import com.forgerock.authenticator.ui.MechanismIcon;
 import com.forgerock.authenticator.mechanisms.base.MechanismLayout;
@@ -56,10 +57,7 @@ public class PushLayout extends FrameLayout implements MechanismLayout<Push> {
         setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                Context context = getContext();
-                Intent intent = new Intent(context, NotificationActivity.class);
-                intent.putExtra(NotificationActivity.IDENTITY_REFERENCE, mechanism.getOwner().getOpaqueReference());
-                context.startActivity(intent);
+                BaseMechanismActivity.start(getContext(), NotificationActivity.class, mechanism);
             }
         });
 
@@ -79,17 +77,9 @@ public class PushLayout extends FrameLayout implements MechanismLayout<Push> {
         popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                Intent i;
-
-                switch (item.getItemId()) {
-
-                    case R.id.action_delete:
-                        i = new Intent(context, DeleteMechanismActivity.class);
-                        i.putExtra(DeleteMechanismActivity.MECHANISM_REFERENCE, mechanism.getOpaqueReference());
-                        context.startActivity(i);
-                        break;
+                if (item.getItemId() == R.id.action_delete) {
+                    BaseMechanismActivity.start(context, DeleteMechanismActivity.class, mechanism);
                 }
-
                 return true;
             }
         });

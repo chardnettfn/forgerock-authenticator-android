@@ -78,7 +78,7 @@ public class MainActivity extends RoboActivity implements OnMenuItemClickListene
         onNewIntent(getIntent());
         setContentView(R.layout.main);
 
-        mechanismAdapter = new MechanismAdapter(this, Identity.builder().build());
+        mechanismAdapter = new MechanismAdapter(this, null);
         ((GridView) findViewById(R.id.grid)).setAdapter(mechanismAdapter);
 
         // Don't permit screenshots since these might contain OTP codes.
