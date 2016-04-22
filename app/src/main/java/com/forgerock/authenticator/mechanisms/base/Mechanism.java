@@ -17,6 +17,7 @@
 package com.forgerock.authenticator.mechanisms.base;
 
 import android.content.Context;
+import android.support.annotation.VisibleForTesting;
 
 import com.forgerock.authenticator.identity.Identity;
 import com.forgerock.authenticator.mechanisms.InvalidNotificationException;
@@ -26,6 +27,7 @@ import com.forgerock.authenticator.model.SortedList;
 import com.forgerock.authenticator.notifications.Notification;
 import com.forgerock.authenticator.storage.IdentityDatabase;
 import com.forgerock.authenticator.storage.IdentityModel;
+import com.forgerock.authenticator.utils.TimeKeeper;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -229,7 +231,6 @@ public abstract class Mechanism extends ModelObject<Mechanism> {
         return Objects.hash(owner, mechanismUID, getInfo().getMechanismString()); // TODO" API version
     }
 
-
     @Override
     public int compareTo(Mechanism another) {
         return getInfo().getMechanismString().compareTo(another.getInfo().getMechanismString());
@@ -244,6 +245,7 @@ public abstract class Mechanism extends ModelObject<Mechanism> {
         protected String mechanismUID;
         protected Identity owner;
         protected long id = NOT_STORED;
+        protected TimeKeeper timeKeeper = new TimeKeeper();
         private List<Notification.NotificationBuilder> notificationBuilders = new ArrayList<>();
 
         /**
@@ -288,6 +290,17 @@ public abstract class Mechanism extends ModelObject<Mechanism> {
          */
         public T setNotifications(List<Notification.NotificationBuilder> notificationBuilders) {
             this.notificationBuilders = notificationBuilders;
+            return getThis();
+        }
+
+        /**
+         * Used for Time Travel during testing.
+         * @param timeKeeper The TimeKeeper implementation this Mechanism should use.
+         * @return This builder.
+         */
+        @VisibleForTesting
+        public T setTimeKeeper(TimeKeeper timeKeeper) {
+            this.timeKeeper = timeKeeper;
             return getThis();
         }
 

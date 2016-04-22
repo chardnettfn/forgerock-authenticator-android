@@ -17,7 +17,6 @@
 package com.forgerock.authenticator.mechanisms.oath;
 
 import android.content.Context;
-import android.support.annotation.VisibleForTesting;
 
 import com.forgerock.authenticator.mechanisms.MechanismCreationException;
 import com.forgerock.authenticator.mechanisms.base.Mechanism;
@@ -44,7 +43,7 @@ class OathFactory extends MechanismFactory {
     protected Mechanism.PartialMechanismBuilder createFromUriParameters(
         int version, String mechanismUID, Map<String, String> map) throws MechanismCreationException {
         if (version == 1) {
-            Oath.OathBuilder oathBuilder = Oath.getBuilder()
+            Oath.OathBuilder oathBuilder = Oath.builder()
                     .setAlgorithm(get(map, OathAuthMapper.ALGORITHM, "sha1"))
                     .setType(map.get(OathAuthMapper.TYPE))
                     .setCounter(get(map, OathAuthMapper.COUNTER, "0"))
@@ -65,7 +64,7 @@ class OathFactory extends MechanismFactory {
     @Override
     public Mechanism.PartialMechanismBuilder restoreFromParameters(int version, Map<String, String> map) throws MechanismCreationException {
         if (version == 1) {
-            return Oath.getBuilder()
+            return Oath.builder()
                     .setOptions(map);
 
         } else {

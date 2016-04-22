@@ -18,11 +18,14 @@
 
 package com.forgerock.authenticator.mechanisms.oath;
 
+import android.support.annotation.VisibleForTesting;
+
 import com.forgerock.authenticator.identity.Identity;
 import com.forgerock.authenticator.mechanisms.base.Mechanism;
 import com.forgerock.authenticator.mechanisms.base.MechanismInfo;
 import com.forgerock.authenticator.mechanisms.MechanismCreationException;
 import com.forgerock.authenticator.storage.IdentityModel;
+import com.forgerock.authenticator.utils.TimeKeeper;
 import com.google.android.apps.authenticator.Base32String;
 import com.google.android.apps.authenticator.Base32String.DecodingException;
 
@@ -66,11 +69,12 @@ public class Oath extends Mechanism {
     private int digits;
     private long counter;
     private int period;
+    private TimeKeeper timeKeeper;
 
     private Logger logger = LoggerFactory.getLogger(Oath.class);
 
     private Oath(Identity owner, long id, String mechanismUID, TokenType type, String algo, byte[] secret, int digits,
-                 long counter, int period) {
+                 long counter, int period, TimeKeeper keeper) {
         super(owner, id, mechanismUID);
         this.type = type;
         this.algo = algo;
@@ -78,13 +82,14 @@ public class Oath extends Mechanism {
         this.digits = digits;
         this.counter = counter;
         this.period = period;
+        this.timeKeeper = keeper;
     }
 
     /**
      * Returns a builder for creating a Token.
      * @return The Token builder.
      */
-    public static OathBuilder getBuilder() {
+    public static OathBuilder builder() {
         return new OathBuilder();
     }
 
@@ -118,6 +123,21 @@ public class Oath extends Mechanism {
         return digits;
     }
 
+    @VisibleForTesting
+    public String getAlgo() {
+        return algo;
+    }
+
+    @VisibleForTesting
+    public long getCounter() {
+        return counter;
+    }
+
+    @VisibleForTesting
+    public long getPeriod() {
+        return period;
+    }
+
     /**
      * Returns the token type (HOTP, TOTP)
      * @return The token type.
@@ -130,17 +150,17 @@ public class Oath extends Mechanism {
      * Generates a new set of codes for this Token.
      */
     public TokenCode generateNextCode() {
-        long cur = System.currentTimeMillis();
+        long cur = timeKeeper.getCurrentTimeMillis();
 
         switch (type) {
         case HOTP:
             counter++;
             save();
-            return new TokenCode(getHOTP(counter), cur, cur + (period * 1000));
+            return new TokenCode(timeKeeper, getHOTP(counter), cur, cur + (period * 1000));
 
         case TOTP:
             long counter = cur / 1000 / period;
-            return new TokenCode(getHOTP(counter + 0),
+            return new TokenCode(timeKeeper, getHOTP(counter + 0),
                                  (counter + 0) * period * 1000,
                                  (counter + 1) * period * 1000);
         }
@@ -195,11 +215,11 @@ public class Oath extends Mechanism {
      */
     public static class OathBuilder extends PartialMechanismBuilder<OathBuilder> {
         private TokenType type;
-        private String algo;
+        private String algo = "SHA1";
         private byte[] secret;
-        private int digits;
+        private int digits = 6;
         private long counter;
-        private int period;
+        private int period = 30;
 
         /**
          * Sets the type of OTP that will be used.
@@ -226,12 +246,8 @@ public class Oath extends Mechanism {
          */
         public OathBuilder setAlgorithm(String algorithm) throws MechanismCreationException {
             String algoUpperCase = algorithm.toUpperCase(Locale.US);
-            try {
-                Mac.getInstance("Hmac" + algoUpperCase);
-                algo = algoUpperCase;
-            } catch (NoSuchAlgorithmException e1) {
-                throw new MechanismCreationException("Invalid algorithm: " + algorithm);
-            }
+            validateAlgoSecretPair(algoUpperCase, secret);
+            algo = algoUpperCase;
             return this;
         }
 
@@ -271,7 +287,7 @@ public class Oath extends Mechanism {
 
         /**
          * Sets the secret used for generating the OTP.
-         * Base32 encodeding based on: http://tools.ietf.org/html/rfc4648#page-8
+         * Base32 encoding based on: http://tools.ietf.org/html/rfc4648#page-8
          *
          * @param secretStr A non null Base32 encoded secret key.
          * @return The current builder.
@@ -279,7 +295,9 @@ public class Oath extends Mechanism {
          */
         public OathBuilder setSecret(String secretStr) throws MechanismCreationException {
             try {
-                secret = Base32String.decode(secretStr);
+                byte[] testSecret = Base32String.decode(secretStr);
+                validateAlgoSecretPair(algo, testSecret);
+                secret = testSecret;
             } catch (DecodingException e) {
                 throw new MechanismCreationException("Could not decode secret: " + secretStr, e);
             } catch (NullPointerException e) {
@@ -330,7 +348,27 @@ public class Oath extends Mechanism {
          * @throws MechanismCreationException If an owner was not provided.
          */
         protected Oath buildImpl(Identity owner) throws MechanismCreationException {
-            return new Oath(owner, id, mechanismUID, type, algo, secret, digits, counter, period);
+            if (type == null) {
+                throw new MechanismCreationException("Must specify a valid type");
+            }
+            if (secret == null) {
+                throw new MechanismCreationException("Must specify a valid secret");
+            }
+            return new Oath(owner, id, mechanismUID, type, algo, secret, digits, counter, period, timeKeeper);
+        }
+
+        private void validateAlgoSecretPair(String algo, byte[] secret) throws MechanismCreationException {
+            try {
+                Mac mac = Mac.getInstance("Hmac" + algo);
+                if (secret != null) {
+                    mac.init(new SecretKeySpec(secret, "Hmac" + algo));
+                }
+            } catch (NoSuchAlgorithmException e) {
+                throw new MechanismCreationException("Invalid algorithm: " + algo);
+            } catch (InvalidKeyException e) {
+                throw new MechanismCreationException("Invalid secret for this algorithm.");
+            }
+
         }
     }
 

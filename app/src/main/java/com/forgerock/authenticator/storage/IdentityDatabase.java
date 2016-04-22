@@ -192,21 +192,23 @@ public class IdentityDatabase {
      * Update the mechanism in the database. Does not create it if it does not exist.
      * @param mechanismId The id of the mechanism to update.
      * @param mechanism The mechanism to update it with.
+     * @return Whether the operation succeeded
      */
-    public void updateMechanism(long mechanismId, Mechanism mechanism) {
+    public boolean updateMechanism(long mechanismId, Mechanism mechanism) {
         ContentValues values = new ContentValues();
         String options = gson.toJson(mechanism.asMap());
         values.put(OPTIONS, options);
         String[] selectionArgs = { Long.toString(mechanismId) };
-        database.update(MECHANISM_TABLE_NAME, values, "rowId = ?", selectionArgs);
+        return database.update(MECHANISM_TABLE_NAME, values, "rowId = ?", selectionArgs) == 1;
     }
 
     /**
      * Update the notification in the database. Does not create it if it does not exist.
      * @param notificationId The id of the notification to update.
      * @param notification The notification to update it with.
+     * @return Whether the operation succeeded
      */
-    public void updateNotification(long notificationId, Notification notification) {
+    public boolean updateNotification(long notificationId, Notification notification) {
         ContentValues values = new ContentValues();
 
         int wasApproved = notification.wasApproved() ? 1 : 0;
@@ -215,31 +217,34 @@ public class IdentityDatabase {
         values.put(PENDING, isPending);
         values.put(APPROVED, wasApproved);
         String[] selectionArgs = { Long.toString(notificationId) };
-        database.update(NOTIFICATION_TABLE_NAME, values, "rowId = ?", selectionArgs);
+        return database.update(NOTIFICATION_TABLE_NAME, values, "rowId = ?", selectionArgs) == 1;
     }
 
     /**
      * Delete the mechanism uniquely identified by an id.
      * @param mechanismId The id of the mechanism to delete.
+     * @return Whether the operation succeeded
      */
-    public void deleteMechanism(long mechanismId) {
-        database.delete(MECHANISM_TABLE_NAME, "rowId = " + mechanismId, null);
+    public boolean deleteMechanism(long mechanismId) {
+        return database.delete(MECHANISM_TABLE_NAME, "rowId = " + mechanismId, null) == 1;
     }
 
     /**
      * Delete the identity that was passed in.
      * @param identityId The if of the identity to delete.
+     * @return Whether the operation succeeded
      */
-    public void deleteIdentity(long identityId) {
-        database.delete(IDENTITY_TABLE_NAME, "rowId = " + identityId, null);
+    public boolean deleteIdentity(long identityId) {
+        return database.delete(IDENTITY_TABLE_NAME, "rowId = " + identityId, null) == 1;
     }
 
     /**
      * Delete the notification uniquely identified by an id.
      * @param notificationId The id of the notification to delete.
+     * @return Whether the operation succeeded
      */
-    public void deleteNotification(long notificationId) {
-        database.delete(NOTIFICATION_TABLE_NAME, "rowId = " + notificationId, null);
+    public boolean deleteNotification(long notificationId) {
+        return database.delete(NOTIFICATION_TABLE_NAME, "rowId = " + notificationId, null) == 1;
     }
 
     private List<Identity.IdentityBuilder> getIdentityBuilders() {

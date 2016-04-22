@@ -65,18 +65,22 @@ public class BaseNotificationActivity extends BaseActivity {
     public static void start(Context context,
                              Class<? extends BaseNotificationActivity> notificationActivity,
                              Notification notification) {
-        Intent intent = new Intent(context, notificationActivity);
-        setupIntent(intent, notification);
+        Intent intent = setupIntent(context, notificationActivity, notification);
         context.startActivity(intent);
     }
 
     /**
      * Loads an intent with the required information to start an activity that needs a Notification.
-     * @param intent The intent to set up with the information.
+     * @param context The context that the activity is being started from.
+     * @param notificationActivity The class of activity to start.
      * @param notification The notification to pass.
+     * @return The generated intent.
      */
-    public static void setupIntent(Intent intent,
+    public static Intent setupIntent(Context context,
+                             Class<? extends BaseNotificationActivity> notificationActivity,
                              Notification notification) {
+        Intent intent = new Intent(context, notificationActivity);
         intent.putExtra(NOTIFICATION_REFERENCE, notification.getOpaqueReference());
+        return intent;
     }
 }

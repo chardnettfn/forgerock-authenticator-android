@@ -21,6 +21,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.DataSetObserver;
 import android.os.Bundle;
+import android.support.annotation.VisibleForTesting;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -116,30 +117,32 @@ public class IdentityActivity extends BaseActivity {
         identityModel.removeListener(listener);
     }
 
+    @VisibleForTesting
+    public Menu getMenu() {
+        return menu;
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        super.onCreateOptionsMenu(menu);
         this.menu = menu;
         getMenuInflater().inflate(R.menu.main, menu);
         menu.findItem(R.id.action_scan).setVisible(settings.isCameraEnabled());
+        return true;
+    }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
         final Context context = this;
-
-        menu.findItem(R.id.action_scan).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_scan:
                 startActivity(new Intent(context, ScanActivity.class));
                 overridePendingTransition(R.anim.fadein, R.anim.fadeout);
                 return true;
-            }
-        });
-
-        menu.findItem(R.id.action_about).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
+            case R.id.action_about:
                 startActivity(new Intent(context, AboutActivity.class));
                 return true;
-            }
-        });
-        return true;
+        }
+        return false;
     }
 }

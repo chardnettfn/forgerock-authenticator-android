@@ -51,6 +51,15 @@ public class PushAuthMapper extends UriParser {
 
         //TODO: validate appropriately (in parallel with unit tests)
         values.put(IMAGE, new String(Base64.decode(values.get(IMAGE), Base64.URL_SAFE))); // Have to decode the url here - how does auth work?
+        if (!containsNonEmpty(values, REG_ENDPOINT)) {
+            throw new URIMappingException("Registration endpoint must not be empty");
+        }
+        values.put(REG_ENDPOINT, new String(Base64.decode(values.get(REG_ENDPOINT), Base64.URL_SAFE)));
+
+        if (!containsNonEmpty(values, AUTH_ENDPOINT)) {
+            throw new URIMappingException("Authentication endpoint must not be empty");
+        }
+        values.put(AUTH_ENDPOINT, new String(Base64.decode(values.get(AUTH_ENDPOINT), Base64.URL_SAFE)));
 
         if (!values.containsKey(MESSAGE_ID) || values.get(MESSAGE_ID).isEmpty()) {
             throw new URIMappingException("Message ID is required");

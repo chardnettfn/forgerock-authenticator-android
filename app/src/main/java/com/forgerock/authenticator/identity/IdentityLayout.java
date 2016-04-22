@@ -1,6 +1,7 @@
 package com.forgerock.authenticator.identity;
 
 import android.content.Context;
+import android.support.annotation.VisibleForTesting;
 import android.util.AttributeSet;
 import android.view.MenuItem;
 import android.view.View;
@@ -24,6 +25,8 @@ import java.util.List;
  */
 public class IdentityLayout extends RelativeLayout {
 
+    private PopupMenu popupMenu;
+
     public IdentityLayout(Context context) {
         super(context);
     }
@@ -34,6 +37,15 @@ public class IdentityLayout extends RelativeLayout {
 
     public IdentityLayout(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+    }
+
+    /**
+     * Used to get access to the popup menu for testing.
+     * @return The PopupMenu belonging to this layout.
+     */
+    @VisibleForTesting
+    PopupMenu getPopupMenu() {
+        return popupMenu;
     }
 
     /**
@@ -61,7 +73,7 @@ public class IdentityLayout extends RelativeLayout {
 
         ImageView mMenu = (ImageView) findViewById(R.id.menu);
 
-        final PopupMenu popupMenu = new PopupMenu(getContext(), mMenu);
+        popupMenu = new PopupMenu(getContext(), mMenu);
         mMenu.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {

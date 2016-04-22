@@ -104,10 +104,10 @@ public class Identity extends ModelObject<Identity> {
 
     /**
      * Returns the name of this Identity.
-     * @return The account name if it has been assigned or an empty String.
+     * @return The account name.
      */
     public String getAccountName() {
-        return accountName != null ? accountName : "";
+        return accountName;
     }
 
     /**
@@ -174,7 +174,7 @@ public class Identity extends ModelObject<Identity> {
     }
 
     @Override
-    public boolean equals(Object object) {
+    public boolean equals(Object object) { //TODO: differing images could still equals()
         if (object == null || !(object instanceof Identity)) {
             return false;
         }
@@ -213,6 +213,9 @@ public class Identity extends ModelObject<Identity> {
 
     @Override
     public int compareTo(Identity another) {
+        if (another == null) {
+            return -1;
+        }
         int compareIssuer = issuer.compareTo(another.issuer);
         if (compareIssuer == 0) {
             return accountName.compareTo(another.accountName);
@@ -225,8 +228,8 @@ public class Identity extends ModelObject<Identity> {
      */
     public static class IdentityBuilder {
         private long id = NOT_STORED;
-        private String issuer;
-        private String accountName;
+        private String issuer = "";
+        private String accountName = "";
         private Uri imageURL;
         private List<Mechanism.PartialMechanismBuilder> mechanismBuilders = new ArrayList<>();
         private String backgroundColor;

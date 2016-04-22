@@ -14,29 +14,27 @@
  * Copyright 2016 ForgeRock AS.
  */
 
-package com.forgerock.authenticator.model;
+package com.forgerock.authenticator;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
+import android.app.Application;
+import android.content.Context;
+
+import com.forgerock.authenticator.mechanisms.CoreMechanismFactory;
+import com.forgerock.authenticator.storage.IdentityDatabase;
+import com.forgerock.authenticator.storage.IdentityModel;
+import com.forgerock.authenticator.storage.Settings;
+import com.google.inject.AbstractModule;
+
+import static org.mockito.Mockito.mock;
 
 /**
- * List of Comparables which reorders itself whenever an element is added to the list.
- * @param <T> The particular class of Comparable that is being stored.
+ * Guice module for the ForgeRock Authenticator app.
  */
-public class SortedList<T extends Comparable> extends ArrayList<T> {
+public class TestGuiceModule extends AbstractModule {
 
     @Override
-    public boolean add(T object) {
-        boolean result = super.add(object);
-        Collections.sort(this);
-        return result;
-    }
-
-    @Override
-    public boolean addAll(Collection<? extends T> collection) {
-        boolean result = super.addAll(collection);
-        Collections.sort(this);
-        return result;
+    protected void configure() {
+        bind(IdentityModel.class).toInstance(mock(IdentityModel.class));
+        bind(Settings.class).toInstance(mock(Settings.class));
     }
 }

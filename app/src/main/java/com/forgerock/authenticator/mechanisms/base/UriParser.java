@@ -121,6 +121,10 @@ public abstract class UriParser {
      */
     protected abstract Map<String, String> validate(Map<String, String> values) throws URIMappingException;
 
+    protected final boolean containsNonEmpty(Map<String, String> values, String key) {
+        return values.containsKey(key) && !values.get(key).isEmpty();
+    }
+
     private static String[] split(String s, String sep) {
         int index = s.indexOf(sep);
         if (index == -1) {

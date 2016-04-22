@@ -36,7 +36,7 @@ public class AuthGuiceModule extends AbstractModule {
      * @param application The application that the Guice module is used for.
      */
     public AuthGuiceModule(Application application) {
-        this.context = application.getBaseContext();
+        this.context = application.getApplicationContext();
     }
 
     @Override

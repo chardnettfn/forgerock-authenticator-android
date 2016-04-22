@@ -18,6 +18,8 @@
 
 package com.forgerock.authenticator.mechanisms.oath;
 
+import com.forgerock.authenticator.utils.TimeKeeper;
+
 /**
  * Represents a currently active token.
  */
@@ -25,10 +27,12 @@ class TokenCode {
     private final String code;
     private final long start;
     private final long until;
+    private TimeKeeper timeKeeper;
+    private final int MAX_VALUE = 1000;
 
-    public TokenCode(String code, long start, long until) {
-        this.code = code.substring(0, code.length() / 2) + " " +
-                "" + code.substring(code.length() / 2, code.length());
+    public TokenCode(TimeKeeper timeKeeper, String code, long start, long until) {
+        this.timeKeeper = timeKeeper;
+        this.code = code;
         this.start = start;
         this.until = until;
     }
@@ -41,19 +45,27 @@ class TokenCode {
         return code;
     }
 
+    /**
+     * Returns true if the TokenCode has not yet expired.
+     * @return True if the TokenCode is still valid, false otherwise.
+     */
     public boolean isValid() {
-        long cur = System.currentTimeMillis();
+        long cur = timeKeeper.getCurrentTimeMillis();
 
         return cur < until;
     }
 
-
+    /**
+     * Get the current progress of the TokenCode. This is a number between 0 and 1000, and represents
+     * the amount of time that has passed between the start and end times of the code.
+     * @return The total progress, a number between 0 and 1000.
+     */
     public int getCurrentProgress() {
-        long cur = System.currentTimeMillis();
-
+        long cur = timeKeeper.getCurrentTimeMillis();
         long total = until - start;
         long state = cur - start;
-        return (int) (state * 1000 / total);
+        int progress = (int) (state * MAX_VALUE / total);
+        return progress < MAX_VALUE ? progress : MAX_VALUE;
     }
 
 }

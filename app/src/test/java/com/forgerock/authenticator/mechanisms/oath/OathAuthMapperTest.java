@@ -17,44 +17,47 @@ package com.forgerock.authenticator.mechanisms.oath;
 
 import com.forgerock.authenticator.mechanisms.URIMappingException;
 
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
+import junit.framework.Assert;
+
+import org.junit.Before;
+import org.junit.Test;
 
 import java.util.Map;
 
+import static junit.framework.Assert.fail;
 import static org.testng.Assert.assertEquals;
 
-public class OTPAuthMapperTest {
+public class OathAuthMapperTest {
 
-    private OTPAuthMapper mapper;
+    private OathAuthMapper mapper;
 
-    @BeforeMethod
+    @Before
     public void setUp() {
-        mapper = new OTPAuthMapper();
+        mapper = new OathAuthMapper();
     }
 
     @Test
     public void shouldParseType() throws URIMappingException {
         Map<String, String> result = mapper.map("otpauth://hotp/Example:alice@gmail.com?secret=ABC&counter=0");
-        assertEquals(result.get(OTPAuthMapper.TYPE), "hotp");
+        assertEquals(result.get(OathAuthMapper.TYPE), "hotp");
     }
 
     @Test
     public void shouldParseAccountName() throws URIMappingException {
         Map<String, String> result = mapper.map("otpauth://totp/example?secret=ABC");
-        assertEquals(result.get(OTPAuthMapper.LABEL), "example");
+        assertEquals(result.get(OathAuthMapper.ACCOUNT_NAME), "example");
     }
 
     @Test
     public void shouldParseIssuerFromPath() throws URIMappingException {
         Map<String, String> result = mapper.map("otpauth://totp/Badger:ferret?secret=ABC");
-        assertEquals(result.get(OTPAuthMapper.ISSUER), "Badger");
+        assertEquals(result.get(OathAuthMapper.ISSUER), "Badger");
     }
 
     @Test
     public void shouldOverwriteIssuerFromParamters() throws URIMappingException {
         Map<String, String> result = mapper.map("otpauth://totp/Badger:ferret?issuer=Stoat&secret=ABC");
-        assertEquals(result.get(OTPAuthMapper.ISSUER), "Stoat");
+        assertEquals(result.get(OathAuthMapper.ISSUER), "Stoat");
     }
 
     @Test
@@ -66,7 +69,7 @@ public class OTPAuthMapperTest {
     @Test
     public void shouldParseKnownQueryParameters() throws URIMappingException {
         Map<String, String> result = mapper.map("otpauth://totp/Example:alice@google.com?secret=JBSWY3DPEHPK3PXP");
-        assertEquals(result.get(OTPAuthMapper.SECRET), "JBSWY3DPEHPK3PXP");
+        assertEquals(result.get(OathAuthMapper.SECRET), "JBSWY3DPEHPK3PXP");
     }
 
     @Test
@@ -82,17 +85,17 @@ public class OTPAuthMapperTest {
         assertEquals(result.get("image"), "http://upload.wikimedia.org/wikipedia/commons/1/10/Badger-badger.jpg");
     }
 
-    @Test (expectedExceptions = URIMappingException.class)
+    @Test (expected = URIMappingException.class)
     public void shouldValidateMissingSecret() throws URIMappingException {
         mapper.map("otpauth://totp/Example:alice@google.com");
     }
 
-    @Test (expectedExceptions = URIMappingException.class)
+    @Test (expected = URIMappingException.class)
     public void shouldValidateMissingCounterInHOTPMode() throws URIMappingException {
         mapper.map("otpauth://hotp/Example:alice@google.com?secret=ABC");
     }
 
-    @Test (expectedExceptions = URIMappingException.class)
+    @Test (expected = URIMappingException.class)
     public void shouldValidateIncorrectAuthorityType() throws URIMappingException {
         mapper.map("otpauth://badger/Example:alice@google.com?secret=ABC");
     }

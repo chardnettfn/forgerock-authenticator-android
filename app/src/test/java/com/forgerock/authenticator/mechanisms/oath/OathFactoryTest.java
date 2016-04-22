@@ -15,38 +15,68 @@
  */
 package com.forgerock.authenticator.mechanisms.oath;
 
+import android.content.Context;
+
+import com.forgerock.authenticator.identity.Identity;
+import android.content.Context;
+
 import com.forgerock.authenticator.mechanisms.MechanismCreationException;
+import com.forgerock.authenticator.mechanisms.base.Mechanism;
+import com.forgerock.authenticator.storage.IdentityDatabase;
+import com.forgerock.authenticator.storage.IdentityModel;
 
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.mock;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotEquals;
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
-public class TokenFactoryTest {
+public class OathFactoryTest {
 
-    private TokenFactory factory;
+    private OathFactory factory;
+    private IdentityModel model;
+    private int mechanismUID;
 
-    @BeforeMethod
+    @Before
     public void setUp() {
-        factory = new TokenFactory();
+        Context context = mock(Context.class);
+        model = mock(IdentityModel.class);
+        IdentityDatabase identityDatabase = mock(IdentityDatabase.class);
+        given(identityDatabase.addMechanism(any(Mechanism.class))).willReturn(1l);
+        given(model.getIdentityDatabase()).willReturn(identityDatabase);
+        given(model.getNewMechanismUID()).willReturn("0");
+        given(model.addIdentity(any(Identity.IdentityBuilder.class))).willAnswer(new Answer<Identity>() {
+            @Override
+            public Identity answer(InvocationOnMock invocation) throws Throwable {
+                return ((Identity.IdentityBuilder) invocation.getArguments()[0]).build(model);
+            }
+        });
+
+        factory = new OathFactory(context, model);
     }
 
     @Test
     public void shouldParseVersionOne() throws Exception {
         String uri = "otpauth://totp/Forgerock:user.0?secret=ONSWG4TFOQ=====&version=1";
-        Token token = (Token) factory.createFromUri(uri);
-        assertEquals(token.getType(), Token.TokenType.TOTP);
+        Oath token = (Oath) factory.createFromUri(uri);
+        assertEquals(token.getType(), Oath.TokenType.TOTP);
         assertEquals(token.getOwner().getAccountName(), "user.0");
     }
 
     @Test
     public void shouldHandleDefaultVersion() throws Exception {
         String uri = "otpauth://totp/Forgerock:user.0?secret=ONSWG4TFOQ=====";
-        Token token = (Token) factory.createFromUri(uri);
-        assertEquals(token.getType(), Token.TokenType.TOTP);
+        Oath token = (Oath) factory.createFromUri(uri);
+        assertEquals(token.getType(), Oath.TokenType.TOTP);
         assertEquals(token.getOwner().getAccountName(), "user.0");
     }
 
@@ -64,19 +94,20 @@ public class TokenFactoryTest {
     @Test
     public void optionStorageShouldBeRepeatable() throws Exception {
         String uri = "otpauth://totp/Forgerock:user.0?secret=ONSWG4TFOQ=====&version=1";
-        Oath token = (Oath) factory.createFromUri(mock(Context.class), uri);
+        Oath token = (Oath) factory.createFromUri(uri);
         Oath secondToken = (Oath) factory.restoreFromParameters(token.getVersion(), token.asMap())
+                .setMechanismUID("dummy")
                 .build(token.getOwner());
 
         assertEquals(secondToken.asMap(), token.asMap());
     }
 
     @Test
-    public void optionStorageShouldReflectDifferences() throws Exception {
+    public void optionStorageShouldReflectDifferences() throws Exception { //TODO move to Oath tests
         String uri = "otpauth://totp/Forgerock:user.0?secret=ONSWG4TFOQ=====&version=1";
         String secondUri = "otpauth://totp/Forgerock:user.0?secret=IOHEOSHIEF=====&version=1";
-        Token token = (Token) factory.createFromUri(uri);
-        Token secondToken = (Token) factory.createFromUri(secondUri);
+        Oath token = (Oath) factory.createFromUri(uri);
+        Oath secondToken = (Oath) factory.createFromUri(secondUri);
 
         assertNotEquals(secondToken.asMap(), token.asMap());
     }

@@ -26,6 +26,7 @@ import com.forgerock.authenticator.storage.IdentityDatabase;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TimeZone;
 
 import roboguice.RoboGuice;
@@ -135,6 +136,19 @@ public abstract class Notification extends ModelObject<Notification> {
         return false;
     }
 
+    @Override
+    public boolean equals(Object other) {
+        if (other == null || !(other instanceof Notification)) {
+            return false;
+        }
+        Notification otherNotification = (Notification) other;
+        return getMechanism().equals(otherNotification.getMechanism()) && timeAdded.getTimeInMillis() == otherNotification.timeAdded.getTimeInMillis();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getMechanism(), timeAdded);
+    }
 
     /**
      * Determines if the Notification has been interacted with by the user.

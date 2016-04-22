@@ -159,16 +159,17 @@ public class OathLayout extends FrameLayout implements MechanismLayout<Oath> {
         mCode.setText(mPlaceholder);
 
         // Set onClick behaviour
-        final Context context = getContext();
         final View view = this;
 
         setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Increment the token.
-                TokenCode code = oath.generateNextCode();
+                // Update the code.
+                String code = oath.generateNextCode().getCurrentCode();
+                String formattedCode = code.substring(0, code.length() / 2) + " " +
+                        code.substring(code.length() / 2, code.length());
 
-                mCode.setText(code.getCurrentCode());
+                mCode.setText(formattedCode);
 
                 setEnabled(false);
                 postDelayed(new Runnable() {

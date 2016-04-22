@@ -30,7 +30,6 @@ import com.forgerock.authenticator.mechanisms.push.Push;
 import com.forgerock.authenticator.mechanisms.push.PushAuthActivity;
 import com.forgerock.authenticator.notifications.PushNotification;
 import com.forgerock.authenticator.utils.ContextService;
-import com.forgerock.authenticator.utils.IntentFactory;
 import com.forgerock.authenticator.utils.NotificationFactory;
 
 import org.forgerock.json.jose.common.JwtReconstruction;
@@ -67,7 +66,6 @@ public class GcmService extends RoboGcmListenerService {
     private static int messageCount = 2;
 
     private final Logger logger;
-    private final IntentFactory intentFactory;
     private final NotificationFactory notificationFactory;
     private final ContextService contextService;
 
@@ -80,23 +78,9 @@ public class GcmService extends RoboGcmListenerService {
      * Default instance of GcmService expected to be instantiated by Android framework.
      */
     public GcmService() {
-        this(LoggerFactory.getLogger(GcmService.class), new IntentFactory(), new NotificationFactory(), new ContextService());
-    }
-
-    /**
-     * Dependencies exposed for unit test purposes.
-     *
-     * @param logger Non null logging instance.
-     * @param intentFactory Non null IntentFactory for generating internal Intents.
-     * @param notificationFactory Non null NotificationFactory.
-     */
-    @VisibleForTesting
-    public GcmService(final Logger logger, final IntentFactory intentFactory,
-                      final NotificationFactory notificationFactory, final ContextService contextService) {
-        this.logger = logger;
-        this.intentFactory = intentFactory;
-        this.notificationFactory = notificationFactory;
-        this.contextService = contextService;
+        logger = LoggerFactory.getLogger(GcmService.class);
+        notificationFactory = new NotificationFactory();
+        contextService = new ContextService();
     }
 
     @Override
@@ -123,7 +107,7 @@ public class GcmService extends RoboGcmListenerService {
         String mechanismUid = (String) signedJwt.getClaimsSet().getClaim(MECHANISM_UID);
         String base64Challenge = (String) signedJwt.getClaimsSet().getClaim(CHALLENGE);
 
-        if (mechanismUid == null || base64Challenge == null) {
+        if (messageId == null || mechanismUid == null || base64Challenge == null) {
             logger.error("Message did not contain required fields.");
             return;
         }
@@ -175,8 +159,7 @@ public class GcmService extends RoboGcmListenerService {
          * stable in the downstream message. This will allow us to possibly clear out a
          * notification from the users device if they decide to cancel the login request.
          */
-        Intent intent = intentFactory.generateInternal(this, PushAuthActivity.class);
-        BaseNotificationActivity.setupIntent(intent, notificationData);
+        Intent intent = BaseNotificationActivity.setupIntent(this, PushAuthActivity.class, notificationData);
 
         intent.addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
 

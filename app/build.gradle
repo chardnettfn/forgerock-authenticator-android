@@ -34,12 +34,17 @@ android {
         }
         debug {
             debuggable true
+            testCoverageEnabled true
         }
     }
 
     lintOptions {
         abortOnError false
     }
+
+    // Workaround for compile issue with Robolectric, which should be fixed in 3.1
+    // https://github.com/robolectric/robolectric/issues/1862
+    useLibrary 'org.apache.http.legacy'
 }
 
 repositories {
@@ -53,6 +58,9 @@ dependencies {
     testCompile 'org.testng:testng:6.8.5'
     testCompile 'org.mockito:mockito-core:1.9.5'
     testCompile "org.robolectric:robolectric:3.0"
+    testCompile('uk.org.lidalia:slf4j-test:1.2.0') {
+        exclude group: 'org.slf4j'
+    }
 
     // Gson for Serialisation
     compile 'com.google.code.gson:gson:2.6.2'
@@ -65,12 +73,23 @@ dependencies {
     compile 'com.android.support:appcompat-v7:23.2.0'
     compile 'com.android.support:support-v4:23.2.0'
     // Logging framework
-    compile 'org.slf4j:slf4j-android:1.7.18'
+    compile 'org.slf4j:slf4j-api:1.7.18'
+    apk 'org.slf4j:slf4j-android:1.7.18'
     // Guice
     compile 'org.roboguice:roboguice:3.+'
     provided 'org.roboguice:roboblender:3.+'
     // JWT
     compile 'org.forgerock.commons:json-web-token:3.0.3'
+}
+
+apply plugin: 'jacoco'
+
+task generateCoverage(type: JacocoReport, dependsOn: 'testDebugUnitTest') {
+    sourceDirectories = files('src/main/java')
+    classDirectories = fileTree('build/intermediates/classes/debug') {
+        exclude 'android', 'com/google', '**/R$*.class', '**/R.class', '**/BuildConfig.class'
+    }
+    executionData = files('build/jacoco/testDebugUnitTest.exec')
 }
 
 apply plugin: 'com.google.gms.google-services'

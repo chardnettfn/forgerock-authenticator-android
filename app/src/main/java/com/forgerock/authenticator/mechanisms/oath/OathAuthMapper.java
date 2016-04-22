@@ -65,15 +65,13 @@ class OathAuthMapper extends UriParser {
         }
 
         // Secret is REQUIRED
-        if (!values.containsKey(SECRET) || values.get(SECRET).isEmpty()) {
+        if (!containsNonEmpty(values, SECRET)) {
             throw new URIMappingException("Secret is required");
         }
 
-        // Counter is REQUIRED
-        if (type.equalsIgnoreCase(ALLOWED_TYPES[0])) {
-            if (!values.containsKey(COUNTER)) {
-                throw new URIMappingException("Counter is required when in hotp mode");
-            }
+        // Counter is REQUIRED if the algorithm is HOTP
+        if (type.equalsIgnoreCase("hotp") && !containsNonEmpty(values, COUNTER)) {
+            throw new URIMappingException("Counter is required when in hotp mode");
         }
 
         return values;
