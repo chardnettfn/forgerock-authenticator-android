@@ -17,17 +17,24 @@
 package com.forgerock.authenticator.mechanisms.push;
 
 import android.content.Context;
+import android.widget.Toast;
 
-import com.forgerock.authenticator.identity.Identity;
-import com.forgerock.authenticator.mechanisms.base.Mechanism;
+import com.forgerock.authenticator.R;
 import com.forgerock.authenticator.mechanisms.MechanismCreationException;
+import com.forgerock.authenticator.mechanisms.base.Mechanism;
 import com.forgerock.authenticator.mechanisms.base.MechanismFactory;
-import com.forgerock.authenticator.mechanisms.URIMappingException;
-import com.forgerock.authenticator.storage.IdentityModel;
+import com.forgerock.authenticator.mechanisms.base.UriParser;
+import com.forgerock.authenticator.utils.MessageUtils;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.gcm.GoogleCloudMessaging;
+import com.google.android.gms.iid.InstanceID;
 
+import org.json.JSONException;
+
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
-
-import roboguice.RoboGuice;
 
 /**
  * Responsible for generating instances of {@link Push}.
@@ -35,49 +42,60 @@ import roboguice.RoboGuice;
  * Understands the concept of a version number associated with a Push mechanism
  * and will parse the URI according to this.
  */
-public class PushFactory implements MechanismFactory {
+public class PushFactory extends MechanismFactory {
     private PushAuthMapper mapper = new PushAuthMapper();
 
     @Override
-    public Mechanism createFromUri(Context context, String uri) throws URIMappingException, MechanismCreationException {
-        Map<String, String> values = mapper.map(uri);
-        int version;
-        try {
-            version = Integer.parseInt(get(values, PushAuthMapper.VERSION, "1"));
-        } catch (NumberFormatException e) {
-            throw new MechanismCreationException("Expected valid integer, found " +
-                    get(values, PushAuthMapper.VERSION, "1"), e);
-        }
+    protected Mechanism.PartialMechanismBuilder createFromUriParameters
+            (Context context, int version, int mechanismUID, Map<String, String> map)
+            throws MechanismCreationException {
         if (version == 1) {
-            IdentityModel identityModel = RoboGuice.getInjector(context).getInstance(IdentityModel.class);
+            String messageId = get(map, PushAuthMapper.MESSAGE_ID, null);
 
-            String issuer = get(values, PushAuthMapper.ISSUER, "");
-            String accountName = get(values, PushAuthMapper.ACCOUNT_NAME, "");
-            String image = get(values, "image", null);
 
-            Identity identity = identityModel.getIdentity(issuer, accountName);
-
-            if (identity == null) {
-                identity = Identity.builder()
-                        .setIssuer(issuer)
-                        .setAccountName(accountName)
-                        .setImage(image)
-                        .build();
-                identityModel.addIdentity(context, identity);
+            // TODO: AME-9928 check should be performed in on-resume as well.
+            if (!checkPlayServices(context)) {
+                throw new MechanismCreationException("Google play services not enabled");
+            }
+            String token;
+            try {
+                InstanceID instanceId = InstanceID.getInstance(context);
+                token = instanceId.getToken(context.getString(R.string.gcm_defaultSenderId),
+                        GoogleCloudMessaging.INSTANCE_ID_SCOPE, null);
+            } catch (IOException e) {
+                throw new MechanismCreationException("Failed to retrieve GCM token.", e);
             }
 
-            Push.PushBuilder pushBuilder = Push.builder()
-                    .setMechanismUID(5);
-            //TODO: Generate real mechanism UID using IdentityModel
+            String endpoint = map.get(PushAuthMapper.ENDPOINT);
 
-            Mechanism pushAuth = identity.addMechanism(context, pushBuilder);
+            Map<String, String> data = new HashMap<>();
+            data.put("deviceName", "myDevice");
+            data.put("communicationId", token);
+            data.put("mechanismUid", Integer.toString(mechanismUID));
 
-            return pushAuth;
+            try {
+                int returnCode = MessageUtils.respond(endpoint, messageId, data);
+                if (returnCode != 200) {
+                    throw new MechanismCreationException("Communication with server returned " +
+                            returnCode + " code.");
+                }
+            } catch (IOException | JSONException e) {
+                throw new MechanismCreationException("Failed to register with server.", e);
+            }
+
+            Push.PushBuilder pushBuilder = Push.builder().setEndpoint(endpoint);
+
+            return pushBuilder;
         } else {
             throw new MechanismCreationException("Unknown version: " + version);
         }
-
     }
+
+    @Override
+    protected UriParser getParser() {
+        return mapper;
+    }
+
     @Override
     public Mechanism.PartialMechanismBuilder restoreFromParameters(int version, Map<String, String> map) throws MechanismCreationException {
         if (version == 1) {
@@ -88,8 +106,19 @@ public class PushFactory implements MechanismFactory {
         }
     }
 
-    private static String get(Map<String, String> map, String name, String defaultValue) {
-        String value = map.get(name);
-        return value == null ? defaultValue : value;
+    // TODO: AME-9928 should seek to upgrade this functionality
+    private boolean checkPlayServices(Context context) {
+        GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
+        int resultCode = apiAvailability.isGooglePlayServicesAvailable(context);
+        if (resultCode != ConnectionResult.SUCCESS) {
+            if (apiAvailability.isUserResolvableError(resultCode)) {
+                apiAvailability.showErrorNotification(context, resultCode);
+            } else {
+                Toast.makeText(context.getApplicationContext(),
+                        "Error: Google Play Services failed to load.", Toast.LENGTH_LONG).show();
+            }
+            return false;
+        }
+        return true;
     }
 }

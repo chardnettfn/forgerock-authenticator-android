@@ -19,10 +19,13 @@
 package com.forgerock.authenticator.add;
 
 import android.annotation.TargetApi;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.hardware.Camera;
 import android.hardware.Camera.CameraInfo;
 import android.hardware.Camera.Parameters;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -39,6 +42,7 @@ import com.forgerock.authenticator.mechanisms.CoreMechanismFactory;
 import com.forgerock.authenticator.mechanisms.base.Mechanism;
 import com.forgerock.authenticator.mechanisms.MechanismCreationException;
 import com.forgerock.authenticator.mechanisms.URIMappingException;
+import com.forgerock.authenticator.notifications.Notification;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
@@ -79,34 +83,8 @@ public class ScanActivity extends BaseActivity implements SurfaceHolder.Callback
             @Override
             protected void onPostExecute(String result) {
                 super.onPostExecute(result);
-                Mechanism mechanism = addWithToast(context, result);
-                if (mechanism == null || mechanism.getOwner().getImage() == null) {
-                    finish();
-                    return;
-                }
+                new CreateMechanismFromUriTask(context).execute(result);
 
-                final ImageView image = (ImageView) findViewById(R.id.image);
-                Picasso.with(ScanActivity.this)
-                        .load(mechanism.getOwner().getImage())
-                        .placeholder(R.drawable.scan)
-                        .into(image, new Callback() {
-                            @Override
-                            public void onSuccess() {
-                                findViewById(R.id.progress).setVisibility(View.INVISIBLE);
-                                image.setAlpha(0.9f);
-                                image.postDelayed(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        finish();
-                                    }
-                                }, 2000);
-                            }
-
-                            @Override
-                            public void onError() {
-                                finish();
-                            }
-                        });
             }
         };
     }
@@ -130,17 +108,6 @@ public class ScanActivity extends BaseActivity implements SurfaceHolder.Callback
         }
 
         return cameraId;
-    }
-
-    private Mechanism addWithToast(Context context, String uri) {
-        try {
-            Mechanism mechanism = RoboGuice.getInjector(this).getInstance(CoreMechanismFactory.class).createFromUri(context, uri);
-            return mechanism;
-        } catch (MechanismCreationException | URIMappingException e) {
-            Toast.makeText(context, R.string.invalid_qr, Toast.LENGTH_SHORT).show();
-            logger.error("Failed to create Mechanism from QR code", e);
-            return null;
-        }
     }
 
     @Override
@@ -278,6 +245,71 @@ public class ScanActivity extends BaseActivity implements SurfaceHolder.Callback
         @Override
         public void onAutoFocus(boolean success, Camera camera) {
             sendEmptyMessageDelayed(0, 1000);
+        }
+    }
+
+    /**
+     * Class responsible for making a request to OpenAM to complete the authentication request.
+     */
+    private class CreateMechanismFromUriTask extends AsyncTask<String, Void, Mechanism> {
+        private Context context;
+
+        /**
+         * Creates the task.
+         */
+        public CreateMechanismFromUriTask(Context context) {
+            this.context = context;
+        }
+
+        @Override
+        protected Mechanism doInBackground(String... uri) {
+            if (uri.length != 1) {
+                return null;
+            }
+            try {
+                Mechanism mechanism = RoboGuice.getInjector(context).getInstance(CoreMechanismFactory.class).createFromUri(context, uri[0]);
+                return mechanism;
+            } catch (MechanismCreationException | URIMappingException e) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(context, R.string.invalid_qr, Toast.LENGTH_SHORT).show();
+                        logger.error("Failed to create Mechanism from QR code", e);
+                    }
+                });
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Mechanism mechanism) {
+            if (mechanism == null || mechanism.getOwner().getImage() == null) {
+                finish();
+                return;
+            }
+
+            final ImageView image = (ImageView) findViewById(R.id.image);
+            Picasso.with(ScanActivity.this)
+                    .load(mechanism.getOwner().getImage())
+                    .placeholder(R.drawable.scan)
+                    .into(image, new Callback() {
+                        @Override
+                        public void onSuccess() {
+                            findViewById(R.id.progress).setVisibility(View.INVISIBLE);
+                            image.setAlpha(0.9f);
+                            image.postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    finish();
+                                }
+                            }, 2000);
+                        }
+
+                        @Override
+                        public void onError() {
+                            finish();
+                        }
+                    });
         }
     }
 }

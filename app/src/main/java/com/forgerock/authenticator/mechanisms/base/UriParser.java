@@ -47,6 +47,9 @@ public abstract class UriParser {
     /** The identity account name */
     public static final String ACCOUNT_NAME = "accountname";
 
+    /** The identity image */
+    public static final String IMAGE = "image";
+
     private static final String SLASH = "/";
 
     /**

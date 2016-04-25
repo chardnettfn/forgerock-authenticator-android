@@ -16,8 +16,10 @@
 
 package com.forgerock.authenticator.notifications;
 
+import com.forgerock.authenticator.mechanisms.MechanismCreationException;
 import com.forgerock.authenticator.mechanisms.base.Mechanism;
 import com.forgerock.authenticator.mechanisms.push.Push;
+import com.forgerock.authenticator.utils.MessageUtils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -57,31 +59,10 @@ public class PushNotification extends Notification {
     @Override
     protected boolean acceptImpl() {
         int returnCode = 404;
-        HttpURLConnection connection = null;
         try {
-            URL url = new URL("http://amqa-clone69.test.forgerock.com:8080/openam/json/push/gcm/message?_action=send");
-            connection = (HttpURLConnection) url.openConnection();
-            connection.setDoOutput(true);
-            connection.setDoInput(true);
-            connection.setRequestMethod("POST");
-            connection.setRequestProperty("Content-Type", "application/json");
-            connection.connect();
-
-            JSONObject message = new JSONObject();
-            message.put("messageId", messageId);
-
-            OutputStream os = connection.getOutputStream();
-            OutputStreamWriter osw = new OutputStreamWriter(os, "UTF-8");
-            osw.write(message.toString());
-            osw.flush();
-            osw.close();
-            returnCode = connection.getResponseCode();
+            returnCode = MessageUtils.respond(((Push) getMechanism()).getEndpoint(), messageId, new HashMap<String, String>());
         } catch (IOException | JSONException e) {
             logger.error("Response to server failed.", e);
-        }  finally {
-            if(connection != null) {
-                connection.disconnect();
-            }
         }
 
         return returnCode == 200;

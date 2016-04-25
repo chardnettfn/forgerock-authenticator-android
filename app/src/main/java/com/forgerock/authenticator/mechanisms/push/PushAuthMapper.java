@@ -16,6 +16,8 @@
 
 package com.forgerock.authenticator.mechanisms.push;
 
+import android.util.Base64;
+
 import com.forgerock.authenticator.mechanisms.URIMappingException;
 import com.forgerock.authenticator.mechanisms.base.UriParser;
 
@@ -27,8 +29,19 @@ import java.util.Map;
  */
 public class PushAuthMapper extends UriParser {
 
+    /** The secret used for generating the OTP */
+    public static final String MESSAGE_ID = "messageId";
+    public static final String ENDPOINT = "endpoint";
+
     @Override
     protected Map<String, String> validate(Map<String, String> values) throws URIMappingException {
+
+        values.put(ENDPOINT, new String(Base64.decode(values.get(ENDPOINT), Base64.DEFAULT)));
+
+        if (!values.containsKey(MESSAGE_ID) || values.get(MESSAGE_ID).isEmpty()) {
+            throw new URIMappingException("Message ID is required");
+        }
+
         return values;
     }
 }

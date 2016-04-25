@@ -16,8 +16,6 @@
 
 package com.forgerock.authenticator.message;
 
-import android.content.Intent;
-
 import com.google.android.gms.iid.InstanceIDListenerService;
 
 /**
@@ -47,7 +45,5 @@ public class InstanceIdListener extends InstanceIDListenerService {
          */
 
         // Fetch updated Instance ID token and notify our app's server of any changes (if applicable).
-        Intent intent = new Intent(this, InstanceIdListener.class);
-        startService(intent);
     }
 }

@@ -82,6 +82,7 @@ public class GcmService extends RoboGcmListenerService {
 
         String messageId = data.getString("messageId");
         String message = data.getString("message");
+        String mechanismUid = data.getString("mechanismUid");
 
         // TODO: Message contents should not be printed to system log
         logger.info("From: {}", from);
@@ -89,24 +90,20 @@ public class GcmService extends RoboGcmListenerService {
 
         // TODO: Validate that the message is a correctly formed message from the server.
 
-        handleMessage(messageId, message);
+        handleMessage(messageId, mechanismUid, message);
     }
 
-    private void handleMessage(String messageId, String message) {
+    private void handleMessage(String messageId, String mechanismUid, String message) {
 
         int id = messageCount++;
         // TODO: Change activity a list of "unread" messages when there is more than one
-
-
-        //TODO: extract id from message
-        int mechanismId = 5;
 
         List<Mechanism> mechanismList = identityModel.getMechanisms();
 
         Mechanism mechanism = null;
 
         for (Mechanism current : mechanismList) {
-            if (current.getMechanismUID() == mechanismId) {
+            if (Integer.toString(current.getMechanismUID()).equals(mechanismUid)) {
                 mechanism = current;
                 break;
             }

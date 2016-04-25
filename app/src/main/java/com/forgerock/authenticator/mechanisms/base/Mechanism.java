@@ -164,6 +164,9 @@ public abstract class Mechanism extends ModelObject<Mechanism> {
 
     @Override
     public void delete(Context context) {
+        for (Notification notification : notificationList) {
+            notification.delete(context);
+        }
         if (isStored()) {
             RoboGuice.getInjector(context).getInstance(IdentityDatabase.class).deleteMechanism(id);
         }
