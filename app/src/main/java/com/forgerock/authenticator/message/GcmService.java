@@ -31,11 +31,14 @@ import com.forgerock.authenticator.utils.ContextService;
 import com.forgerock.authenticator.utils.IntentFactory;
 import com.forgerock.authenticator.utils.NotificationFactory;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Calendar;
 import java.util.List;
+import java.util.Map;
 import java.util.TimeZone;
 
 
@@ -81,6 +84,16 @@ public class GcmService extends RoboGcmListenerService {
     public void onMessageReceived(String from, Bundle data) {
 
         String messageId = data.getString("messageId");
+        try {
+            JSONObject messageData = new JSONObject(data.getString("message"));
+            handleMessage(messageId, messageId, messageData);
+        } catch (JSONException e) {
+            logger.error("Failed to process message {}", data.getString("message"), e);
+        }
+
+    }
+
+    private void handleMessage(String from, String messageId, JSONObject data) throws JSONException {
         String message = data.getString("message");
         String mechanismUid = data.getString("mechanismUid");
 
@@ -89,11 +102,10 @@ public class GcmService extends RoboGcmListenerService {
         logger.info("Message: {}", message);
 
         // TODO: Validate that the message is a correctly formed message from the server.
-
-        handleMessage(messageId, mechanismUid, message);
+        processMessage(messageId, mechanismUid, message);
     }
 
-    private void handleMessage(String messageId, String mechanismUid, String message) {
+    private void processMessage(String messageId, String mechanismUid, String message) {
 
         int id = messageCount++;
         // TODO: Change activity a list of "unread" messages when there is more than one

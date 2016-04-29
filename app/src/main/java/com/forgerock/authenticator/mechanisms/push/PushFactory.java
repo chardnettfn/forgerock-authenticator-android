@@ -66,11 +66,13 @@ public class PushFactory extends MechanismFactory {
                 throw new MechanismCreationException("Failed to retrieve GCM token.", e);
             }
 
-            String endpoint = map.get(PushAuthMapper.ENDPOINT);
+            String endpoint = map.get(PushAuthMapper.REG_ENDPOINT);
 
             Map<String, String> data = new HashMap<>();
             data.put("deviceName", "myDevice");
-            data.put("communicationId", token);
+            data.put("deviceId", token);
+            data.put("deviceType", "android");
+            data.put("communicationType", "gcm");
             data.put("mechanismUid", Integer.toString(mechanismUID));
 
             try {
@@ -83,7 +85,7 @@ public class PushFactory extends MechanismFactory {
                 throw new MechanismCreationException("Failed to register with server.", e);
             }
 
-            Push.PushBuilder pushBuilder = Push.builder().setEndpoint(endpoint);
+            Push.PushBuilder pushBuilder = Push.builder().setAuthEndpoint(map.get(PushAuthMapper.AUTH_ENDPOINT));
 
             return pushBuilder;
         } else {

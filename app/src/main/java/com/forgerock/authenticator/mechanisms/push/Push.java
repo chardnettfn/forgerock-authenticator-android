@@ -62,7 +62,7 @@ public class Push extends Mechanism {
     @Override
     public Map<String, String> asMap() {
         Map<String, String> result = new HashMap<>();
-        result.put(PushAuthMapper.ENDPOINT, endpoint);
+        result.put(PushAuthMapper.REG_ENDPOINT, endpoint);
         return result;
     }
 
@@ -82,7 +82,7 @@ public class Push extends Mechanism {
          * @param endpoint The endpoint to return messages to.
          * @return This builder.
          */
-        public PushBuilder setEndpoint(String endpoint) {
+        public PushBuilder setAuthEndpoint(String endpoint) {
             this.endpoint = endpoint;
             return this;
         }
@@ -95,7 +95,7 @@ public class Push extends Mechanism {
          * @throws MechanismCreationException If any of the options were invalid.
          */
         public PushBuilder setOptions(Map<String, String> options) {
-            endpoint = options.get(PushAuthMapper.ENDPOINT);
+            endpoint = options.get(PushAuthMapper.REG_ENDPOINT);
             return this;
         }
 
