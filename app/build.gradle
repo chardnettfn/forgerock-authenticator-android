@@ -37,14 +37,14 @@ android {
         }
     }
 
-    testOptions {
-        unitTests.all {
-            useTestNG()
-        }
-    }
-
     lintOptions {
         abortOnError false
+    }
+}
+
+repositories {
+    maven {
+        url 'http://maven.forgerock.org/repo/releases/'
     }
 }
 
@@ -69,6 +69,8 @@ dependencies {
     // Guice
     compile 'org.roboguice:roboguice:3.+'
     provided 'org.roboguice:roboblender:3.+'
+    // JWT
+    compile 'org.forgerock.commons:json-web-token:3.0.3'
 }
 
 apply plugin: 'com.google.gms.google-services'

@@ -38,7 +38,7 @@
             android:layout_marginRight="16dp"
             android:orientation="horizontal">
             <ImageView
-                android:id="@+id/imageURL"
+                android:id="@+id/image"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:scaleType="fitCenter"

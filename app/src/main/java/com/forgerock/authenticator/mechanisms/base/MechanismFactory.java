@@ -61,6 +61,8 @@ public abstract class MechanismFactory {
         String issuer = get(values, UriParser.ISSUER, "");
         String accountName = get(values, UriParser.ACCOUNT_NAME, "");
         String imageURL = get(values, UriParser.IMAGE, null);
+        String bgColor = get(values, UriParser.BG_COLOR, null);
+
         int version;
         try {
             version = Integer.parseInt(get(values, UriParser.VERSION, "1"));
@@ -75,7 +77,8 @@ public abstract class MechanismFactory {
             Identity.IdentityBuilder builder = Identity.builder()
                     .setIssuer(issuer)
                     .setAccountName(accountName)
-                    .setImageURL(imageURL);
+                    .setImageURL(imageURL)
+                    .setBackgroundColor(bgColor);
             identity = identityModel.addIdentity(builder);
         }
 

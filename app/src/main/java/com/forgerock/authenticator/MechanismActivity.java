@@ -17,9 +17,11 @@
 package com.forgerock.authenticator;
 
 import android.app.ActionBar;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.widget.GridView;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.forgerock.authenticator.baseactivities.BaseIdentityActivity;
@@ -27,6 +29,7 @@ import com.forgerock.authenticator.identity.Identity;
 import com.forgerock.authenticator.mechanisms.MechanismAdapter;
 import com.forgerock.authenticator.storage.IdentityModel;
 import com.forgerock.authenticator.storage.IdentityModelListener;
+import com.squareup.picasso.Picasso;
 
 import roboguice.RoboGuice;
 
@@ -55,6 +58,22 @@ public class MechanismActivity extends BaseIdentityActivity {
         mechanismAdapter = new MechanismAdapter(this, identity);
 
         ((GridView) findViewById(R.id.grid)).setAdapter(mechanismAdapter);
+
+        try {
+            String color = identity.getBackgroundColor();
+            if (color != null) {
+                findViewById(R.id.header).setBackgroundColor(Color.parseColor(color));
+            }
+        } catch (IllegalArgumentException e) {
+            // Ignore
+        }
+
+        ImageView imageView = (ImageView) findViewById(R.id.image);
+
+        Picasso.with(this)
+                .load(identity.getImageURL())
+                .placeholder(R.drawable.forgerock_placeholder)
+                .into(imageView);
 
         listener = new IdentityModelListener() {
             @Override

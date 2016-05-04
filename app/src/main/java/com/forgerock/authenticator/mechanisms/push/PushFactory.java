@@ -17,6 +17,7 @@
 package com.forgerock.authenticator.mechanisms.push;
 
 import android.content.Context;
+import android.util.Base64;
 import android.widget.Toast;
 
 import com.forgerock.authenticator.R;
@@ -24,6 +25,7 @@ import com.forgerock.authenticator.mechanisms.MechanismCreationException;
 import com.forgerock.authenticator.mechanisms.base.Mechanism;
 import com.forgerock.authenticator.mechanisms.base.MechanismFactory;
 import com.forgerock.authenticator.mechanisms.base.UriParser;
+import com.forgerock.authenticator.notifications.PushNotification;
 import com.forgerock.authenticator.storage.IdentityModel;
 import com.forgerock.authenticator.utils.MessageUtils;
 import com.google.android.gms.common.ConnectionResult;
@@ -56,6 +58,12 @@ public class PushFactory extends MechanismFactory {
     protected Mechanism.PartialMechanismBuilder createFromUriParameters(
             int version, String mechanismUID, Map<String, String> map) throws MechanismCreationException {
         if (version == 1) {
+            String registrationEndpoint = new String(Base64.decode(map.get(PushAuthMapper.REG_ENDPOINT), Base64.URL_SAFE));
+            String authenticationEndpoint = new String(Base64.decode(map.get(PushAuthMapper.AUTH_ENDPOINT), Base64.URL_SAFE));
+            String base64Secret = map.get(PushAuthMapper.SHARED_SECRET);
+            String base64Challenge = map.get(PushAuthMapper.CHALLENGE);
+            String color = map.get(PushAuthMapper.BACKGROUND_COLOR);
+
             String messageId = get(map, PushAuthMapper.MESSAGE_ID, null);
 
 
@@ -71,17 +79,15 @@ public class PushFactory extends MechanismFactory {
                 throw new MechanismCreationException("Failed to retrieve GCM token.", e);
             }
 
-            String endpoint = map.get(PushAuthMapper.REG_ENDPOINT);
-
             Map<String, String> data = new HashMap<>();
-            data.put("deviceName", "myDevice");
             data.put("deviceId", token);
             data.put("deviceType", "android");
             data.put("communicationType", "gcm");
             data.put("mechanismUid", mechanismUID);
+            data.put("response", PushNotification.generateChallengeResponse(base64Secret, base64Challenge));
 
             try {
-                int returnCode = MessageUtils.respond(endpoint, messageId, data);
+                int returnCode = MessageUtils.respond(registrationEndpoint, base64Secret, messageId, data);
                 if (returnCode != 200) {
                     throw new MechanismCreationException("Communication with server returned " +
                             returnCode + " code.");
@@ -90,7 +96,7 @@ public class PushFactory extends MechanismFactory {
                 throw new MechanismCreationException("Failed to register with server.", e);
             }
 
-            Push.PushBuilder pushBuilder = Push.builder().setAuthEndpoint(map.get(PushAuthMapper.AUTH_ENDPOINT));
+            Push.PushBuilder pushBuilder = Push.builder().setAuthEndpoint(authenticationEndpoint).setBase64Secret(base64Secret);
 
             return pushBuilder;
         } else {

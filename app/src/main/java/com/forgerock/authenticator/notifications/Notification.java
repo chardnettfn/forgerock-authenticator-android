@@ -288,6 +288,9 @@ public abstract class Notification extends ModelObject<Notification> {
          * @return The final notification.
          */
         public Notification build(Mechanism mechanism) throws InvalidNotificationException {
+            if (mechanism == null) {
+                throw new InvalidNotificationException("Tried to create notification without a Mechanism");
+            }
             if (!getMechanismClass().isInstance(mechanism)) {
                 throw new InvalidNotificationException("Tried to attach notification to incorrect type of Mechanism");
             }

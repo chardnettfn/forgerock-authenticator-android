@@ -19,16 +19,20 @@ package com.forgerock.authenticator.mechanisms.push;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.forgerock.authenticator.baseactivities.BaseNotificationActivity;
+import com.forgerock.authenticator.identity.Identity;
 import com.forgerock.authenticator.notifications.Notification;
 import com.forgerock.authenticator.ui.ConfirmationSwipeBar;
 import com.forgerock.authenticator.R;
+import com.squareup.picasso.Picasso;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,6 +65,23 @@ public class PushAuthActivity extends BaseNotificationActivity {
                 finish();
             }
         });
+
+        Identity owner = notification.getMechanism().getOwner();
+        try {
+            String color = owner.getBackgroundColor();
+            if (color != null) {
+                findViewById(R.id.header).setBackgroundColor(Color.parseColor(color));
+            }
+        } catch (IllegalArgumentException e) {
+            // Ignore
+        }
+
+        ImageView imageView = (ImageView) findViewById(R.id.image);
+
+        Picasso.with(this)
+                .load(owner.getImageURL())
+                .placeholder(R.drawable.forgerock_placeholder)
+                .into(imageView);
 
         swipeToConfirm = (ConfirmationSwipeBar) findViewById(R.id.slideToConfirm);
         swipeToConfirm.setListener(new ConfirmationSwipeBar.ConfirmationSwipeBarListener() {

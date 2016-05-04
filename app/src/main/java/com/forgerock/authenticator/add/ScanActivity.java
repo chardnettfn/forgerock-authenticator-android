@@ -59,7 +59,6 @@ public class ScanActivity extends BaseActivity implements SurfaceHolder.Callback
     private Handler             mHandler;
     private Camera              mCamera;
     private Logger logger;
-    private CoreMechanismFactory coreMechanismFactory;
 
     /**
      * Creates a new ScanActivity. Never called directly, as instantiation is handled by an Intent.
@@ -82,8 +81,6 @@ public class ScanActivity extends BaseActivity implements SurfaceHolder.Callback
 
             }
         };
-
-        coreMechanismFactory = new CoreMechanismFactory(context, identityModel);
     }
 
     /**
@@ -264,7 +261,7 @@ public class ScanActivity extends BaseActivity implements SurfaceHolder.Callback
                 return null;
             }
             try {
-                Mechanism mechanism = coreMechanismFactory.createFromUri(uri[0]);
+                Mechanism mechanism = new CoreMechanismFactory(context, identityModel).createFromUri(uri[0]);
                 return mechanism;
             } catch (MechanismCreationException | URIMappingException e) {
                 runOnUiThread(new Runnable() {

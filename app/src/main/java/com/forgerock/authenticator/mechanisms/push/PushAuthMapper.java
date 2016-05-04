@@ -29,16 +29,28 @@ import java.util.Map;
  */
 public class PushAuthMapper extends UriParser {
 
-    /** The secret used for generating the OTP */
-    public static final String MESSAGE_ID = "m";
+    /**
+     * Keys.
+     */
+
+    /** The endpoint used for registration */
     public static final String REG_ENDPOINT = "r";
+    /** The endpoint used for authentication */
     public static final String AUTH_ENDPOINT = "a";
+    /** The message id to use for response */
+    public static final String MESSAGE_ID = "m";
+    /** The shared secret used for signing */
+    public static final String SHARED_SECRET = "s";
+    /** The background color used for theming */
+    public static final String BACKGROUND_COLOR = "b"; // TODO: Move this to shared code
+    /** The challenge to use for the response */
+    public static final String CHALLENGE = "c";
 
     @Override
     protected Map<String, String> validate(Map<String, String> values) throws URIMappingException {
 
-        values.put(REG_ENDPOINT, new String(Base64.decode(values.get(REG_ENDPOINT), Base64.URL_SAFE)));
-        values.put(AUTH_ENDPOINT, new String(Base64.decode(values.get(AUTH_ENDPOINT), Base64.URL_SAFE)));
+        //TODO: validate appropriately (in parallel with unit tests)
+        values.put(IMAGE, new String(Base64.decode(values.get(IMAGE), Base64.URL_SAFE))); // Have to decode the url here - how does auth work?
 
         if (!values.containsKey(MESSAGE_ID) || values.get(MESSAGE_ID).isEmpty()) {
             throw new URIMappingException("Message ID is required");

@@ -16,24 +16,25 @@
 
 package com.forgerock.authenticator.notifications;
 
-import com.forgerock.authenticator.mechanisms.MechanismCreationException;
 import com.forgerock.authenticator.mechanisms.base.Mechanism;
 import com.forgerock.authenticator.mechanisms.push.Push;
 import com.forgerock.authenticator.utils.MessageUtils;
 
+import org.forgerock.util.encode.Base64;
 import org.json.JSONException;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.crypto.Mac;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 
 /**
  * Model class which represents a message that was received from an external source. Can provide a
@@ -41,18 +42,23 @@ import java.util.Map;
  */
 public class PushNotification extends Notification {
     private static final Logger logger = LoggerFactory.getLogger(PushNotification.class);
-    private static final String MESSAGE_ID = "messageId";
+    private static final String MESSAGE_ID_KEY = "messageId";
+    private static final String RESPONSE_KEY = "response";
+    private static final String CHALLENGE_KEY = "challenge";
     private String messageId;
+    private String base64Challenge;
 
-    private PushNotification(Mechanism mechanism, long id, Calendar timeAdded, Calendar timeExpired, boolean accepted, boolean active, String messageId) {
+    private PushNotification(Mechanism mechanism, long id, Calendar timeAdded, Calendar timeExpired, boolean accepted, boolean active, String messageId, String base64Challenge) {
         super(mechanism, id, timeAdded, timeExpired, accepted, active);
         this.messageId = messageId;
+        this.base64Challenge = base64Challenge;
     }
 
     @Override
     public Map<String, String> getData() {
         Map<String, String> data = new HashMap<>();
-        data.put(MESSAGE_ID, messageId);
+        data.put(MESSAGE_ID_KEY, messageId);
+        data.put(CHALLENGE_KEY, base64Challenge);
         return data;
     }
 
@@ -60,7 +66,10 @@ public class PushNotification extends Notification {
     protected boolean acceptImpl() {
         int returnCode = 404;
         try {
-            returnCode = MessageUtils.respond(((Push) getMechanism()).getEndpoint(), messageId, new HashMap<String, String>());
+            Push push = (Push) getMechanism();
+            Map<String, String> data = new HashMap<>();
+            data.put(RESPONSE_KEY, generateChallengeResponse(push.getSecret(), base64Challenge));
+            returnCode = MessageUtils.respond(push.getEndpoint(), push.getSecret(), messageId, data);
         } catch (IOException | JSONException e) {
             logger.error("Response to server failed.", e);
         }
@@ -71,6 +80,21 @@ public class PushNotification extends Notification {
     @Override
     protected boolean denyImpl() {
         return true;
+    }
+
+    public static String generateChallengeResponse(String base64Secret, String base64Challenge) {
+        byte[] secret = Base64.decode(base64Secret);
+        byte[] challenge = Base64.decode(base64Challenge);
+        Mac hmac = null;
+        SecretKey key = new SecretKeySpec(secret, 0, secret.length, "HmacSHA256");
+        try {
+            hmac = Mac.getInstance("HmacSHA256");
+            hmac.init(key);
+        } catch (NoSuchAlgorithmException | InvalidKeyException e) {
+            logger.error("Failed to generate challenge-response", e);
+        }
+        byte[] output = hmac.doFinal(challenge);
+        return Base64.encode(output);
     }
 
     /**
@@ -86,6 +110,7 @@ public class PushNotification extends Notification {
      */
     public static class PushNotificationBuilder extends NotificationBuilder<PushNotificationBuilder> {
         private String messageId;
+        private String base64Challenge;
 
         /**
          * Sets the message id that was received with this notification. This will one day be moved
@@ -94,6 +119,15 @@ public class PushNotification extends Notification {
          */
         public PushNotificationBuilder setMessageId(String messageId) {
             this.messageId = messageId;
+            return this;
+        }
+
+        /**
+         * Set the challenge that was sent with this notification.
+         * @param challenge The base64 encoded challenge.
+         */
+        public PushNotificationBuilder setChallenge(String challenge) {
+         this.base64Challenge = challenge;
             return this;
         }
 
@@ -109,13 +143,14 @@ public class PushNotification extends Notification {
 
         @Override
         public PushNotificationBuilder setData(Map<String, String> data) {
-            this.messageId = data.get(MESSAGE_ID);
+            this.messageId = data.get(MESSAGE_ID_KEY);
+            this.base64Challenge = data.get(CHALLENGE_KEY);
             return this;
         }
 
         @Override
         public PushNotification buildImpl() {
-            return new PushNotification(parent, id, timeAdded, timeExpired, approved, pending, messageId);
+            return new PushNotification(parent, id, timeAdded, timeExpired, approved, pending, messageId, base64Challenge);
         }
     }
 }

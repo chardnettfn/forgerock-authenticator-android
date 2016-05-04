@@ -50,6 +50,8 @@ public abstract class UriParser {
     /** The identity image */
     public static final String IMAGE = "image";
 
+    public static final String BG_COLOR = "b";
+
     private static final String SLASH = "/";
 
     /**
@@ -101,6 +103,10 @@ public abstract class UriParser {
             if (split != null) {
                 r.put(split[0], split[1]);
             }
+        }
+
+        if (r.containsKey(BG_COLOR) && !r.get(BG_COLOR).startsWith("#")) {
+            r.put(BG_COLOR, "#" + r.get(BG_COLOR));
         }
         return r;
     }

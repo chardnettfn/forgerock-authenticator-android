@@ -129,11 +129,13 @@ public class IdentityDatabase {
         String issuer = id.getIssuer();
         String accountName = id.getAccountName();
         String imageURL = id.getImageURL() == null ? null : id.getImageURL().toString();
+        String backgroundColor = id.getBackgroundColor();
 
         ContentValues values = new ContentValues();
         values.put(ISSUER, issuer);
         values.put(ACCOUNT_NAME, accountName);
         values.put(IMAGE_URL, imageURL);
+        values.put(BG_COLOR, backgroundColor);
 
         long rowId = database.insert(IDENTITY_TABLE_NAME, null, values);
         return rowId;
@@ -258,6 +260,7 @@ public class IdentityDatabase {
         String issuer = cursor.getString(cursor.getColumnIndex(ISSUER));
         String accountName = cursor.getString(cursor.getColumnIndex(ACCOUNT_NAME));
         String imageURL = cursor.getString(cursor.getColumnIndex(IMAGE_URL));
+        String backgroundColor = cursor.getString(cursor.getColumnIndex(BG_COLOR));
 
         List<Mechanism.PartialMechanismBuilder> mechanismBuilders = getMechanismBuilders(issuer, accountName);
 
@@ -266,6 +269,7 @@ public class IdentityDatabase {
                 .setAccountName(accountName)
                 .setImageURL(imageURL)
                 .setId(rowid)
+                .setBackgroundColor(backgroundColor)
                 .setMechanisms(mechanismBuilders);
         return identityBuilder;
     }

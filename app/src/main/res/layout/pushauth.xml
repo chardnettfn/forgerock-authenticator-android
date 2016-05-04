@@ -22,6 +22,7 @@
     android:layout_height="match_parent">
 
     <LinearLayout
+        android:id="@+id/header"
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="180dp"
@@ -40,10 +41,9 @@
             android:layout_width="match_parent"
             android:layout_height="20dp" />
         <com.forgerock.authenticator.ui.CircleImageView
-            android:id="@+id/imageURL"
+            android:id="@+id/image"
             android:layout_width="96dp"
             android:layout_height="96dp"
-            android:padding="10dp"
             android:layout_gravity="center_horizontal"
             android:src="@drawable/forgerock_placeholder"
             android:scaleType="fitCenter"

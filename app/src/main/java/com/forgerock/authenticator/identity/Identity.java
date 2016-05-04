@@ -16,6 +16,7 @@
 
 package com.forgerock.authenticator.identity;
 
+import android.graphics.Color;
 import android.net.Uri;
 
 import com.forgerock.authenticator.mechanisms.MechanismCreationException;
@@ -43,15 +44,17 @@ public class Identity extends ModelObject<Identity> {
     private final Uri imageURL;
     private final List<Mechanism> mechanismList;
     private static final Logger logger = LoggerFactory.getLogger(Identity.class);
+    private final String backgroundColor;
 
 
-    private Identity(IdentityModel model, long id, String issuer, String accountName, Uri imageURL) {
+    private Identity(IdentityModel model, long id, String issuer, String accountName, String backgroundColor, Uri imageURL) {
         super(model);
         this.id = id;
         this.issuer = issuer;
         this.accountName = accountName;
         this.imageURL = imageURL;
         this.mechanismList = new SortedList<>();
+        this.backgroundColor = backgroundColor;
     }
 
     /**
@@ -166,6 +169,10 @@ public class Identity extends ModelObject<Identity> {
         }
     }
 
+    public String getBackgroundColor() {
+        return backgroundColor;
+    }
+
     @Override
     public boolean equals(Object object) {
         if (object == null || !(object instanceof Identity)) {
@@ -222,6 +229,7 @@ public class Identity extends ModelObject<Identity> {
         private String accountName;
         private Uri imageURL;
         private List<Mechanism.PartialMechanismBuilder> mechanismBuilders = new ArrayList<>();
+        private String backgroundColor;
 
         /**
          * Sets the storage id of this Identity. Should not be set manually, or if the Identity is
@@ -269,12 +277,24 @@ public class Identity extends ModelObject<Identity> {
             return this;
         }
 
+        public IdentityBuilder setBackgroundColor(String color) {
+            try {
+                if (color != null) {
+                    Color.parseColor(color);
+                    backgroundColor = color;
+                }
+            } catch (IllegalArgumentException e) {
+                logger.error("Tried to parse invalid string as color ({})", color, e);
+            }
+            return this;
+        }
+
         /**
          * Produces the Identity object that was being constructed.
          * @return The identity.
          */
         public Identity build(IdentityModel model) {
-            Identity result =  new Identity(model, id, issuer, accountName, imageURL);
+            Identity result =  new Identity(model, id, issuer, accountName, backgroundColor, imageURL);
             result.populateMechanisms(mechanismBuilders);
             return result;
         }

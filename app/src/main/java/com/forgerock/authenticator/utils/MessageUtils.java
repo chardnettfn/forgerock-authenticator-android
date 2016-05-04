@@ -16,6 +16,15 @@
 
 package com.forgerock.authenticator.utils;
 
+import org.forgerock.json.jose.builders.JwtBuilder;
+import org.forgerock.json.jose.builders.JwtClaimsSetBuilder;
+import org.forgerock.json.jose.builders.SignedJwtBuilderImpl;
+import org.forgerock.json.jose.jws.JwsAlgorithm;
+import org.forgerock.json.jose.jws.SigningManager;
+import org.forgerock.json.jose.jws.handlers.HmacSigningHandler;
+import org.forgerock.json.jose.jws.handlers.SigningHandler;
+import org.forgerock.json.jose.jwt.Jwt;
+import org.forgerock.util.encode.Base64;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -40,7 +49,7 @@ public class MessageUtils {
      * @throws IOException If a network issue occurred.
      * @throws JSONException If an encoding issue occurred.
      */
-    public static int respond(String endpoint, String messageId, Map<String, String> data)
+    public static int respond(String endpoint, String base64Secret, String messageId, Map<String, String> data)
             throws IOException, JSONException {
         HttpURLConnection connection = null;
         int returnCode = 404;
@@ -53,13 +62,9 @@ public class MessageUtils {
             connection.setRequestProperty("Content-Type", "application/json");
             connection.connect();
 
-            JSONObject jsonData = new JSONObject();
-            for (String key : data.keySet()) {
-                jsonData.put(key, data.get(key));
-            }
-            jsonData.put("messageId", messageId);
             JSONObject message = new JSONObject();
-            message.put("data", jsonData);
+            message.put("messageId", messageId);
+            message.put("jwt", generateJwt(base64Secret, data));
 
             OutputStream os = connection.getOutputStream();
             OutputStreamWriter osw = new OutputStreamWriter(os, "UTF-8");
@@ -73,5 +78,19 @@ public class MessageUtils {
             }
         }
         return returnCode;
+    }
+
+    private static String generateJwt(String base64Secret, Map<String, String> data) {
+        JwtClaimsSetBuilder builder = new JwtClaimsSetBuilder();
+        for (String key : data.keySet()) {
+            builder.claim(key, data.get(key));
+        }
+
+        byte[] secret = Base64.decode(base64Secret);
+        SigningHandler signingHandler = new SigningManager().newHmacSigningHandler(secret);
+        SignedJwtBuilderImpl jwtBuilder = new SignedJwtBuilderImpl(signingHandler);
+        jwtBuilder.claims(builder.build());
+        jwtBuilder.headers().alg(JwsAlgorithm.HS256);
+        return jwtBuilder.build();
     }
 }

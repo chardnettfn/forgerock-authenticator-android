@@ -26,21 +26,34 @@ import android.support.annotation.VisibleForTesting;
 import com.forgerock.authenticator.baseactivities.BaseNotificationActivity;
 import com.forgerock.authenticator.mechanisms.InvalidNotificationException;
 import com.forgerock.authenticator.mechanisms.base.Mechanism;
+import com.forgerock.authenticator.mechanisms.push.Push;
 import com.forgerock.authenticator.mechanisms.push.PushAuthActivity;
 import com.forgerock.authenticator.notifications.PushNotification;
 import com.forgerock.authenticator.utils.ContextService;
 import com.forgerock.authenticator.utils.IntentFactory;
 import com.forgerock.authenticator.utils.NotificationFactory;
 
+import org.forgerock.json.jose.common.JwtReconstruction;
+import org.forgerock.json.jose.exceptions.JwtReconstructionException;
+import org.forgerock.json.jose.jws.SignedJwt;
+import org.forgerock.json.jose.jws.SigningManager;
+import org.forgerock.json.jose.jws.handlers.SigningHandler;
+import org.forgerock.util.encode.Base64;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
+
+import javax.crypto.Mac;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 
 
 /**
@@ -57,6 +70,11 @@ public class GcmService extends RoboGcmListenerService {
     private final IntentFactory intentFactory;
     private final NotificationFactory notificationFactory;
     private final ContextService contextService;
+
+    private static final String MESSAGE = "message";
+    private static final String CHALLENGE = "c";
+    private static final String MESSAGE_ID = "messageId";
+    private static final String MECHANISM_UID = "u";
 
     /**
      * Default instance of GcmService expected to be instantiated by Android framework.
@@ -83,46 +101,53 @@ public class GcmService extends RoboGcmListenerService {
 
     @Override
     public void onMessageReceived(String from, Bundle data) {
+        String messageId = data.getString(MESSAGE_ID);
+        handleMessage(messageId, data.getString(MESSAGE));
+    }
 
-        String messageId = data.getString("messageId");
+    private boolean verify(String base64Secret, SignedJwt signedJwt) {
+
+        byte[] secret = Base64.decode(base64Secret);
+        SigningHandler signingHandler = new SigningManager().newHmacSigningHandler(secret);
+        return signedJwt.verify(signingHandler);
+    }
+
+    private void handleMessage(String messageId, String jwtString) {
+        SignedJwt signedJwt;
         try {
-            JSONObject messageData = new JSONObject(data.getString("message"));
-            handleMessage(messageId, messageId, messageData);
-        } catch (JSONException e) {
-            logger.error("Failed to process message {}", data.getString("message"), e);
+            signedJwt = new JwtReconstruction().reconstructJwt(jwtString, SignedJwt.class);
+        } catch (JwtReconstructionException e) {
+            logger.error("Failed to reconstruct JWT.");
+            return;
         }
+        String mechanismUid = (String) signedJwt.getClaimsSet().getClaim(MECHANISM_UID);
+        String base64Challenge = (String) signedJwt.getClaimsSet().getClaim(CHALLENGE);
 
-    }
-
-    private void handleMessage(String from, String messageId, JSONObject data) throws JSONException {
-        String message = data.getString("message");
-        String mechanismUid = data.getString("mechanismUid");
-
-        // TODO: Message contents should not be printed to system log
-        logger.info("From: {}", from);
-        logger.info("Message: {}", message);
-
-        // TODO: Validate that the message is a correctly formed message from the server.
-        processMessage(messageId, mechanismUid, message);
-    }
-
-    private void processMessage(String messageId, String mechanismUid, String message) {
+        if (mechanismUid == null || base64Challenge == null) {
+            logger.error("Message did not contain required fields.");
+            return;
+        }
 
         int id = messageCount++;
         // TODO: Change activity a list of "unread" messages when there is more than one
 
         List<Mechanism> mechanismList = identityModel.getMechanisms();
 
-        Mechanism mechanism = null;
+        Push push = null;
 
         for (Mechanism current : mechanismList) {
             if (current.getMechanismUID().equals(mechanismUid)) {
-                mechanism = current;
+                push = (Push) current;
                 break;
             }
         }
 
-        if (mechanism == null) {
+        if (push == null) {
+            return;
+        }
+
+        if (!verify(push.getSecret(), signedJwt)) {
+            logger.error("Failed to validate jwt.");
             return;
         }
 
@@ -134,10 +159,11 @@ public class GcmService extends RoboGcmListenerService {
                 PushNotification.builder()
                         .setTimeAdded(timeReceived)
                         .setTimeExpired(timeExpired)
-                        .setMessageId(messageId);
+                        .setMessageId(messageId)
+                        .setChallenge(base64Challenge);
         com.forgerock.authenticator.notifications.Notification notificationData;
         try {
-            notificationData = mechanism.addNotification(notificationBuilder);
+            notificationData = push.addNotification(notificationBuilder);
         } catch (InvalidNotificationException e) {
             logger.error("Received message mapped invalid Notification to Mechanism. Skipping...");
             return;
@@ -155,7 +181,7 @@ public class GcmService extends RoboGcmListenerService {
         intent.addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
 
         String title = "Login Detected";
-        Notification notification = notificationFactory.generatePending(this, id, title, message, intent);
+        Notification notification = notificationFactory.generatePending(this, id, title, "Login Detected", intent); //TODO: update the notification strings
 
         NotificationManager notificationManager = contextService.getService(this, Context.NOTIFICATION_SERVICE);
         notificationManager.notify(id, notification);
