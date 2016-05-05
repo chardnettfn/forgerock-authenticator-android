@@ -16,18 +16,14 @@
 
 package com.forgerock.authenticator.storage;
 
-import android.content.Context;
 import android.support.annotation.VisibleForTesting;
 
 import com.forgerock.authenticator.identity.Identity;
-import com.forgerock.authenticator.mechanisms.CoreMechanismFactory;
 import com.forgerock.authenticator.mechanisms.base.Mechanism;
-import com.forgerock.authenticator.model.ModelObject;
 import com.forgerock.authenticator.notifications.Notification;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 /**
  * Class which represents the data model, and handles deciding when the database should be updated.
@@ -36,29 +32,41 @@ import java.util.Random;
 public class IdentityModel {
     private List<Identity> identities;
     private List<IdentityModelListener> listeners;
-    private IdentityDatabase identityDatabase;
+    private StorageSystem storageSystem;
 
     /**
      * Load the model from the database.
-     * @param context The context that the model is being loaded from.
      */
-    public IdentityModel(Context context) {
-        identityDatabase = new IdentityDatabase(context, new CoreMechanismFactory(context, this));
+    public IdentityModel() {
         listeners = new ArrayList<>();
-        identities = identityDatabase.getModel(this);
-        validateModel(identities);
+    }
+
+    /**
+     * Set the initial storage system to load data from. Can only be used once for a given Model.
+     * @param storageSystem The storage system to use.
+     */
+    public void loadFromStorageSystem(StorageSystem storageSystem) {
+        if (this.storageSystem == null) {
+            this.storageSystem = storageSystem;
+            identities = this.storageSystem.getModel(this);
+            validateModel(identities);
+        }
     }
 
     @VisibleForTesting
     public IdentityModel(IdentityDatabase database) {
-        identityDatabase = database;
+        storageSystem = database;
         listeners = new ArrayList<>();
-        identities = identityDatabase.getModel(this);
+        identities = storageSystem.getModel(this);
         validateModel(identities);
     }
 
-    public IdentityDatabase getIdentityDatabase() {
-        return identityDatabase;
+    /**
+     * Returns the storage system currently backing this model.
+     * @return The storage system being used.
+     */
+    public StorageSystem getStorageSystem() {
+        return storageSystem;
     }
 
     /**
@@ -206,6 +214,25 @@ public class IdentityModel {
     public void removeIdentity(Identity identity) {
         identity.delete();
         identities.remove(identity);
+    }
+
+    /**
+     * Transfer the current data to a new storage system.
+     * @param newStorage The storage system to transfer the data to.
+     */
+    public void transferStorage(StorageSystem newStorage) {
+        storageSystem = newStorage;
+        for (Identity identity : identities) {
+            identity.forceSave();
+        }
+
+        for (Mechanism mechanism : getMechanisms()) {
+            mechanism.forceSave();
+        }
+
+        for (Notification notification : getNotifications()) {
+            notification.forceSave();
+        }
     }
 
     /**

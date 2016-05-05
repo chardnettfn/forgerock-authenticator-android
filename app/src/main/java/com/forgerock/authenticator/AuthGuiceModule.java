@@ -22,6 +22,7 @@ import android.content.Context;
 import com.forgerock.authenticator.mechanisms.CoreMechanismFactory;
 import com.forgerock.authenticator.storage.IdentityDatabase;
 import com.forgerock.authenticator.storage.IdentityModel;
+import com.forgerock.authenticator.storage.ModelOpenHelper;
 import com.forgerock.authenticator.storage.Settings;
 import com.google.inject.AbstractModule;
 
@@ -41,7 +42,8 @@ public class AuthGuiceModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        bind(IdentityModel.class).toInstance(new IdentityModel(context));
+
+        bind(IdentityModel.class).toInstance(new ModelOpenHelper(context).getModel());
         bind(Settings.class).toInstance(new Settings(context));
     }
 }

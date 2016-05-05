@@ -16,20 +16,17 @@
 
 package com.forgerock.authenticator.notifications;
 
-import android.content.Context;
-
 import com.forgerock.authenticator.mechanisms.InvalidNotificationException;
 import com.forgerock.authenticator.mechanisms.base.Mechanism;
 import com.forgerock.authenticator.model.ModelObject;
-import com.forgerock.authenticator.storage.IdentityDatabase;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.TimeZone;
-
-import roboguice.RoboGuice;
 
 /**
  * Model class which represents a message that was received from an external source. Can provide a
@@ -101,16 +98,22 @@ public abstract class Notification extends ModelObject<Notification> {
     @Override
     public void save() {
         if (id == NOT_STORED) {
-            id = getModel().getIdentityDatabase().addNotification(this);
+            id = getModel().getStorageSystem().addNotification(this);
         } else {
-            getModel().getIdentityDatabase().updateNotification(id, this);
+            getModel().getStorageSystem().updateNotification(id, this);
         }
+    }
+
+    @Override
+    public boolean forceSave() {
+        id = getModel().getStorageSystem().addNotification(this);
+        return id != NOT_STORED;
     }
 
     @Override
     public void delete() {
         if (id != NOT_STORED) {
-            getModel().getIdentityDatabase().deleteNotification(id);
+            getModel().getStorageSystem().deleteNotification(id);
             id = NOT_STORED;
         }
     }
@@ -137,17 +140,50 @@ public abstract class Notification extends ModelObject<Notification> {
     }
 
     @Override
+    public boolean matches(Notification other) {
+        if (other == null) {
+            return false;
+        }
+        return getMechanism().equals(other.getMechanism()) && timeAdded.getTimeInMillis() == other.timeAdded.getTimeInMillis();
+    }
+
+    @Override
     public boolean equals(Object other) {
         if (other == null || !(other instanceof Notification)) {
             return false;
         }
         Notification otherNotification = (Notification) other;
-        return getMechanism().equals(otherNotification.getMechanism()) && timeAdded.getTimeInMillis() == otherNotification.timeAdded.getTimeInMillis();
+
+        boolean dataMatches = true;
+
+        Map<String, String> data = getData();
+        Map<String, String> otherData = otherNotification.getData();
+
+        for (String key: data.keySet()) {
+            if (data.get(key) != null || otherData.get(key) != null) {
+                dataMatches &= data.get(key) != null && data.get(key).equals(otherData.get(key));
+            }
+        }
+
+        return parent.equals(otherNotification.parent)
+                && timeAdded.equals(otherNotification.timeAdded)
+                && timeExpired.equals(otherNotification.timeExpired)
+                && dataMatches;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getMechanism(), timeAdded);
+        List<Object> values = new ArrayList<>();
+        values.add(parent);
+        values.add(timeAdded);
+
+        Map<String, String> data = getData();
+
+        for (String key: data.keySet()) {
+            values.add(data.get(key));
+        }
+
+        return Arrays.hashCode(values.toArray());
     }
 
     /**
@@ -234,15 +270,6 @@ public abstract class Notification extends ModelObject<Notification> {
         protected abstract T getThis();
 
         protected abstract Class<? extends Mechanism> getMechanismClass();
-
-        /**
-         * Sets the mechanism which this notification in intended for.
-         * @param mechanism The mechanism.
-         */
-        public T setMechanism(Mechanism mechanism) {
-
-            return getThis();
-        }
 
         /**
          * Sets the date that the notification was received.

@@ -56,7 +56,7 @@ public class IdentityBuilderTest {
         model = mock(IdentityModel.class);
         IdentityDatabase identityDatabase = mock(IdentityDatabase.class);
         given(identityDatabase.addMechanism(any(Mechanism.class))).willReturn(1l);
-        given(model.getIdentityDatabase()).willReturn(identityDatabase);
+        given(model.getStorageSystem()).willReturn(identityDatabase);
     }
 
     @Test

@@ -19,6 +19,7 @@ package com.forgerock.authenticator.storage;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 
 import com.forgerock.authenticator.identity.Identity;
@@ -38,12 +39,13 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 
 /**
  * Data Access Object which can store and load both Identities and Mechanisms. Encapsulates the
  * specific storage mechanism.
  */
-public class IdentityDatabase {
+public class IdentityDatabase implements StorageSystem {
     /** The name of the table the identities are stored in */
     static final String IDENTITY_TABLE_NAME = "identity";
     /**The name of the table the mechanisms are stored in */
@@ -99,16 +101,13 @@ public class IdentityDatabase {
      * Creates a connection to the database using the provided Context.
      * @param context The context that requested the connection.
      */
-    public IdentityDatabase(Context context, CoreMechanismFactory factory) {
+    IdentityDatabase(Context context, CoreMechanismFactory factory) {
         DatabaseOpenHelper databaseOpeHelper = new DatabaseOpenHelper(context);
         database = databaseOpeHelper.getWritableDatabase();
         coreMechanismFactory = factory;
     }
 
-    /**
-     * Loads the complete list of Identities, loaded with the mechanisms and notifications from the database.
-     * @return The complete set of data.
-     */
+    @Override
     public List<Identity> getModel(IdentityModel model) {
         List<Identity.IdentityBuilder> identityBuilders = getIdentityBuilders();
 
@@ -121,10 +120,7 @@ public class IdentityDatabase {
         return identities;
     }
 
-    /**
-     * Add the identity to the database.
-     * @param id The identity to add.
-     */
+    @Override
     public long addIdentity(Identity id) {
         String issuer = id.getIssuer();
         String accountName = id.getAccountName();
@@ -141,10 +137,7 @@ public class IdentityDatabase {
         return rowId;
     }
 
-    /**
-     * Add the mechanism to the database. If the owning identity is not yet stored, store that as well.
-     * @param mechanism The mechanism to store.
-     */
+    @Override
     public long addMechanism(Mechanism mechanism) {
         String issuer = mechanism.getOwner().getIssuer();
         String accountName = mechanism.getOwner().getAccountName();
@@ -164,10 +157,7 @@ public class IdentityDatabase {
         return rowId;
     }
 
-    /**
-     * Add the notification to the database.
-     * @param notification The notification to store.
-     */
+    @Override
     public long addNotification(Notification notification) {
         long timeAdded = notification.getTimeAdded().getTimeInMillis();
         long timeExpired = notification.getTimeExpired().getTimeInMillis();
@@ -188,12 +178,7 @@ public class IdentityDatabase {
         return rowId;
     }
 
-    /**
-     * Update the mechanism in the database. Does not create it if it does not exist.
-     * @param mechanismId The id of the mechanism to update.
-     * @param mechanism The mechanism to update it with.
-     * @return Whether the operation succeeded
-     */
+    @Override
     public boolean updateMechanism(long mechanismId, Mechanism mechanism) {
         ContentValues values = new ContentValues();
         String options = gson.toJson(mechanism.asMap());
@@ -202,12 +187,7 @@ public class IdentityDatabase {
         return database.update(MECHANISM_TABLE_NAME, values, "rowId = ?", selectionArgs) == 1;
     }
 
-    /**
-     * Update the notification in the database. Does not create it if it does not exist.
-     * @param notificationId The id of the notification to update.
-     * @param notification The notification to update it with.
-     * @return Whether the operation succeeded
-     */
+    @Override
     public boolean updateNotification(long notificationId, Notification notification) {
         ContentValues values = new ContentValues();
 
@@ -220,31 +200,25 @@ public class IdentityDatabase {
         return database.update(NOTIFICATION_TABLE_NAME, values, "rowId = ?", selectionArgs) == 1;
     }
 
-    /**
-     * Delete the mechanism uniquely identified by an id.
-     * @param mechanismId The id of the mechanism to delete.
-     * @return Whether the operation succeeded
-     */
+    @Override
     public boolean deleteMechanism(long mechanismId) {
         return database.delete(MECHANISM_TABLE_NAME, "rowId = " + mechanismId, null) == 1;
     }
 
-    /**
-     * Delete the identity that was passed in.
-     * @param identityId The if of the identity to delete.
-     * @return Whether the operation succeeded
-     */
+    @Override
     public boolean deleteIdentity(long identityId) {
         return database.delete(IDENTITY_TABLE_NAME, "rowId = " + identityId, null) == 1;
     }
 
-    /**
-     * Delete the notification uniquely identified by an id.
-     * @param notificationId The id of the notification to delete.
-     * @return Whether the operation succeeded
-     */
+    @Override
     public boolean deleteNotification(long notificationId) {
         return database.delete(NOTIFICATION_TABLE_NAME, "rowId = " + notificationId, null) == 1;
+    }
+
+    @Override
+    public boolean isEmpty() {
+        long identityDataCount = DatabaseUtils.queryNumEntries(database, IDENTITY_TABLE_NAME);
+        return identityDataCount == 0;
     }
 
     private List<Identity.IdentityBuilder> getIdentityBuilders() {
@@ -331,23 +305,17 @@ public class IdentityDatabase {
         cursor.moveToFirst();
 
         while (!cursor.isAfterLast()) {
-            try {
-                result.add(cursorToNotificationBuilder(cursor));
-            } catch (MechanismCreationException e) {
-                logger.error("Failed to load notification. This may be caused by invalid data, or data " +
-                        "that has not been upgraded.", e);
-                // Don't add the notification that failed to load.
-            }
+            result.add(cursorToNotificationBuilder(cursor));
             cursor.moveToNext();
         }
         return result;
     }
 
-    private Notification.NotificationBuilder cursorToNotificationBuilder(Cursor cursor) throws MechanismCreationException {
+    private Notification.NotificationBuilder cursorToNotificationBuilder(Cursor cursor) {
         int rowid = cursor.getInt(cursor.getColumnIndex("rowid"));
-        Calendar addedTime = Calendar.getInstance();
+        Calendar addedTime = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
         addedTime.setTimeInMillis(cursor.getLong(cursor.getColumnIndex(TIME_RECEIVED)));
-        Calendar expiryTime = Calendar.getInstance();
+        Calendar expiryTime = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
         expiryTime.setTimeInMillis(cursor.getLong(cursor.getColumnIndex(TIME_EXPIRED)));
         boolean approved = cursor.getLong(cursor.getColumnIndex(APPROVED)) == 1;
         boolean pending = cursor.getLong(cursor.getColumnIndex(PENDING)) == 1;

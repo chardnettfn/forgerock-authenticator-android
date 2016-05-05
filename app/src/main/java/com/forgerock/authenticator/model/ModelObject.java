@@ -63,6 +63,12 @@ public abstract class ModelObject<T> implements Comparable<T> {
     public abstract void save();
 
     /**
+     * Force a save operation, rather than an update operation. Used for transferring storage systems.
+     * @return Whether the operation succeeded.
+     */
+    public abstract boolean forceSave();
+
+    /**
      * Deletes the object from the database. Should not be called from outside the object model.
      */
     public abstract void delete();
@@ -87,4 +93,11 @@ public abstract class ModelObject<T> implements Comparable<T> {
      * @return True if the model object is valid..
      */
     public abstract boolean validate();
+
+    /**
+     * Returns true if the two objects would conflict if added to a StorageSystem.
+     * @param object The object to compare.
+     * @return True if key traits of the objects match, false otherwise.
+     */
+    public abstract boolean matches(T object);
 }

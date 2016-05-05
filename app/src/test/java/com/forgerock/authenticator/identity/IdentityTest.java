@@ -50,7 +50,7 @@ public class IdentityTest {
     public void setUp() throws MechanismCreationException {
         model = mock(IdentityModel.class);
         identityDatabase = mock(IdentityDatabase.class);
-        given(model.getIdentityDatabase()).willReturn(identityDatabase);
+        given(model.getStorageSystem()).willReturn(identityDatabase);
 
         identity = Identity.builder().setIssuer("ForgeRock").setAccountName("test.user").build(model);
         MINIMUM_OATH_BUILDER = Oath.builder().setType("totp").setSecret("JMEZ2W7D462P3JYBDG2HV7PFBM").setMechanismUID("1");

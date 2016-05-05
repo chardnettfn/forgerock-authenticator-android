@@ -71,8 +71,10 @@ public class IdentityDatabaseTest {
 
     @Before
     public void setup() throws Exception {
-        model = new IdentityModel(RuntimeEnvironment.application);
+        model = new IdentityModel();
         database = new IdentityDatabase(RuntimeEnvironment.application, new CoreMechanismFactory(RuntimeEnvironment.application, model));
+
+        model.loadFromStorageSystem(database);
 
         Identity internalSavedIdentity = Identity.builder().setAccountName("uniqueinternalsavedidentity").build(model);
         database.addIdentity(internalSavedIdentity);
@@ -349,7 +351,10 @@ public class IdentityDatabaseTest {
     }
 
     private void reloadModel() {
-        model = new IdentityModel(RuntimeEnvironment.application);
+        model = new IdentityModel();
+        database = new IdentityDatabase(RuntimeEnvironment.application, new CoreMechanismFactory(RuntimeEnvironment.application, model));
+
+        model.loadFromStorageSystem(database);
     }
 
     public static void assertNotEquals(Object object, Object other) {
@@ -362,11 +367,6 @@ public class IdentityDatabaseTest {
         if (!object.getClass().equals(other.getClass())) {
             fail("Tried to compare objects of different classes");
         }
-        if (object != null) {
-            assertFalse(object.equals(other));
-        } else {
-            assertFalse(other.equals(object));
-
-        }
+        assertFalse(object.equals(other));
     }
 }

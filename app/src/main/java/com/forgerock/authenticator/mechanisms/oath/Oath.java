@@ -29,13 +29,16 @@ import com.forgerock.authenticator.utils.TimeKeeper;
 import com.google.android.apps.authenticator.Base32String;
 import com.google.android.apps.authenticator.Base32String.DecodingException;
 
+import org.forgerock.util.encode.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.ByteBuffer;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -123,19 +126,39 @@ public class Oath extends Mechanism {
         return digits;
     }
 
+    /**
+     * Returns the algorithm used by this Oath.
+     */
     @VisibleForTesting
     public String getAlgo() {
         return algo;
     }
 
+    /**
+     * Returns the value of the counter of this Oath.
+     */
     @VisibleForTesting
     public long getCounter() {
         return counter;
     }
 
+    /**
+     * Returns the period of this Oath.
+     * @return
+     */
     @VisibleForTesting
     public long getPeriod() {
         return period;
+    }
+
+    /**
+     * Validates that the base 64 secret for this object is the one passed in.
+     * @param base64Secret The base 64 secret to test against.
+     * @return True if the secrets match, false otherwise.
+     */
+    @VisibleForTesting
+    public boolean hasBase64Secret(String base64Secret) {
+        return new String(Base64.encode(secret)).equals(base64Secret);
     }
 
     /**

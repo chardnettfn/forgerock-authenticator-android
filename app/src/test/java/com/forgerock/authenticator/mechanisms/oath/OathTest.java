@@ -46,7 +46,7 @@ public class OathTest {
         model = mock(IdentityModel.class);
         IdentityDatabase identityDatabase = mock(IdentityDatabase.class);
         given(identityDatabase.addMechanism(any(Mechanism.class))).willReturn(1l);
-        given(model.getIdentityDatabase()).willReturn(identityDatabase);
+        given(model.getStorageSystem()).willReturn(identityDatabase);
         given(model.addIdentity(any(Identity.IdentityBuilder.class))).willAnswer(new Answer<Identity>() {
             @Override
             public Identity answer(InvocationOnMock invocation) throws Throwable {

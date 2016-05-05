@@ -118,6 +118,14 @@ public class Identity extends ModelObject<Identity> {
         return imageURL;
     }
 
+    /**
+     * Gets the background color for the IDP that issued this identity.
+     * @return A hex string including a prepending # symbol, representing the color (e.g. #aabbcc)
+     */
+    public String getBackgroundColor() {
+        return backgroundColor;
+    }
+
     @Override
     public ArrayList<String> getOpaqueReference() {
         ArrayList<String> reference = new ArrayList<>();
@@ -152,10 +160,40 @@ public class Identity extends ModelObject<Identity> {
     @Override
     public void save() {
         if (!isStored()) {
-            id = getModel().getIdentityDatabase().addIdentity(this);
+            id = getModel().getStorageSystem().addIdentity(this);
         } else {
             // TODO: handle updates
         }
+    }
+
+    @Override
+    public boolean forceSave() {
+        id = getModel().getStorageSystem().addIdentity(this);
+        return id != NOT_STORED;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Identity identity = (Identity) o;
+
+        if (!issuer.equals(identity.issuer)) return false;
+        if (!accountName.equals(identity.accountName)) return false;
+        if (imageURL != null ? !imageURL.equals(identity.imageURL) : identity.imageURL != null)
+            return false;
+        return !(backgroundColor != null ? !backgroundColor.equals(identity.backgroundColor) : identity.backgroundColor != null);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = issuer.hashCode();
+        result = 31 * result + accountName.hashCode();
+        result = 31 * result + (imageURL != null ? imageURL.hashCode() : 0);
+        result = 31 * result + (backgroundColor != null ? backgroundColor.hashCode() : 0);
+        return result;
     }
 
     @Override
@@ -164,27 +202,18 @@ public class Identity extends ModelObject<Identity> {
             mechanism.delete();
         }
         if (id != NOT_STORED) {
-            getModel().getIdentityDatabase().deleteIdentity(id);
+            getModel().getStorageSystem().deleteIdentity(id);
             id = NOT_STORED;
         }
-    }
 
-    public String getBackgroundColor() {
-        return backgroundColor;
     }
 
     @Override
-    public boolean equals(Object object) { //TODO: differing images could still equals()
-        if (object == null || !(object instanceof Identity)) {
+    public boolean matches(Identity other) {
+        if (other == null) {
             return false;
         }
-        Identity other = (Identity) object;
         return other.issuer.equals(issuer) && other.accountName.equals(accountName);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(issuer, accountName); //TODO: insufficient API level
     }
 
     /**

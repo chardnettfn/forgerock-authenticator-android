@@ -16,7 +16,6 @@
 
 package com.forgerock.authenticator.mechanisms.base;
 
-import android.content.Context;
 import android.support.annotation.VisibleForTesting;
 
 import com.forgerock.authenticator.identity.Identity;
@@ -25,20 +24,17 @@ import com.forgerock.authenticator.mechanisms.MechanismCreationException;
 import com.forgerock.authenticator.model.ModelObject;
 import com.forgerock.authenticator.model.SortedList;
 import com.forgerock.authenticator.notifications.Notification;
-import com.forgerock.authenticator.storage.IdentityDatabase;
-import com.forgerock.authenticator.storage.IdentityModel;
 import com.forgerock.authenticator.utils.TimeKeeper;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-
-import roboguice.RoboGuice;
 
 /**
  * A mechanism used for authentication.
@@ -157,10 +153,16 @@ public abstract class Mechanism extends ModelObject<Mechanism> {
     @Override
     public void save() {
         if (!isStored()) {
-            id = getModel().getIdentityDatabase().addMechanism(this);
+            id = getModel().getStorageSystem().addMechanism(this);
         } else {
-            getModel().getIdentityDatabase().updateMechanism(id, this);
+            getModel().getStorageSystem().updateMechanism(id, this);
         }
+    }
+
+    @Override
+    public boolean forceSave() {
+        id = getModel().getStorageSystem().addMechanism(this);
+        return id != NOT_STORED;
     }
 
     @Override
@@ -169,7 +171,7 @@ public abstract class Mechanism extends ModelObject<Mechanism> {
             notification.delete();
         }
         if (isStored()) {
-            getModel().getIdentityDatabase().deleteMechanism(id);
+            getModel().getStorageSystem().deleteMechanism(id);
         }
     }
 
@@ -216,19 +218,52 @@ public abstract class Mechanism extends ModelObject<Mechanism> {
     }
 
     @Override
+    public final boolean matches(Mechanism other) {
+        if (other == null) {
+            return false;
+        }
+        return owner.matches(other.getOwner())
+                && getInfo().getMechanismString().equals(other.getInfo().getMechanismString());
+    }
+
+    @Override
     public boolean equals(Object other) {
         if (other == null || !(other instanceof Mechanism)) {
             return false;
         }
         Mechanism otherMechanism = (Mechanism) other;
-        return owner.equals(otherMechanism.getOwner())
+
+        boolean dataMatches = true;
+
+        Map<String, String> data = asMap();
+        Map<String, String> otherData = otherMechanism.asMap();
+
+        for (String key : data.keySet()) {
+            if (data.get(key) != null || otherData.get(key) != null) {
+                dataMatches &= data.get(key) != null && data.get(key).equals(otherData.get(key));
+            }
+        }
+
+        return owner.matches(otherMechanism.getOwner())
                 && getInfo().getMechanismString().equals(otherMechanism.getInfo().getMechanismString())
-                && mechanismUID.equals(otherMechanism.mechanismUID);
+                && mechanismUID.equals(otherMechanism.mechanismUID)
+                && dataMatches;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(owner, mechanismUID, getInfo().getMechanismString()); // TODO" API version
+        List<Object> values = new ArrayList<>();
+        values.add(owner);
+        values.add(mechanismUID);
+        values.add(getInfo().getMechanismString());
+
+        Map<String, String> data = asMap();
+
+        for (String key: data.keySet()) {
+            values.add(data.get(key));
+        }
+
+        return Arrays.hashCode(values.toArray());
     }
 
     @Override
