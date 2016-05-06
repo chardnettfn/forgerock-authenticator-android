@@ -43,7 +43,9 @@ class DatabaseOpenHelper extends SQLiteOpenHelper {
         db.execSQL("CREATE TABLE " + IdentityDatabase.IDENTITY_TABLE_NAME + " (" +
                 IdentityDatabase.ISSUER + " TEXT, " +
                 IdentityDatabase.ACCOUNT_NAME + " TEXT, " +
-                IdentityDatabase.IMAGE + " TEXT, " +
+                IdentityDatabase.IMAGE + " BLOB, " +
+                IdentityDatabase.IMAGE_URL + " TEXT, " +
+                IdentityDatabase.BG_COLOUR + " TEXT, " +
                 "PRIMARY KEY(" + IdentityDatabase.ISSUER + ", " + IdentityDatabase.ACCOUNT_NAME + "));");
 
         db.execSQL("CREATE TABLE " + IdentityDatabase.MECHANISM_TABLE_NAME + " (" +
@@ -53,17 +55,19 @@ class DatabaseOpenHelper extends SQLiteOpenHelper {
                 IdentityDatabase.TYPE + " TEXT, " +
                 IdentityDatabase.VERSION + " INTEGER, " +
                 IdentityDatabase.OPTIONS + " TEXT, " +
+                "PRIMARY KEY(" + IdentityDatabase.ISSUER + ", " + IdentityDatabase.ACCOUNT_NAME + ", " + IdentityDatabase.TYPE + ") " +
                 "FOREIGN KEY(" + IdentityDatabase.ID_ISSUER + ", " + IdentityDatabase.ID_ACCOUNT_NAME + ") " +
                 "REFERENCES " + IdentityDatabase.IDENTITY_TABLE_NAME
                 + "(" + IdentityDatabase.ISSUER + ", " + IdentityDatabase.ACCOUNT_NAME + "));");
 
         db.execSQL("CREATE TABLE " + IdentityDatabase.NOTIFICATION_TABLE_NAME + " (" +
                 IdentityDatabase.MECHANISM_UID + " TEXT, " +
-                IdentityDatabase.ADDED_TIME + " TEXT, " +
-                IdentityDatabase.EXPIRY_TIME + " TEXT, " +
+                IdentityDatabase.TIME_RECEIVED + " TEXT, " +
+                IdentityDatabase.TIME_EXPIRED + " TEXT, " +
                 IdentityDatabase.DATA + " TEXT, " +
-                IdentityDatabase.APPROVED + " INT, " +
                 IdentityDatabase.PENDING + " INT, " +
+                IdentityDatabase.APPROVED + " INT, " +
+                "PRIMARY KEY(" + IdentityDatabase.MECHANISM_UID + ", " + IdentityDatabase.TIME_RECEIVED + ") " +
                 "FOREIGN KEY(" + IdentityDatabase.MECHANISM_UID + ") " +
                 "REFERENCES " + IdentityDatabase.MECHANISM_TABLE_NAME
                 + "(" + IdentityDatabase.MECHANISM_UID + "));");

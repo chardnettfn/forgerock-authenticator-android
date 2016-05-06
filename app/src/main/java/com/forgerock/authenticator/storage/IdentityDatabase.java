@@ -58,6 +58,10 @@ public class IdentityDatabase {
     static final String ACCOUNT_NAME = "accountName";
     /** The IDP image column */
     static final String IMAGE = "image";
+    /** The IDP image url column */
+    static final String IMAGE_URL = "imageURL";
+    /** The IDP background color */
+    static final String BG_COLOUR = "bgColour";
 
     // Mechanism columns
     /** The IDP name column (Foreign key) */
@@ -75,9 +79,9 @@ public class IdentityDatabase {
 
     // Notification columns
     /** The time that the notification was received */
-    static final String ADDED_TIME = "timeAdded";
+    static final String TIME_RECEIVED = "timeReceived";
     /** The time that the notification will expire */
-    static final String EXPIRY_TIME = "timeExpired";
+    static final String TIME_EXPIRED = "timeExpired";
     /** The data that is relevant to the notification (e.g. messageId) */
     static final String DATA = "data";
     /** Whether the notification was successful or not, for historical purposes */
@@ -171,8 +175,8 @@ public class IdentityDatabase {
         String data = gson.toJson(notification.getData());
 
         ContentValues values = new ContentValues();
-        values.put(ADDED_TIME, timeAdded);
-        values.put(EXPIRY_TIME, timeExpired);
+        values.put(TIME_RECEIVED, timeAdded);
+        values.put(TIME_EXPIRED, timeExpired);
         values.put(APPROVED, wasApproved);
         values.put(MECHANISM_UID, mechanismUID);
         values.put(DATA, data);
@@ -333,9 +337,9 @@ public class IdentityDatabase {
     private Notification.NotificationBuilder cursorToNotificationBuilder(Cursor cursor) throws MechanismCreationException {
         int rowid = cursor.getInt(cursor.getColumnIndex("rowid"));
         Calendar addedTime = Calendar.getInstance();
-        addedTime.setTimeInMillis(cursor.getLong(cursor.getColumnIndex(ADDED_TIME)));
+        addedTime.setTimeInMillis(cursor.getLong(cursor.getColumnIndex(TIME_RECEIVED)));
         Calendar expiryTime = Calendar.getInstance();
-        expiryTime.setTimeInMillis(cursor.getLong(cursor.getColumnIndex(EXPIRY_TIME)));
+        expiryTime.setTimeInMillis(cursor.getLong(cursor.getColumnIndex(TIME_EXPIRED)));
         boolean approved = cursor.getLong(cursor.getColumnIndex(APPROVED)) == 1;
         boolean pending = cursor.getLong(cursor.getColumnIndex(PENDING)) == 1;
         Type mapType = new TypeToken<Map<String, String>>() {
