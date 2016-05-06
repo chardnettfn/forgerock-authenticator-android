@@ -128,12 +128,12 @@ public class IdentityDatabase {
     public long addIdentity(Identity id) {
         String issuer = id.getIssuer();
         String accountName = id.getAccountName();
-        String image = id.getImage() == null ? null : id.getImage().toString();
+        String imageURL = id.getImageURL() == null ? null : id.getImageURL().toString();
 
         ContentValues values = new ContentValues();
         values.put(ISSUER, issuer);
         values.put(ACCOUNT_NAME, accountName);
-        values.put(IMAGE, image);
+        values.put(IMAGE_URL, imageURL);
 
         long rowId = database.insert(IDENTITY_TABLE_NAME, null, values);
         return rowId;
@@ -171,7 +171,7 @@ public class IdentityDatabase {
         long timeExpired = notification.getTimeExpired().getTimeInMillis();
         int wasApproved = notification.wasApproved() ? 1 : 0;
         int isPending = notification.isPending() ? 1 : 0;
-        int mechanismUID = notification.getMechanism().getMechanismUID();
+        String mechanismUID = notification.getMechanism().getMechanismUID();
         String data = gson.toJson(notification.getData());
 
         ContentValues values = new ContentValues();
@@ -257,14 +257,14 @@ public class IdentityDatabase {
         int rowid = cursor.getInt(cursor.getColumnIndex("rowid"));
         String issuer = cursor.getString(cursor.getColumnIndex(ISSUER));
         String accountName = cursor.getString(cursor.getColumnIndex(ACCOUNT_NAME));
-        String image = cursor.getString(cursor.getColumnIndex(IMAGE));
+        String imageURL = cursor.getString(cursor.getColumnIndex(IMAGE_URL));
 
         List<Mechanism.PartialMechanismBuilder> mechanismBuilders = getMechanismBuilders(issuer, accountName);
 
         Identity.IdentityBuilder identityBuilder = Identity.builder()
                 .setIssuer(issuer)
                 .setAccountName(accountName)
-                .setImage(image)
+                .setImageURL(imageURL)
                 .setId(rowid)
                 .setMechanisms(mechanismBuilders);
         return identityBuilder;
@@ -299,7 +299,7 @@ public class IdentityDatabase {
         Map<String, String> options =
                 gson.fromJson(cursor.getString(cursor.getColumnIndex(OPTIONS)), mapType);
 
-        int mechanismUID = cursor.getInt(cursor.getColumnIndex(MECHANISM_UID));
+        String mechanismUID = cursor.getString(cursor.getColumnIndex(MECHANISM_UID));
 
         List<Notification.NotificationBuilder> notificationBuilders = getNotificationBuilders(mechanismUID);
 
@@ -310,11 +310,11 @@ public class IdentityDatabase {
         return mechanismBuilder;
     }
 
-    private List<Notification.NotificationBuilder> getNotificationBuilders(int mechanismUid) {
-        if (mechanismUid == -1) {
+    private List<Notification.NotificationBuilder> getNotificationBuilders(String mechanismUid) {
+        if (mechanismUid == null) {
             return new ArrayList<>();
         }
-        String[] selectionArgs = { Integer.toString(mechanismUid) };
+        String[] selectionArgs = { mechanismUid };
 
         Cursor cursor = database.rawQuery("SELECT rowid, * FROM " + NOTIFICATION_TABLE_NAME +
                 " WHERE " + MECHANISM_UID + " = ?", selectionArgs);

@@ -42,7 +42,7 @@ class OathFactory extends MechanismFactory {
 
     @Override
     protected Mechanism.PartialMechanismBuilder createFromUriParameters(
-        int version, int mechanismUID, Map<String, String> map) throws MechanismCreationException {
+        int version, String mechanismUID, Map<String, String> map) throws MechanismCreationException {
         if (version == 1) {
             Oath.OathBuilder oathBuilder = Oath.getBuilder()
                     .setAlgorithm(get(map, OathAuthMapper.ALGORITHM, "sha1"))

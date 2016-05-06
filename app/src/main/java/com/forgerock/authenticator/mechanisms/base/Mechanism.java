@@ -43,7 +43,7 @@ import roboguice.RoboGuice;
  */
 public abstract class Mechanism extends ModelObject<Mechanism> {
     private long id = NOT_STORED;
-    private final int mechanismUID;
+    private final String mechanismUID;
     private final Identity owner;
     private final List<Notification> notificationList;
 
@@ -55,7 +55,7 @@ public abstract class Mechanism extends ModelObject<Mechanism> {
      * @param id The storage id of the Mechanism.
      * @param mechanismUID The ID used to identify the Mechanism to external systems.
      */
-    protected Mechanism(Identity owner, long id, int mechanismUID) {
+    protected Mechanism(Identity owner, long id, String mechanismUID) {
         super(owner.getModel());
         notificationList = new SortedList<>();
         this.owner = owner;
@@ -142,7 +142,7 @@ public abstract class Mechanism extends ModelObject<Mechanism> {
      * Returns the unique mechanism id used to identify this mechanism with the server.
      * @return The mechanism UID if one is set, 0 otherwise.
      */
-    public int getMechanismUID() {
+    public String getMechanismUID() {
         return mechanismUID;
     }
 
@@ -182,13 +182,13 @@ public abstract class Mechanism extends ModelObject<Mechanism> {
     @Override
     public ArrayList<String> getOpaqueReference() {
         ArrayList<String> ownerReference = getOwner().getOpaqueReference();
-        ownerReference.add(Long.toString(mechanismUID));
+        ownerReference.add(mechanismUID);
         return ownerReference;
     }
 
     @Override
     public boolean consumeOpaqueReference(ArrayList<String> reference) {
-        if (reference.size() > 0 && Long.toString(id).equals(reference.get(0))) {
+        if (reference.size() > 0 && mechanismUID.equals(reference.get(0))) {
             reference.remove(0);
             return true;
         }
@@ -223,7 +223,7 @@ public abstract class Mechanism extends ModelObject<Mechanism> {
      * @param <T> The extended builder, used for chaining.
      */
     public static abstract class PartialMechanismBuilder<T extends PartialMechanismBuilder> {
-        protected int mechanismUID;
+        protected String mechanismUID;
         protected Identity owner;
         protected long id = NOT_STORED;
         private List<Notification.NotificationBuilder> notificationBuilders = new ArrayList<>();
@@ -239,7 +239,7 @@ public abstract class Mechanism extends ModelObject<Mechanism> {
          * @param uid The UID used by external systems to identify this mechanism.
          * @return This builder.
          */
-        public T setMechanismUID(int uid) {
+        public T setMechanismUID(String uid) {
             mechanismUID = uid;
             return getThis();
         }
@@ -278,6 +278,9 @@ public abstract class Mechanism extends ModelObject<Mechanism> {
          * @return The mechanism.
          */
         public final Mechanism build(Identity owner) throws MechanismCreationException {
+            if (mechanismUID == null) {
+                throw new MechanismCreationException("The mechanism UID must be set to a valid value");
+            }
             Mechanism newMechanism = buildImpl(owner);
             newMechanism.populateNotifications(notificationBuilders);
             return newMechanism;

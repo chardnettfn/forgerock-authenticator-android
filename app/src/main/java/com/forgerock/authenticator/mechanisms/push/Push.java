@@ -33,7 +33,7 @@ public class Push extends Mechanism {
     private static final PushInfo pushInfo = new PushInfo();
     private String endpoint;
 
-    private Push(Identity owner, long id, int mechanismUID, String endpoint) {
+    private Push(Identity owner, long id, String mechanismUID, String endpoint) {
         super(owner, id, mechanismUID);
         this.endpoint = endpoint;
     }

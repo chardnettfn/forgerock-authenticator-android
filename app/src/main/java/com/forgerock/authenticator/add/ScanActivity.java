@@ -19,9 +19,7 @@
 package com.forgerock.authenticator.add;
 
 import android.annotation.TargetApi;
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.hardware.Camera;
 import android.hardware.Camera.CameraInfo;
 import android.hardware.Camera.Parameters;
@@ -42,7 +40,6 @@ import com.forgerock.authenticator.mechanisms.CoreMechanismFactory;
 import com.forgerock.authenticator.mechanisms.base.Mechanism;
 import com.forgerock.authenticator.mechanisms.MechanismCreationException;
 import com.forgerock.authenticator.mechanisms.URIMappingException;
-import com.forgerock.authenticator.notifications.Notification;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
@@ -50,9 +47,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
-
-import roboguice.RoboGuice;
-import roboguice.activity.RoboActivity;
 
 /**
  * Activity used for scanning QR codes. Provides feedback to the user when a QR code is scanned,
@@ -286,14 +280,14 @@ public class ScanActivity extends BaseActivity implements SurfaceHolder.Callback
 
         @Override
         protected void onPostExecute(Mechanism mechanism) {
-            if (mechanism == null || mechanism.getOwner().getImage() == null) {
+            if (mechanism == null || mechanism.getOwner().getImageURL() == null) {
                 finish();
                 return;
             }
 
             final ImageView image = (ImageView) findViewById(R.id.image);
             Picasso.with(ScanActivity.this)
-                    .load(mechanism.getOwner().getImage())
+                    .load(mechanism.getOwner().getImageURL())
                     .placeholder(R.drawable.scan)
                     .into(image, new Callback() {
                         @Override

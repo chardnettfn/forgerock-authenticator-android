@@ -54,7 +54,7 @@ public class PushFactory extends MechanismFactory {
 
     @Override
     protected Mechanism.PartialMechanismBuilder createFromUriParameters(
-            int version, int mechanismUID, Map<String, String> map) throws MechanismCreationException {
+            int version, String mechanismUID, Map<String, String> map) throws MechanismCreationException {
         if (version == 1) {
             String messageId = get(map, PushAuthMapper.MESSAGE_ID, null);
 
@@ -78,7 +78,7 @@ public class PushFactory extends MechanismFactory {
             data.put("deviceId", token);
             data.put("deviceType", "android");
             data.put("communicationType", "gcm");
-            data.put("mechanismUid", Integer.toString(mechanismUID));
+            data.put("mechanismUid", mechanismUID);
 
             try {
                 int returnCode = MessageUtils.respond(endpoint, messageId, data);

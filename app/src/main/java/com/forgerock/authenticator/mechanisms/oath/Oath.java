@@ -69,7 +69,7 @@ public class Oath extends Mechanism {
 
     private Logger logger = LoggerFactory.getLogger(Oath.class);
 
-    private Oath(Identity owner, long id, int mechanismUID, TokenType type, String algo, byte[] secret, int digits,
+    private Oath(Identity owner, long id, String mechanismUID, TokenType type, String algo, byte[] secret, int digits,
                  long counter, int period) {
         super(owner, id, mechanismUID);
         this.type = type;

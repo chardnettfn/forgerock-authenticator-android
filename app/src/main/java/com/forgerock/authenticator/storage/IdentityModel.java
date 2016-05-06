@@ -157,17 +157,17 @@ public class IdentityModel {
      * Generate a new, unique ID for a Mechanism.
      * @return The new mechanism UID.
      */
-    public int getNewMechanismUID() {
+    public String getNewMechanismUID() {
         int uid = 0; //TODO: Make UID larger, and random
-        while (isExistingMechanismUID(uid)) {
+        while (isExistingMechanismUID(Integer.toString(uid))) {
             uid++;
         }
-        return uid;
+        return Integer.toString(uid);
     }
 
-    private boolean isExistingMechanismUID(int uid) {
+    private boolean isExistingMechanismUID(String uid) {
         for (Mechanism mechanism : getMechanisms()) {
-            if (mechanism.getMechanismUID() == uid) {
+            if (mechanism.getMechanismUID().equals(uid)) {
                 return true;
             }
         }

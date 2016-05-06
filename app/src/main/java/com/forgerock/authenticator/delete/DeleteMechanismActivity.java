@@ -25,16 +25,10 @@ import com.forgerock.authenticator.R;
 import com.forgerock.authenticator.baseactivities.BaseMechanismActivity;
 import com.forgerock.authenticator.identity.Identity;
 import com.forgerock.authenticator.mechanisms.base.Mechanism;
-import com.forgerock.authenticator.storage.IdentityModel;
 import com.squareup.picasso.Picasso;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-
-import roboguice.RoboGuice;
-import roboguice.activity.RoboActivity;
 
 /**
  * Activity responsible for verifying that a user wishes to delete a mechanism, then deleting it.
@@ -60,7 +54,7 @@ public class DeleteMechanismActivity extends BaseMechanismActivity {
         ((TextView) findViewById(R.id.issuer)).setText(mechanism.getOwner().getIssuer());
         ((TextView) findViewById(R.id.label)).setText(mechanism.getOwner().getAccountName());
         Picasso.with(this)
-                .load(mechanism.getOwner().getImage())
+                .load(mechanism.getOwner().getImageURL())
                 .placeholder(R.drawable.forgerock_placeholder)
                 .into((ImageView) findViewById(R.id.image));
 

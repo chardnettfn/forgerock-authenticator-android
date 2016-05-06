@@ -17,7 +17,6 @@
 package com.forgerock.authenticator.mechanisms.base;
 
 import android.content.Context;
-import android.support.annotation.VisibleForTesting;
 
 import com.forgerock.authenticator.identity.Identity;
 import com.forgerock.authenticator.mechanisms.MechanismCreationException;
@@ -27,8 +26,6 @@ import com.forgerock.authenticator.mechanisms.push.PushAuthMapper;
 import com.forgerock.authenticator.storage.IdentityModel;
 
 import java.util.Map;
-
-import roboguice.RoboGuice;
 
 /**
  * Mechanism specific factory which can convert the two storage methods to a Mechanism.
@@ -63,7 +60,7 @@ public abstract class MechanismFactory {
         Map<String, String> values = getParser().map(uri);
         String issuer = get(values, UriParser.ISSUER, "");
         String accountName = get(values, UriParser.ACCOUNT_NAME, "");
-        String image = get(values, UriParser.IMAGE, null);
+        String imageURL = get(values, UriParser.IMAGE, null);
         int version;
         try {
             version = Integer.parseInt(get(values, UriParser.VERSION, "1"));
@@ -78,11 +75,11 @@ public abstract class MechanismFactory {
             Identity.IdentityBuilder builder = Identity.builder()
                     .setIssuer(issuer)
                     .setAccountName(accountName)
-                    .setImage(image);
+                    .setImageURL(imageURL);
             identity = identityModel.addIdentity(builder);
         }
 
-        int mechanismUID = identityModel.getNewMechanismUID();
+        String mechanismUID = identityModel.getNewMechanismUID();
 
         Mechanism.PartialMechanismBuilder builder = createFromUriParameters(version, mechanismUID, values)
                 .setMechanismUID(mechanismUID);
@@ -101,7 +98,7 @@ public abstract class MechanismFactory {
      * @throws MechanismCreationException If anything goes wrong.
      */
     protected abstract Mechanism.PartialMechanismBuilder createFromUriParameters(
-            int version, int mechanismUID, Map<String, String> map)  throws MechanismCreationException;
+            int version, String mechanismUID, Map<String, String> map)  throws MechanismCreationException;
 
     /**
      * Return the UriParser subclass used by the factory for a particular Mechanism type.

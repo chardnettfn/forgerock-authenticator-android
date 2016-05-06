@@ -40,17 +40,17 @@ public class Identity extends ModelObject<Identity> {
     private long id = NOT_STORED;
     private final String issuer;
     private final String accountName;
-    private final Uri image;
+    private final Uri imageURL;
     private final List<Mechanism> mechanismList;
     private static final Logger logger = LoggerFactory.getLogger(Identity.class);
 
 
-    private Identity(IdentityModel model, long id, String issuer, String accountName, Uri image) {
+    private Identity(IdentityModel model, long id, String issuer, String accountName, Uri imageURL) {
         super(model);
         this.id = id;
         this.issuer = issuer;
         this.accountName = accountName;
-        this.image = image;
+        this.imageURL = imageURL;
         this.mechanismList = new SortedList<>();
     }
 
@@ -108,11 +108,11 @@ public class Identity extends ModelObject<Identity> {
     }
 
     /**
-     * Gets the image for the IDP that issued this identity.
+     * Gets the image URL for the IDP that issued this identity.
      * @return Non null {@link Uri} representing the path to the image, or null if not assigned.
      */
-    public Uri getImage() {
-        return image;
+    public Uri getImageURL() {
+        return imageURL;
     }
 
     @Override
@@ -218,10 +218,9 @@ public class Identity extends ModelObject<Identity> {
      */
     public static class IdentityBuilder {
         private long id = NOT_STORED;
-        private IdentityModel model;
         private String issuer;
         private String accountName;
-        private Uri image;
+        private Uri imageURL;
         private List<Mechanism.PartialMechanismBuilder> mechanismBuilders = new ArrayList<>();
 
         /**
@@ -253,11 +252,11 @@ public class Identity extends ModelObject<Identity> {
         }
 
         /**
-         * Sets the image for the IDP that issued this identity.
-         * @param image A string that represents the image URI.
+         * Sets the imageURL for the IDP that issued this identity.
+         * @param imageURL A string that represents the image URI.
          */
-        public IdentityBuilder setImage(String image) {
-            this.image = image == null ? null : Uri.parse(image);
+        public IdentityBuilder setImageURL(String imageURL) {
+            this.imageURL = imageURL == null ? null : Uri.parse(imageURL);
             return this;
         }
 
@@ -275,7 +274,7 @@ public class Identity extends ModelObject<Identity> {
          * @return The identity.
          */
         public Identity build(IdentityModel model) {
-            Identity result =  new Identity(model, id, issuer, accountName, image);
+            Identity result =  new Identity(model, id, issuer, accountName, imageURL);
             result.populateMechanisms(mechanismBuilders);
             return result;
         }

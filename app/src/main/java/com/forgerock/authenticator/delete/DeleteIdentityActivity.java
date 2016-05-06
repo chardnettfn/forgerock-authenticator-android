@@ -24,16 +24,10 @@ import android.widget.TextView;
 import com.forgerock.authenticator.R;
 import com.forgerock.authenticator.baseactivities.BaseIdentityActivity;
 import com.forgerock.authenticator.identity.Identity;
-import com.forgerock.authenticator.storage.IdentityModel;
 import com.squareup.picasso.Picasso;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-
-import roboguice.RoboGuice;
-import roboguice.activity.RoboActivity;
 
 /**
  * Activity responsible for verifying that a user wishes to delete an identity, then deleting it.
@@ -58,7 +52,7 @@ public class DeleteIdentityActivity extends BaseIdentityActivity {
         ((TextView) findViewById(R.id.issuer)).setText(identity.getIssuer());
         ((TextView) findViewById(R.id.label)).setText(identity.getAccountName());
         Picasso.with(this)
-                .load(identity.getImage())
+                .load(identity.getImageURL())
                 .placeholder(R.drawable.forgerock_placeholder)
                 .into((ImageView) findViewById(R.id.image));
 

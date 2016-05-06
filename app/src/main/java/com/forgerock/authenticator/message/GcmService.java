@@ -116,7 +116,7 @@ public class GcmService extends RoboGcmListenerService {
         Mechanism mechanism = null;
 
         for (Mechanism current : mechanismList) {
-            if (Integer.toString(current.getMechanismUID()).equals(mechanismUid)) {
+            if (current.getMechanismUID().equals(mechanismUid)) {
                 mechanism = current;
                 break;
             }

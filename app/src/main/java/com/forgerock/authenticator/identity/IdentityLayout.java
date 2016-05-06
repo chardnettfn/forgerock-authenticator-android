@@ -1,7 +1,6 @@
 package com.forgerock.authenticator.identity;
 
 import android.content.Context;
-import android.content.Intent;
 import android.util.AttributeSet;
 import android.view.MenuItem;
 import android.view.View;
@@ -49,7 +48,7 @@ public class IdentityLayout extends RelativeLayout {
         labelView.setText(identity.getAccountName());
 
         Picasso.with(getContext())
-                .load(identity.getImage())
+                .load(identity.getImageURL())
                 .placeholder(R.drawable.forgerock_placeholder)
                 .into(imageView);
 
