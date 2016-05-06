@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import roboguice.RoboGuice;
 
@@ -211,6 +212,23 @@ public abstract class Mechanism extends ModelObject<Mechanism> {
             }
         }
     }
+
+    @Override
+    public boolean equals(Object other) {
+        if (other == null || !(other instanceof Mechanism)) {
+            return false;
+        }
+        Mechanism otherMechanism = (Mechanism) other;
+        return owner.equals(otherMechanism.getOwner())
+                && getInfo().getMechanismString().equals(otherMechanism.getInfo().getMechanismString())
+                && mechanismUID.equals(otherMechanism.mechanismUID);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(owner, mechanismUID, getInfo().getMechanismString()); // TODO" API version
+    }
+
 
     @Override
     public int compareTo(Mechanism another) {

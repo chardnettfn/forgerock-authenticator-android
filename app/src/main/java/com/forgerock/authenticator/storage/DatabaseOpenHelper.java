@@ -55,7 +55,7 @@ class DatabaseOpenHelper extends SQLiteOpenHelper {
                 IdentityDatabase.TYPE + " TEXT, " +
                 IdentityDatabase.VERSION + " INTEGER, " +
                 IdentityDatabase.OPTIONS + " TEXT, " +
-                "PRIMARY KEY(" + IdentityDatabase.ISSUER + ", " + IdentityDatabase.ACCOUNT_NAME + ", " + IdentityDatabase.TYPE + ") " +
+                "PRIMARY KEY(" + IdentityDatabase.ID_ISSUER + ", " + IdentityDatabase.ID_ACCOUNT_NAME + ", " + IdentityDatabase.TYPE + "), " +
                 "FOREIGN KEY(" + IdentityDatabase.ID_ISSUER + ", " + IdentityDatabase.ID_ACCOUNT_NAME + ") " +
                 "REFERENCES " + IdentityDatabase.IDENTITY_TABLE_NAME
                 + "(" + IdentityDatabase.ISSUER + ", " + IdentityDatabase.ACCOUNT_NAME + "));");
@@ -67,7 +67,7 @@ class DatabaseOpenHelper extends SQLiteOpenHelper {
                 IdentityDatabase.DATA + " TEXT, " +
                 IdentityDatabase.PENDING + " INT, " +
                 IdentityDatabase.APPROVED + " INT, " +
-                "PRIMARY KEY(" + IdentityDatabase.MECHANISM_UID + ", " + IdentityDatabase.TIME_RECEIVED + ") " +
+                "PRIMARY KEY(" + IdentityDatabase.MECHANISM_UID + ", " + IdentityDatabase.TIME_RECEIVED + "), " +
                 "FOREIGN KEY(" + IdentityDatabase.MECHANISM_UID + ") " +
                 "REFERENCES " + IdentityDatabase.MECHANISM_TABLE_NAME
                 + "(" + IdentityDatabase.MECHANISM_UID + "));");
