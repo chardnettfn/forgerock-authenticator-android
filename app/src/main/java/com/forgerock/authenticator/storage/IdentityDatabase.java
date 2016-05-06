@@ -61,7 +61,7 @@ public class IdentityDatabase {
     /** The IDP image url column */
     static final String IMAGE_URL = "imageURL";
     /** The IDP background color */
-    static final String BG_COLOUR = "bgColour";
+    static final String BG_COLOR = "bgColor";
 
     // Mechanism columns
     /** The IDP name column (Foreign key) */

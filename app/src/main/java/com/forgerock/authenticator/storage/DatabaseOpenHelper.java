@@ -45,7 +45,7 @@ class DatabaseOpenHelper extends SQLiteOpenHelper {
                 IdentityDatabase.ACCOUNT_NAME + " TEXT, " +
                 IdentityDatabase.IMAGE + " BLOB, " +
                 IdentityDatabase.IMAGE_URL + " TEXT, " +
-                IdentityDatabase.BG_COLOUR + " TEXT, " +
+                IdentityDatabase.BG_COLOR + " TEXT, " +
                 "PRIMARY KEY(" + IdentityDatabase.ISSUER + ", " + IdentityDatabase.ACCOUNT_NAME + "));");
 
         db.execSQL("CREATE TABLE " + IdentityDatabase.MECHANISM_TABLE_NAME + " (" +
