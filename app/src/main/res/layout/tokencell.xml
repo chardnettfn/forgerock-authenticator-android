@@ -38,20 +38,25 @@
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:padding="5dp"
-        android:layout_toLeftOf="@id/menu"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
         android:layout_marginRight="16dp"
+        android:layout_marginEnd="16dp"
         android:layout_centerVertical="true"
         freeotp:hollow="true"
         freeotp:max="1000"
         />
 
-    <ImageView
+    <ImageButton
         android:id="@+id/refresh"
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:padding="5dp"
-        android:layout_toLeftOf="@id/menu"
+        android:background="@color/white"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
         android:layout_marginRight="16dp"
+        android:layout_marginEnd="16dp"
         android:layout_centerVertical="true"
         android:src="@drawable/forgerock_icon_refresh"
         />
@@ -86,18 +91,6 @@
             android:typeface="monospace"
             />
     </LinearLayout>
-
-    <ImageView
-        android:id="@+id/menu"
-        android:layout_width="32dp"
-        android:layout_height="48dp"
-        android:layout_gravity="bottom|right"
-        android:paddingTop="12dp"
-        android:paddingBottom="12dp"
-        android:src="@drawable/menu"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentBottom="true"
-        />
 
     </RelativeLayout>
 </com.forgerock.authenticator.mechanisms.oath.OathLayout>

@@ -32,6 +32,7 @@ import com.forgerock.authenticator.baseactivities.BaseMechanismActivity;
 import com.forgerock.authenticator.identity.Identity;
 import com.forgerock.authenticator.mechanisms.base.Mechanism;
 import com.forgerock.authenticator.notifications.NotificationAdapter;
+import com.forgerock.authenticator.notifications.NotificationLayout;
 import com.forgerock.authenticator.storage.IdentityModelListener;
 
 /**
@@ -43,6 +44,7 @@ public class NotificationActivity extends BaseMechanismActivity {
     private DataSetObserver dataSetObserver;
     private IdentityModelListener listener;
     private Mechanism mechanism;
+    private static final int UI_REFRESH_TIME_MILLIS = 15000;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -65,6 +67,8 @@ public class NotificationActivity extends BaseMechanismActivity {
                 return true;
             }
         });
+
+        list.post(new RefreshNotificationTime(list));
 
         dataSetObserver = new DataSetObserver() {
             @Override
@@ -139,20 +143,28 @@ public class NotificationActivity extends BaseMechanismActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.notifications, menu);
 
-        final Context context = this;
         menu.findItem(R.id.action_clear_history).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
                 mechanism.clearInactiveNotifications();
-                new AlertDialog.Builder(context)
-                        .setIcon(android.R.drawable.ic_dialog_alert)
-                        .setTitle("History cleared")
-                        .setMessage("The history has been deleted")
-                        .setPositiveButton("Ok", null)
-                        .show();
                 return true;
             }
         });
         return true;
+    }
+
+    private class RefreshNotificationTime implements Runnable {
+
+        private View view;
+
+        public RefreshNotificationTime (View view) {
+            this.view = view;
+        }
+
+        @Override
+        public void run() {
+            notificationAdapter.updateTimes();
+            view.postDelayed(this, UI_REFRESH_TIME_MILLIS);
+        }
     }
 }

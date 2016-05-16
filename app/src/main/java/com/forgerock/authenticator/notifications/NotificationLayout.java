@@ -37,6 +37,11 @@ import java.util.concurrent.TimeUnit;
  * Individual entry which displays information about a given Notification.
  */
 public class NotificationLayout extends FrameLayout {
+
+    private Notification notification;
+    private static final SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy");;
+    private boolean isActive;
+
     /**
      * Create a cell that a Notification is displayed in.
      * @param context The context that the Notification is called from.
@@ -69,8 +74,7 @@ public class NotificationLayout extends FrameLayout {
      * @param notification The Notification to display.
      */
     void bind(final Notification notification) {
-        TextView timeView = (TextView) findViewById(R.id.time);
-        timeView.setText(calendarToTimeString(notification.getTimeAdded()));
+        this.notification = notification;
         final Context context = getContext();
 
         setOnClickListener(new View.OnClickListener() {
@@ -82,6 +86,22 @@ public class NotificationLayout extends FrameLayout {
 
         setClickable(notification.isActive());
 
+        refresh(Calendar.getInstance(TimeZone.getTimeZone("UTC")).getTimeInMillis());
+    }
+
+    /**
+     * Determine if the notification was active last time this was refreshed.
+     * @return The latest active status of the notification.
+     */
+    public boolean isActive() {
+        return isActive;
+    }
+
+    /**
+     * Update the current time and status, based on a millisecond value passed in.
+     * @param currentTimeUTCMillis The current UTC time in ms.
+     */
+    public void refresh(long currentTimeUTCMillis) {
         ImageView statusImage = (ImageView) findViewById(R.id.image);
         TextView statusText = (TextView) findViewById(R.id.status);
         if (notification.wasApproved()) {
@@ -97,15 +117,21 @@ public class NotificationLayout extends FrameLayout {
             statusImage.setImageDrawable(getResources().getDrawable(R.drawable.forgerock_icon_denied));
             statusText.setText("Rejected");
         }
+
+        TextView timeView = (TextView) findViewById(R.id.time);
+        timeView.setText(calendarToTimeString(currentTimeUTCMillis, notification.getTimeAdded()));
+
+        this.isActive = notification.isActive();
     }
 
-
-    private String calendarToTimeString(Calendar calendar) { //TODO: use String resources
-        long timeDiffMillis = Calendar.getInstance(TimeZone.getTimeZone("UTC")).getTimeInMillis()
-                - calendar.getTimeInMillis();
+    private String calendarToTimeString(long currentTimeUTCMillis, Calendar calendar) { //TODO: use String resources
+        long timeDiffMillis = currentTimeUTCMillis - calendar.getTimeInMillis();
 
         if (TimeUnit.MILLISECONDS.toSeconds(timeDiffMillis) < 60) {
-            return TimeUnit.MILLISECONDS.toSeconds(timeDiffMillis) + " seconds ago";
+            return "Less than 1 minute ago";
+        }
+        else if (TimeUnit.MILLISECONDS.toMinutes(timeDiffMillis) == 1) {
+            return "1 minute ago";
         } else if (TimeUnit.MILLISECONDS.toMinutes(timeDiffMillis) < 60) {
             return TimeUnit.MILLISECONDS.toMinutes(timeDiffMillis) + " minutes ago";
         } else if (TimeUnit.MILLISECONDS.toHours(timeDiffMillis) < 24) {
@@ -116,7 +142,6 @@ public class NotificationLayout extends FrameLayout {
             return TimeUnit.MILLISECONDS.toDays(timeDiffMillis) + " days ago";
         }
 
-        SimpleDateFormat format1 = new SimpleDateFormat("dd/MM/yyyy");
-        return format1.format(calendar.getTime());
+        return format.format(calendar.getTime());
     }
 }

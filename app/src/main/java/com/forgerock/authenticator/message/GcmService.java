@@ -76,7 +76,7 @@ public class GcmService extends RoboGcmListenerService {
     private static final String AMLB_COOKIE = "l";
     private static final String TTL = "t";
 
-    private static final int DEFAULT_TTL = 120000;
+    private static final int DEFAULT_TTL_SECONDS = 120;
 
     /**
      * Default instance of GcmService expected to be instantiated by Android framework.
@@ -113,7 +113,7 @@ public class GcmService extends RoboGcmListenerService {
         String amlbCookie = (String) signedJwt.getClaimsSet().getClaim(AMLB_COOKIE);
 
         String ttlString = (String) signedJwt.getClaimsSet().getClaim(TTL);
-        int ttl = DEFAULT_TTL;
+        int ttl = DEFAULT_TTL_SECONDS;
         if (ttlString != null) {
             try {
                 ttl = Integer.parseInt((String) signedJwt.getClaimsSet().getClaim(TTL));
@@ -186,7 +186,7 @@ public class GcmService extends RoboGcmListenerService {
          */
         Intent intent = BaseNotificationActivity.setupIntent(this, PushAuthActivity.class, notificationData);
 
-        intent.addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
 
         String title = "Login Detected";
         Notification notification = notificationFactory.generatePending(this, id, title, "Login Detected", intent); //TODO: update the notification strings

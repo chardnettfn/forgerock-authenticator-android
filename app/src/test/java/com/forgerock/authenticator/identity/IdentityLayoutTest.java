@@ -18,8 +18,12 @@ package com.forgerock.authenticator.identity;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.view.ActionMode;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -39,7 +43,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowActivity;
 import org.robolectric.shadows.ShadowImageView;
 import org.robolectric.shadows.ShadowPopupMenu;
 
@@ -134,20 +140,27 @@ public class IdentityLayoutTest {
     }
 
     @Test
-    public void shouldBeAbleToDeleteViaPopupMenu() {
+    public void shouldBeAbleToDeleteViaContextualActionBar() {
         Identity identity = Identity.builder().setIssuer(ISSUER).setAccountName(ACCOUNT_NAME).build(model);
         Activity activity = Robolectric.setupActivity(Activity.class);
+
+        // ActionModes can only be created when the View creating it has a parent. Therefore, we
+        // must create a dummy FrameLayout to contain our test Views whenever we wish to test
+        // ActionModes or Contextual Action Bars.
+        FrameLayout frameLayout = new FrameLayout(activity);
+        activity.addContentView(frameLayout,
+                new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+
+
         IdentityLayout layout = (IdentityLayout) LayoutInflater.from(activity).inflate(R.layout.identitycell, null);
         layout.bind(identity);
 
-        ImageView menuButton = (ImageView) layout.findViewById(R.id.menu);
+        frameLayout.addView(layout);
 
-        menuButton.performClick();
+        layout.performLongClick();
 
-        ShadowPopupMenu shadowPopupMenu = shadowOf(layout.getPopupMenu());
-        assertTrue(shadowPopupMenu.isShowing());
-
-        shadowPopupMenu.getOnMenuItemClickListener().onMenuItemClick(layout.getPopupMenu().getMenu().findItem(R.id.action_delete));
+        ActionMode actionMode = layout.getActionMode();
+        actionMode.getMenu().performIdentifierAction(R.id.action_delete, 0);
 
         Intent expectedIntent = new Intent(activity, DeleteIdentityActivity.class);
         expectedIntent.putExtra("identityReference", identity.getOpaqueReference());

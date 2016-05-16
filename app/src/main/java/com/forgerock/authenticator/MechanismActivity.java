@@ -100,6 +100,9 @@ public class MechanismActivity extends BaseIdentityActivity {
     public void onResume() {
         super.onResume();
         mechanismAdapter.notifyDataSetChanged();
+        if (getIdentity().getMechanisms().size() == 0) {
+            finish();
+        }
     }
 
     @Override

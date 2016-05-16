@@ -16,17 +16,22 @@
 
 package com.forgerock.authenticator.mechanisms.oath;
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
-import android.content.Intent;
 import android.util.AttributeSet;
+import android.view.ActionMode;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.PopupMenu;
 import android.widget.TextView;
 
 import com.forgerock.authenticator.baseactivities.BaseMechanismActivity;
+import com.forgerock.authenticator.mechanisms.base.Mechanism;
 import com.forgerock.authenticator.ui.MechanismIcon;
 import com.forgerock.authenticator.ui.ProgressCircle;
 import com.forgerock.authenticator.R;
@@ -37,15 +42,15 @@ import com.forgerock.authenticator.mechanisms.base.MechanismLayout;
  * Handles the display of a Token in a list.
  * Some common features of this may be able to be broken out.
  */
-public class OathLayout extends FrameLayout implements MechanismLayout<Oath> {
+public class OathLayout extends MechanismLayout<Oath> {
     private ProgressCircle mProgressOuter;
     private TextView mCode;
-    private ImageView mMenu;
-    private PopupMenu mPopupMenu;
 
     private TokenCode mCodes;
     private String mPlaceholder;
-    private ImageView refresh;
+    private ImageButton refresh;
+    private Oath oath;
+    private String code;
 
     /**
      * Creates this layout using the provided context.
@@ -69,22 +74,13 @@ public class OathLayout extends FrameLayout implements MechanismLayout<Oath> {
 
         mProgressOuter = (ProgressCircle) findViewById(R.id.progressOuter);
         mCode = (TextView) findViewById(R.id.code);
-        mMenu = (ImageView) findViewById(R.id.menu);
-        refresh = (ImageView) findViewById(R.id.refresh);
-
-        mPopupMenu = new PopupMenu(getContext(), mMenu);
-        mMenu.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mPopupMenu.show();
-            }
-        });
+        refresh = (ImageButton) findViewById(R.id.refresh);
     }
 
     @Override
     public void bind(final Oath oath) {
+        this.oath = oath;
 
-        final Context context = this.getContext();
         mCodes = null;
         // Cancel all active animations.
         setEnabled(true);
@@ -92,19 +88,6 @@ public class OathLayout extends FrameLayout implements MechanismLayout<Oath> {
 
         MechanismIcon icon = (MechanismIcon) findViewById(R.id.icon);
         icon.setMechanism(oath);
-
-        // Setup menu.
-        mPopupMenu.getMenu().clear();
-        mPopupMenu.getMenuInflater().inflate(R.menu.token, mPopupMenu.getMenu());
-        mPopupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                if (item.getItemId() == R.id.action_delete) {
-                    BaseMechanismActivity.start(context, DeleteMechanismActivity.class, oath);
-                }
-                return true;
-            }
-        });
 
         switch (oath.getType()) {
             case HOTP:
@@ -116,6 +99,30 @@ public class OathLayout extends FrameLayout implements MechanismLayout<Oath> {
         }
     }
 
+    @Override
+    public void onContextualActionBarItemClicked(ActionMode mode, MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_delete:
+                BaseMechanismActivity.start(getContext(), DeleteMechanismActivity.class, oath);
+            case R.id.action_copy:
+                if (code != null) {
+                    ClipboardManager manager = (ClipboardManager) getContext().getSystemService(Context.CLIPBOARD_SERVICE);
+                    ClipData data = ClipData.newPlainText("Oath code", code);
+                    manager.setPrimaryClip(data);
+                }
+        }
+    }
+
+    @Override
+    protected void onPrepareContextualActionBar(ActionMode mode, Menu menu) {
+        menu.findItem(R.id.action_copy).setEnabled(code != null);
+    }
+
+    @Override
+    protected int getContextMenu() {
+        return R.menu.oath;
+    }
+
     private void setupTOTP(final Oath oath) {
         mProgressOuter.setVisibility(View.VISIBLE);
         refresh.setVisibility(View.GONE);
@@ -124,15 +131,14 @@ public class OathLayout extends FrameLayout implements MechanismLayout<Oath> {
         Runnable totpRunnable = new Runnable() {
             @Override
             public void run() {
-                // Get the current data
                 if (!mCodes.isValid()) {
                     mCodes = oath.generateNextCode();
                 }
 
-                String code = mCodes.getCurrentCode();
+                code = mCodes.getCurrentCode();
 
-                // Update the fields
-                mCode.setText(code);
+                setDisplayCode(code);
+
                 mProgressOuter.setProgress(mCodes.getCurrentProgress());
                 postDelayed(this, 100);
             }
@@ -145,7 +151,6 @@ public class OathLayout extends FrameLayout implements MechanismLayout<Oath> {
         mProgressOuter.setVisibility(View.GONE);
         refresh.setVisibility(View.VISIBLE);
 
-        // Get the code placeholder.
         StringBuilder placeholderBuilder = new StringBuilder();
         for (int i = 0; i < oath.getDigits(); i++) {
             placeholderBuilder.append('●');
@@ -155,31 +160,33 @@ public class OathLayout extends FrameLayout implements MechanismLayout<Oath> {
         }
         mPlaceholder = new String(placeholderBuilder);
 
-        // Set the labels.
         mCode.setText(mPlaceholder);
 
-        // Set onClick behaviour
         final View view = this;
 
-        setOnClickListener(new View.OnClickListener() {
+        refresh.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // Update the code.
-                String code = oath.generateNextCode().getCurrentCode();
-                String formattedCode = code.substring(0, code.length() / 2) + " " +
-                        code.substring(code.length() / 2, code.length());
+                code = oath.generateNextCode().getCurrentCode();
+                setDisplayCode(code);
+                refresh.setEnabled(false);
 
-                mCode.setText(formattedCode);
-
-                setEnabled(false);
-                postDelayed(new Runnable() {
-
+                view.post(new Runnable() {
                     @Override
                     public void run() {
-                        view.setEnabled(true);
+                        refresh.setEnabled(true);
                     }
-                }, 5000);
+                });
             }
         });
     }
+
+    private void setDisplayCode(String code) {
+        String formattedCode = code.substring(0, code.length() / 2) + " " +
+                code.substring(code.length() / 2, code.length());
+
+        mCode.setText(formattedCode);
+    }
+
 }

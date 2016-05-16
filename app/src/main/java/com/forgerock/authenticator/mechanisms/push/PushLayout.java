@@ -17,8 +17,8 @@
 package com.forgerock.authenticator.mechanisms.push;
 
 import android.content.Context;
-import android.content.Intent;
 import android.util.AttributeSet;
+import android.view.ActionMode;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -35,7 +35,8 @@ import com.forgerock.authenticator.mechanisms.base.MechanismLayout;
 /**
  * Handles the display of a Push mechanism in a list.
  */
-public class PushLayout extends FrameLayout implements MechanismLayout<Push> {
+public class PushLayout extends MechanismLayout<Push> {
+    private Push push;
 
     public PushLayout(Context context) {
         super(context);
@@ -50,7 +51,20 @@ public class PushLayout extends FrameLayout implements MechanismLayout<Push> {
     }
 
     @Override
+    public void onContextualActionBarItemClicked(ActionMode mode, MenuItem item) {
+        if (item.getItemId() == R.id.action_delete) {
+            BaseMechanismActivity.start(getContext(), DeleteMechanismActivity.class, push);
+        }
+    }
+
+    @Override
+    protected int getContextMenu() {
+        return R.menu.push;
+    }
+
+    @Override
     public void bind(final Push mechanism) {
+        this.push = mechanism;
         MechanismIcon icon = (MechanismIcon) findViewById(R.id.icon);
         icon.setMechanism(mechanism);
 
@@ -58,29 +72,6 @@ public class PushLayout extends FrameLayout implements MechanismLayout<Push> {
             @Override
             public void onClick(View v) {
                 BaseMechanismActivity.start(getContext(), NotificationActivity.class, mechanism);
-            }
-        });
-
-        ImageView menu = (ImageView) findViewById(R.id.menu);
-        final PopupMenu popupMenu = new PopupMenu(getContext(), menu);
-        menu.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                popupMenu.show();
-            }
-        });
-
-        // Setup menu.
-        popupMenu.getMenu().clear();
-        popupMenu.getMenuInflater().inflate(R.menu.token, popupMenu.getMenu());
-        final Context context = getContext();
-        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                if (item.getItemId() == R.id.action_delete) {
-                    BaseMechanismActivity.start(context, DeleteMechanismActivity.class, mechanism);
-                }
-                return true;
             }
         });
     }

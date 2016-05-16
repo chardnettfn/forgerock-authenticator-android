@@ -28,7 +28,10 @@ import com.forgerock.authenticator.mechanisms.base.Mechanism;
 import com.forgerock.authenticator.model.SortedList;
 import com.forgerock.authenticator.storage.IdentityModel;
 
+import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
+import java.util.TimeZone;
 
 import roboguice.RoboGuice;
 
@@ -40,6 +43,7 @@ public class NotificationAdapter extends BaseExpandableListAdapter {
     private final LayoutInflater mLayoutInflater;
     private List<Notification> pendingList;
     private List<Notification> historyList;
+    private List<NotificationLayout> layoutList;
 
     /**
      * Creates the adapter, and finds the data model.
@@ -49,6 +53,7 @@ public class NotificationAdapter extends BaseExpandableListAdapter {
         mLayoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         pendingList = new SortedList<>();
         historyList = new SortedList<>();
+        layoutList = new ArrayList<>();
         reloadData();
     }
 
@@ -124,8 +129,10 @@ public class NotificationAdapter extends BaseExpandableListAdapter {
             convertView = mLayoutInflater.inflate(R.layout.notificationcell, parent, false);
         }
 
-        Notification not = getChild(groupPosition, childPosition);
-        ((NotificationLayout) convertView).bind(not);
+        Notification notification = getChild(groupPosition, childPosition);
+        NotificationLayout layout = ((NotificationLayout) convertView);
+        layout.bind(notification);
+        layoutList.add(layout);
         return convertView;
     }
 
@@ -143,12 +150,31 @@ public class NotificationAdapter extends BaseExpandableListAdapter {
     private void reloadData() {
         pendingList.clear();
         historyList.clear();
+        layoutList.clear();
         for (Notification notification : mechanism.getNotifications()) {
             if (notification.isActive()) {
                 pendingList.add(notification);
             } else {
                 historyList.add(notification);
             }
+        }
+    }
+
+    /**
+     * Causes the adapter to update the current times on all Notifications it contains.
+     */
+    public void updateTimes() {
+        long currentTimeUTCMillis = Calendar.getInstance(TimeZone.getTimeZone("UTC")).getTimeInMillis();
+        boolean dataChanged = false;
+        for (NotificationLayout layout : layoutList) {
+            boolean wasActive = layout.isActive();
+            layout.refresh(currentTimeUTCMillis);
+            if (wasActive != layout.isActive()) {
+                dataChanged = true;
+            }
+        }
+        if (dataChanged) {
+            notifyDataSetChanged();
         }
     }
 }

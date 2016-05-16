@@ -82,7 +82,10 @@
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:layout_toLeftOf="@+id/menu"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginRight="16dp"
+        android:layout_marginEnd="16dp"
         android:gravity="center_vertical">
 
     <com.forgerock.authenticator.ui.MechanismIcon
@@ -96,15 +99,4 @@
         android:layout_height="wrap_content" />
 
     </LinearLayout>
-
-    <ImageView
-        android:id="@+id/menu"
-        android:layout_width="32dp"
-        android:layout_height="48dp"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentBottom="true"
-        android:paddingTop="12dp"
-        android:paddingBottom="12dp"
-        android:src="@drawable/menu"
-        />
 </com.forgerock.authenticator.identity.IdentityLayout>

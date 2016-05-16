@@ -1,8 +1,27 @@
+/*
+ * The contents of this file are subject to the terms of the Common Development and
+ * Distribution License (the License). You may not use this file except in compliance with the
+ * License.
+ *
+ * You can obtain a copy of the License at legal/CDDLv1.0.txt. See the License for the
+ * specific language governing permission and limitations under the License.
+ *
+ * When distributing Covered Software, include this CDDL Header Notice in each file and include
+ * the License file at legal/CDDLv1.0.txt. If applicable, add the following below the CDDL
+ * Header, with the fields enclosed by brackets [] replaced by your own identifying
+ * information: "Portions copyright [year] [name of copyright owner]".
+ *
+ * Copyright 2016 ForgeRock AS.
+ */
+
 package com.forgerock.authenticator.identity;
 
 import android.content.Context;
 import android.support.annotation.VisibleForTesting;
 import android.util.AttributeSet;
+import android.view.ActionMode;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
@@ -25,27 +44,26 @@ import java.util.List;
  */
 public class IdentityLayout extends RelativeLayout {
 
-    private PopupMenu popupMenu;
+    private ActionMode actionMode;
 
+    //Constructors used automatically by Android. Will never be called directly.
     public IdentityLayout(Context context) {
         super(context);
     }
-
     public IdentityLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
-
     public IdentityLayout(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
     }
 
     /**
-     * Used to get access to the popup menu for testing.
-     * @return The PopupMenu belonging to this layout.
+     * Used to get access to the ActionMode for testing.
+     * @return The ActionMode belonging to this layout.
      */
     @VisibleForTesting
-    PopupMenu getPopupMenu() {
-        return popupMenu;
+    public ActionMode getActionMode() {
+        return actionMode;
     }
 
     /**
@@ -71,25 +89,16 @@ public class IdentityLayout extends RelativeLayout {
             }
         });
 
-        ImageView mMenu = (ImageView) findViewById(R.id.menu);
+        final ContextualActionBar actionBar = new ContextualActionBar(getContext(), identity);
 
-        popupMenu = new PopupMenu(getContext(), mMenu);
-        mMenu.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                popupMenu.show();
-            }
-        });
+        setOnLongClickListener(new View.OnLongClickListener() {
 
-        final Context context = getContext();
-        popupMenu.getMenu().clear();
-        popupMenu.getMenuInflater().inflate(R.menu.token, popupMenu.getMenu());
-        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                if (item.getItemId() == R.id.action_delete) {
-                    BaseIdentityActivity.start(context, DeleteIdentityActivity.class, identity);
+            public boolean onLongClick(View view) {
+                if (actionMode != null) {
+                    return false;
                 }
+                actionMode = startActionMode(actionBar);
+                view.setSelected(true);
                 return true;
             }
         });
@@ -107,7 +116,45 @@ public class IdentityLayout extends RelativeLayout {
             icons.get(i).setVisibility(VISIBLE);
             icons.get(i).setMechanism(identity.getMechanisms().get(i));
         }
+    }
 
+    /**
+     * Action Bar which is displayed when an Identity is long pressed.
+     */
+    private class ContextualActionBar implements ActionMode.Callback {
 
+        private final Context context;
+        private final Identity identity;
+
+        public ContextualActionBar(Context context, Identity identity) {
+            this.context = context;
+            this.identity = identity;
+        }
+
+        @Override
+        public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+            MenuInflater inflater = mode.getMenuInflater();
+            inflater.inflate(R.menu.identity, menu);
+            return true;
+        }
+
+        @Override
+        public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+            return false;
+        }
+
+        @Override
+        public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+            if (item.getItemId() == R.id.action_delete) {
+                BaseIdentityActivity.start(context, DeleteIdentityActivity.class, identity);
+            }
+            mode.finish();
+            return true;
+        }
+
+        @Override
+        public void onDestroyActionMode(ActionMode mode) {
+            actionMode = null;
+        }
     }
 }
