@@ -49,7 +49,7 @@ public class MessageUtils {
      * @throws IOException If a network issue occurred.
      * @throws JSONException If an encoding issue occurred.
      */
-    public static int respond(String endpoint, String base64Secret, String messageId, Map<String, String> data)
+    public static int respond(String endpoint, String amlbCookie, String base64Secret, String messageId, Map<String, String> data)
             throws IOException, JSONException {
         HttpURLConnection connection = null;
         int returnCode = 404;
@@ -60,6 +60,9 @@ public class MessageUtils {
             connection.setDoInput(true);
             connection.setRequestMethod("POST");
             connection.setRequestProperty("Content-Type", "application/json");
+            if (amlbCookie != null) {
+                connection.setRequestProperty("Cookie", amlbCookie);
+            }
             connection.connect();
 
             JSONObject message = new JSONObject();

@@ -73,6 +73,10 @@ public class GcmService extends RoboGcmListenerService {
     private static final String CHALLENGE = "c";
     private static final String MESSAGE_ID = "messageId";
     private static final String MECHANISM_UID = "u";
+    private static final String AMLB_COOKIE = "l";
+    private static final String TTL = "t";
+
+    private static final int DEFAULT_TTL = 120000;
 
     /**
      * Default instance of GcmService expected to be instantiated by Android framework.
@@ -106,14 +110,23 @@ public class GcmService extends RoboGcmListenerService {
         }
         String mechanismUid = (String) signedJwt.getClaimsSet().getClaim(MECHANISM_UID);
         String base64Challenge = (String) signedJwt.getClaimsSet().getClaim(CHALLENGE);
+        String amlbCookie = (String) signedJwt.getClaimsSet().getClaim(AMLB_COOKIE);
+
+        String ttlString = (String) signedJwt.getClaimsSet().getClaim(TTL);
+        int ttl = DEFAULT_TTL;
+        if (ttlString != null) {
+            try {
+                ttl = Integer.parseInt((String) signedJwt.getClaimsSet().getClaim(TTL));
+            } catch (NumberFormatException e) {
+                logger.error("TTL was not a number");
+                return;
+            }
+        }
 
         if (messageId == null || mechanismUid == null || base64Challenge == null) {
             logger.error("Message did not contain required fields.");
             return;
         }
-
-        int id = messageCount++;
-        // TODO: Change activity a list of "unread" messages when there is more than one
 
         List<Mechanism> mechanismList = identityModel.getMechanisms();
 
@@ -135,23 +148,35 @@ public class GcmService extends RoboGcmListenerService {
             return;
         }
 
+        com.forgerock.authenticator.notifications.Notification notification;
+        try {
+            notification = generateNotification(messageId, push, base64Challenge, amlbCookie, ttl);
+        } catch (InvalidNotificationException e) {
+            logger.error("Received message mapped invalid Notification to Mechanism. Skipping...");
+            return;
+        }
+        createSystemNotification(notification);
+    }
+
+    private com.forgerock.authenticator.notifications.Notification generateNotification(
+            String messageId, Push push, String base64Challenge, String amlbCookie, int ttl)
+    throws InvalidNotificationException {
         Calendar timeReceived = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
         Calendar timeExpired = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-        timeExpired.setTimeInMillis(timeReceived.getTimeInMillis() + 3600000);
+        timeExpired.add(Calendar.SECOND, ttl);
 
         PushNotification.PushNotificationBuilder notificationBuilder =
                 PushNotification.builder()
                         .setTimeAdded(timeReceived)
                         .setTimeExpired(timeExpired)
                         .setMessageId(messageId)
-                        .setChallenge(base64Challenge);
-        com.forgerock.authenticator.notifications.Notification notificationData;
-        try {
-            notificationData = push.addNotification(notificationBuilder);
-        } catch (InvalidNotificationException e) {
-            logger.error("Received message mapped invalid Notification to Mechanism. Skipping...");
-            return;
-        }
+                        .setChallenge(base64Challenge)
+                        .setAmlbCookie(amlbCookie);
+         return push.addNotification(notificationBuilder);
+    }
+
+    private void createSystemNotification(com.forgerock.authenticator.notifications.Notification notificationData) {
+        int id = messageCount++;
 
         /**
          * TODO: Update ID of Intent to match Notification

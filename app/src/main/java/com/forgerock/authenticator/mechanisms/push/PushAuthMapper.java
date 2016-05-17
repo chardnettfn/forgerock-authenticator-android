@@ -45,6 +45,8 @@ public class PushAuthMapper extends UriParser {
     public static final String BACKGROUND_COLOR = "b"; // TODO: Move this to shared code
     /** The challenge to use for the response */
     public static final String CHALLENGE = "c";
+    /** The challenge to use for the response */
+    public static final String AMLB_COOKIE = "l";
 
     @Override
     protected Map<String, String> validate(Map<String, String> values) throws URIMappingException {

@@ -33,6 +33,7 @@ import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.google.android.gms.iid.InstanceID;
 
+import org.apache.http.impl.cookie.BasicClientCookie;
 import org.json.JSONException;
 
 import java.io.IOException;
@@ -58,11 +59,11 @@ public class PushFactory extends MechanismFactory {
     protected Mechanism.PartialMechanismBuilder createFromUriParameters(
             int version, String mechanismUID, Map<String, String> map) throws MechanismCreationException {
         if (version == 1) {
-            String registrationEndpoint = new String(Base64.decode(map.get(PushAuthMapper.REG_ENDPOINT), Base64.URL_SAFE));
-            String authenticationEndpoint = new String(Base64.decode(map.get(PushAuthMapper.AUTH_ENDPOINT), Base64.URL_SAFE));
+            String registrationEndpoint = map.get(PushAuthMapper.REG_ENDPOINT);
+            String authenticationEndpoint = map.get(PushAuthMapper.AUTH_ENDPOINT);
             String base64Secret = map.get(PushAuthMapper.SHARED_SECRET);
             String base64Challenge = map.get(PushAuthMapper.CHALLENGE);
-            String color = map.get(PushAuthMapper.BACKGROUND_COLOR);
+            String amlbCookie = map.get(PushAuthMapper.AMLB_COOKIE);
 
             String messageId = get(map, PushAuthMapper.MESSAGE_ID, null);
 
@@ -87,7 +88,7 @@ public class PushFactory extends MechanismFactory {
             data.put("response", PushNotification.generateChallengeResponse(base64Secret, base64Challenge));
 
             try {
-                int returnCode = MessageUtils.respond(registrationEndpoint, base64Secret, messageId, data);
+                int returnCode = MessageUtils.respond(registrationEndpoint, amlbCookie, base64Secret, messageId, data);
                 if (returnCode != 200) {
                     throw new MechanismCreationException("Communication with server returned " +
                             returnCode + " code.");

@@ -45,11 +45,14 @@ public class PushNotification extends Notification {
     private static final String MESSAGE_ID_KEY = "messageId";
     private static final String RESPONSE_KEY = "response";
     private static final String CHALLENGE_KEY = "challenge";
+    private static final String AMLB_COOKIE = "amlbCookie";
+    private final String amlbCookie;
     private String messageId;
     private String base64Challenge;
 
-    private PushNotification(Mechanism mechanism, long id, Calendar timeAdded, Calendar timeExpired, boolean accepted, boolean active, String messageId, String base64Challenge) {
+    private PushNotification(Mechanism mechanism, long id, String amlbCookie, Calendar timeAdded, Calendar timeExpired, boolean accepted, boolean active, String messageId, String base64Challenge) {
         super(mechanism, id, timeAdded, timeExpired, accepted, active);
+        this.amlbCookie = amlbCookie;
         this.messageId = messageId;
         this.base64Challenge = base64Challenge;
     }
@@ -59,6 +62,7 @@ public class PushNotification extends Notification {
         Map<String, String> data = new HashMap<>();
         data.put(MESSAGE_ID_KEY, messageId);
         data.put(CHALLENGE_KEY, base64Challenge);
+        data.put(AMLB_COOKIE, amlbCookie);
         return data;
     }
 
@@ -69,7 +73,7 @@ public class PushNotification extends Notification {
             Push push = (Push) getMechanism();
             Map<String, String> data = new HashMap<>();
             data.put(RESPONSE_KEY, generateChallengeResponse(push.getSecret(), base64Challenge));
-            returnCode = MessageUtils.respond(push.getEndpoint(), push.getSecret(), messageId, data);
+            returnCode = MessageUtils.respond(push.getEndpoint(), amlbCookie, push.getSecret(), messageId, data);
         } catch (IOException | JSONException e) {
             logger.error("Response to server failed.", e);
         }
@@ -111,6 +115,7 @@ public class PushNotification extends Notification {
     public static class PushNotificationBuilder extends NotificationBuilder<PushNotificationBuilder> {
         private String messageId;
         private String base64Challenge;
+        private String amlbCookie;
 
         /**
          * Sets the message id that was received with this notification. This will one day be moved
@@ -131,6 +136,11 @@ public class PushNotification extends Notification {
             return this;
         }
 
+        public PushNotificationBuilder setAmlbCookie(String amlbCookie) {
+            this.amlbCookie = amlbCookie;
+            return this;
+        }
+
         @Override
         protected PushNotificationBuilder getThis() {
             return this;
@@ -145,12 +155,13 @@ public class PushNotification extends Notification {
         public PushNotificationBuilder setData(Map<String, String> data) {
             this.messageId = data.get(MESSAGE_ID_KEY);
             this.base64Challenge = data.get(CHALLENGE_KEY);
+            this.amlbCookie = data.get(AMLB_COOKIE);
             return this;
         }
 
         @Override
         public PushNotification buildImpl() {
-            return new PushNotification(parent, id, timeAdded, timeExpired, approved, pending, messageId, base64Challenge);
+            return new PushNotification(parent, id, amlbCookie, timeAdded, timeExpired, approved, pending, messageId, base64Challenge);
         }
     }
 }
