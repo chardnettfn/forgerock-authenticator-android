@@ -16,10 +16,11 @@
 
 package com.forgerock.authenticator.mechanisms.push;
 
-import android.util.Base64;
-
 import com.forgerock.authenticator.mechanisms.URIMappingException;
 import com.forgerock.authenticator.mechanisms.base.UriParser;
+
+import org.forgerock.util.encode.Base64;
+import org.forgerock.util.encode.Base64url;
 
 import java.util.Map;
 
@@ -34,39 +35,60 @@ public class PushAuthMapper extends UriParser {
      */
 
     /** The endpoint used for registration */
-    public static final String REG_ENDPOINT = "r";
+    public static final String REG_ENDPOINT_KEY = "r";
     /** The endpoint used for authentication */
-    public static final String AUTH_ENDPOINT = "a";
+    public static final String AUTH_ENDPOINT_KEY = "a";
     /** The message id to use for response */
-    public static final String MESSAGE_ID = "m";
+    public static final String MESSAGE_ID_KEY = "m";
     /** The shared secret used for signing */
-    public static final String SHARED_SECRET = "s";
-    /** The background color used for theming */
-    public static final String BACKGROUND_COLOR = "b"; // TODO: Move this to shared code
+    public static final String BASE_64_SHARED_SECRET_KEY = "s";
     /** The challenge to use for the response */
-    public static final String CHALLENGE = "c";
+    public static final String BASE_64_CHALLENGE_KEY = "c";
     /** The challenge to use for the response */
-    public static final String AMLB_COOKIE = "l";
+    public static final String AM_LOAD_BALANCER_COOKIE_KEY = "l";
 
+    private static final String BASE_64_URL_SHARED_SECRET = "s";
+    private static final String BASE_64_URL_CHALLENGE = "c";
+    private static final String BASE_64_URL_IMAGE = "image";
+    private static final String BASE_64_URL_REG_ENDPOINT = "r";
+    private static final String BASE_64_URL_AUTH_ENDPOINT = "a";
+    
     @Override
-    protected Map<String, String> validate(Map<String, String> values) throws URIMappingException {
+    protected Map<String, String> postProcess(Map<String, String> values) throws URIMappingException {
 
-        //TODO: validate appropriately (in parallel with unit tests)
-        values.put(IMAGE, new String(Base64.decode(values.get(IMAGE), Base64.URL_SAFE))); // Have to decode the url here - how does auth work?
-        if (!containsNonEmpty(values, REG_ENDPOINT)) {
-            throw new URIMappingException("Registration endpoint must not be empty");
-        }
-        values.put(REG_ENDPOINT, new String(Base64.decode(values.get(REG_ENDPOINT), Base64.URL_SAFE)));
-
-        if (!containsNonEmpty(values, AUTH_ENDPOINT)) {
-            throw new URIMappingException("Authentication endpoint must not be empty");
-        }
-        values.put(AUTH_ENDPOINT, new String(Base64.decode(values.get(AUTH_ENDPOINT), Base64.URL_SAFE)));
-
-        if (!values.containsKey(MESSAGE_ID) || values.get(MESSAGE_ID).isEmpty()) {
+        if (containsNonEmpty(values, MESSAGE_ID_KEY)) {
             throw new URIMappingException("Message ID is required");
         }
 
+        if (containsNonEmpty(values, BASE_64_URL_IMAGE)) {
+            values.put(IMAGE, new String(Base64url.decode(values.get(BASE_64_URL_IMAGE))));
+        }
+
+        values.put(REG_ENDPOINT_KEY, recodeBase64UrlValueToStringWithValidation(values, BASE_64_URL_REG_ENDPOINT));
+        values.put(AUTH_ENDPOINT_KEY, recodeBase64UrlValueToStringWithValidation(values, BASE_64_URL_AUTH_ENDPOINT));
+        values.put(BASE_64_SHARED_SECRET_KEY, recodeBase64UrlValueToBase64WithValidation(values, BASE_64_URL_SHARED_SECRET));
+        values.put(BASE_64_CHALLENGE_KEY, recodeBase64UrlValueToBase64WithValidation(values, BASE_64_URL_CHALLENGE));
+
         return values;
+    }
+
+    byte[] decodeValueWithValidation(Map<String, String> data, String key) throws URIMappingException{
+        if (!containsNonEmpty(data, BASE_64_URL_REG_ENDPOINT)) {
+            throw new URIMappingException(key + " must not be empty");
+        }
+        byte[] bytes = Base64url.decode(data.get(BASE_64_URL_REG_ENDPOINT));
+
+        if (bytes == null) {
+            throw new URIMappingException("Failed to decode value in " + key);
+        }
+        return bytes;
+    }
+
+    String recodeBase64UrlValueToBase64WithValidation(Map<String, String> data, String key) throws URIMappingException{
+        return Base64.encode(decodeValueWithValidation(data, key));
+    }
+
+    String recodeBase64UrlValueToStringWithValidation(Map<String, String> data, String key) throws URIMappingException{
+        return new String(decodeValueWithValidation(data, key));
     }
 }

@@ -25,7 +25,6 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.TimeZone;
 
 /**
@@ -216,7 +215,7 @@ public abstract class Notification extends ModelObject<Notification> {
      * @return True if the accept succeeded, false otherwise.
      */
     public final boolean accept() {
-        if (isPending() && acceptImpl()) {
+        if (isPending() && performAccept()) {
             pending = false;
             approved = true;
             save();
@@ -229,14 +228,14 @@ public abstract class Notification extends ModelObject<Notification> {
      * Implementation of the behaviour to perform upon accepting the authentication request.
      * @return True if the operation successfully completed, false otherwise.
      */
-    protected abstract boolean acceptImpl();
+    protected abstract boolean performAccept();
 
     /**
      *
      * @return True if the deny succeeded, false otherwise.
      */
     public final boolean deny() {
-        if (isPending() && denyImpl()) {
+        if (isPending() && performDeny()) {
             pending = false;
             approved = false;
             save();
@@ -249,7 +248,7 @@ public abstract class Notification extends ModelObject<Notification> {
      * Implementation of the behaviour to perform upon denying the authentication request.
      * @return True if the operation successfully completed, false otherwise.
      */
-    protected abstract boolean denyImpl();
+    protected abstract boolean performDeny();
 
     @Override
     public int compareTo(Notification another) {

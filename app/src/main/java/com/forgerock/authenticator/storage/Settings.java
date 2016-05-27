@@ -26,10 +26,12 @@ import android.content.SharedPreferences;
 public class Settings {
     private static final String SETTINGS_NAME = "fr_auth_settings";
     private static final String CAMERA_ENABLED_SETTING = "camera_enabled";
+    private static final String SPLASH_ENABLED_SETTING = "splash_enabled";
 
     private final SharedPreferences sharedPreferences;
 
     private boolean cameraEnabled;
+    private boolean splashEnabled;
 
     /**
      * Load the settings from SharedPreferences, or set default values if they are not there.
@@ -43,6 +45,11 @@ public class Settings {
 
         if (!sharedPreferences.contains(CAMERA_ENABLED_SETTING)) {
             sharedPreferences.edit().putBoolean(CAMERA_ENABLED_SETTING, cameraEnabled).apply();
+        }
+
+        splashEnabled = sharedPreferences.getBoolean(SPLASH_ENABLED_SETTING, true);
+        if (!sharedPreferences.contains(SPLASH_ENABLED_SETTING)) {
+            setSplashEnabled(splashEnabled);
         }
     }
 
@@ -61,5 +68,22 @@ public class Settings {
      */
     public boolean isCameraEnabled() {
         return cameraEnabled;
+    }
+
+    /**
+     * Set whether use of the splash screen is enabled.
+     * @param enabled True if the splash screen should be enabled, false otherwise.
+     */
+    public void setSplashEnabled(boolean enabled) {
+        sharedPreferences.edit().putBoolean(SPLASH_ENABLED_SETTING, enabled).apply();
+        splashEnabled = enabled;
+    }
+
+    /**
+     * Returns whether the splash screen is enabled.
+     * @return True if the splash screen is enabled, false otherwise.
+     */
+    public boolean isSplashEnabled() {
+        return splashEnabled;
     }
 }

@@ -21,6 +21,7 @@ import android.content.Context;
 import com.forgerock.authenticator.mechanisms.MechanismCreationException;
 import com.forgerock.authenticator.mechanisms.base.Mechanism;
 import com.forgerock.authenticator.mechanisms.base.MechanismFactory;
+import com.forgerock.authenticator.mechanisms.base.MechanismInfo;
 import com.forgerock.authenticator.mechanisms.base.UriParser;
 import com.forgerock.authenticator.storage.IdentityModel;
 
@@ -36,7 +37,7 @@ class OathFactory extends MechanismFactory {
     private final OathAuthMapper mapper = new OathAuthMapper();
 
     protected OathFactory(Context context, IdentityModel model) {
-        super(context, model);
+        super(context, model, new OathInfo());
     }
 
     @Override

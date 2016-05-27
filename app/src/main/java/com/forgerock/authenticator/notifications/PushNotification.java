@@ -44,6 +44,7 @@ public class PushNotification extends Notification {
     private static final Logger logger = LoggerFactory.getLogger(PushNotification.class);
     private static final String MESSAGE_ID_KEY = "messageId";
     private static final String RESPONSE_KEY = "response";
+    private static final String DENY_KEY = "deny";
     private static final String CHALLENGE_KEY = "challenge";
     private static final String AMLB_COOKIE = "amlbCookie";
     private final String amlbCookie;
@@ -67,11 +68,11 @@ public class PushNotification extends Notification {
     }
 
     @Override
-    protected boolean acceptImpl() {
+    protected boolean performAccept() {
         int returnCode = 404;
         try {
             Push push = (Push) getMechanism();
-            Map<String, String> data = new HashMap<>();
+            Map<String, Object> data = new HashMap<>();
             data.put(RESPONSE_KEY, generateChallengeResponse(push.getSecret(), base64Challenge));
             returnCode = MessageUtils.respond(push.getEndpoint(), amlbCookie, push.getSecret(), messageId, data);
         } catch (IOException | JSONException e) {
@@ -82,13 +83,27 @@ public class PushNotification extends Notification {
     }
 
     @Override
-    protected boolean denyImpl() {
-        return true;
+    protected boolean performDeny() {
+        int returnCode = 404;
+        try {
+            Push push = (Push) getMechanism();
+            Map<String, Object> data = new HashMap<>();
+            data.put(RESPONSE_KEY, generateChallengeResponse(push.getSecret(), base64Challenge));
+            data.put(DENY_KEY, true);
+            returnCode = MessageUtils.respond(push.getEndpoint(), amlbCookie, push.getSecret(), messageId, data);
+        } catch (IOException | JSONException e) {
+            logger.error("Response to server failed.", e);
+        }
+
+        return returnCode == 200;
     }
 
     public static String generateChallengeResponse(String base64Secret, String base64Challenge) {
         byte[] secret = Base64.decode(base64Secret);
-        byte[] challenge = Base64.decode(base64Challenge);
+        byte[] challenge;
+
+        challenge = Base64.decode(base64Challenge);
+
         Mac hmac = null;
         SecretKey key = new SecretKeySpec(secret, 0, secret.length, "HmacSHA256");
         try {

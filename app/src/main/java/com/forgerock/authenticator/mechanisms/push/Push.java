@@ -21,16 +21,8 @@ import com.forgerock.authenticator.mechanisms.base.Mechanism;
 import com.forgerock.authenticator.mechanisms.MechanismCreationException;
 import com.forgerock.authenticator.mechanisms.base.MechanismInfo;
 
-import org.forgerock.util.encode.Base64;
-
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.crypto.Mac;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
 
 /**
  * Represents an instance of a Push authentication mechanism. Associated with an owner.
@@ -80,8 +72,8 @@ public class Push extends Mechanism {
     @Override
     public Map<String, String> asMap() {
         Map<String, String> result = new HashMap<>();
-        result.put(PushAuthMapper.AUTH_ENDPOINT, endpoint);
-        result.put(PushAuthMapper.SHARED_SECRET, secret);
+        result.put(PushAuthMapper.AUTH_ENDPOINT_KEY, endpoint);
+        result.put(PushAuthMapper.BASE_64_SHARED_SECRET_KEY, secret);
         return result;
     }
 
@@ -125,8 +117,8 @@ public class Push extends Mechanism {
          * @throws MechanismCreationException If any of the options were invalid.
          */
         public PushBuilder setOptions(Map<String, String> options) {
-            endpoint = options.get(PushAuthMapper.AUTH_ENDPOINT);
-            secret = options.get(PushAuthMapper.SHARED_SECRET);
+            endpoint = options.get(PushAuthMapper.AUTH_ENDPOINT_KEY);
+            secret = options.get(PushAuthMapper.BASE_64_SHARED_SECRET_KEY);
             return this;
         }
 

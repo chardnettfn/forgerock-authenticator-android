@@ -52,7 +52,11 @@ public class PushAuthActivity extends BaseNotificationActivity {
         setContentView(R.layout.pushauth);
 
         final Notification notification = getNotification();
-        final Context context = this;
+
+        if (notification == null || !notification.isActive()) {
+            finish();
+            return;
+        }
 
         TextView questionView = (TextView) findViewById(R.id.question);
         questionView.setText("Log into " + notification.getMechanism().getOwner().getIssuer() + "?");
@@ -61,8 +65,7 @@ public class PushAuthActivity extends BaseNotificationActivity {
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                notification.deny();
-                finish();
+                new DenyNotificationTask(notification).execute();
             }
         });
 
@@ -87,7 +90,7 @@ public class PushAuthActivity extends BaseNotificationActivity {
         swipeToConfirm.setListener(new ConfirmationSwipeBar.ConfirmationSwipeBarListener() {
             @Override
             public void onConfirm() {
-                new RespondToMessageTask(context, notification).execute();
+                new AcceptNotificationTask(notification).execute();
             }
         });
     }
@@ -95,22 +98,15 @@ public class PushAuthActivity extends BaseNotificationActivity {
     /**
      * Class responsible for making a request to OpenAM to complete the authentication request.
      */
-    private class RespondToMessageTask extends AsyncTask<Void, Void, Boolean> {
-        private Notification notification;
-        private Context context;
+    private abstract class RespondToMessageTask extends AsyncTask<Void, Void, Boolean> {
+        protected Notification notification;
 
         /**
          * Creates the task, setting the message id it is associated with.
          * @param notification The notification that is being responded to.
          */
-        public RespondToMessageTask(Context context, Notification notification) {
+        public RespondToMessageTask(Notification notification) {
             this.notification = notification;
-            this.context = context;
-        }
-
-        @Override
-        protected Boolean doInBackground(Void... params) {
-            return notification.accept();
         }
 
         @Override
@@ -130,6 +126,36 @@ public class PushAuthActivity extends BaseNotificationActivity {
             } else {
                 finish();
             }
+        }
+    }
+
+    private class AcceptNotificationTask extends RespondToMessageTask {
+        /**
+         * Creates the task, setting the message id it is associated with.
+         * @param notification The notification that is being responded to.
+         */
+        public AcceptNotificationTask(Notification notification) {
+            super(notification);
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            return notification.accept();
+        }
+    }
+
+    private class DenyNotificationTask extends RespondToMessageTask {
+        /**
+         * Creates the task, setting the message id it is associated with.
+         * @param notification The notification that is being responded to.
+         */
+        public DenyNotificationTask(Notification notification) {
+            super(notification);
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            return notification.deny();
         }
     }
 }

@@ -103,6 +103,9 @@ public class IdentityModel {
      */
     public Mechanism getMechanism(ArrayList<String> opaqueReference) {
         Identity identity = getIdentity(opaqueReference);
+        if (identity == null) {
+            return null;
+        }
         for (Mechanism mechanism : identity.getMechanisms()) {
             if (mechanism.consumeOpaqueReference(opaqueReference)) {
                 return mechanism;
@@ -118,6 +121,9 @@ public class IdentityModel {
      */
     public Notification getNotification(ArrayList<String> opaqueReference) {
         Mechanism mechanism = getMechanism(opaqueReference);
+        if (mechanism == null) {
+            return null;
+        }
         for (Notification notification : mechanism.getNotifications()) {
             if (notification.consumeOpaqueReference(opaqueReference)) {
                 return notification;

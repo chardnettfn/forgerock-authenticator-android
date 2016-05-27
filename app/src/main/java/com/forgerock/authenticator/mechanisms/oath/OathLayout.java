@@ -52,6 +52,9 @@ public class OathLayout extends MechanismLayout<Oath> {
     private Oath oath;
     private String code;
 
+    private static final int HOTP_COOLDOWN = 5000;
+    private static final int TOTP_TICK = 100;
+
     /**
      * Creates this layout using the provided context.
      * @param context The context this layout exists within.
@@ -140,7 +143,7 @@ public class OathLayout extends MechanismLayout<Oath> {
                 setDisplayCode(code);
 
                 mProgressOuter.setProgress(mCodes.getCurrentProgress());
-                postDelayed(this, 100);
+                postDelayed(this, TOTP_TICK);
             }
         };
         post(totpRunnable);
@@ -172,12 +175,12 @@ public class OathLayout extends MechanismLayout<Oath> {
                 setDisplayCode(code);
                 refresh.setEnabled(false);
 
-                view.post(new Runnable() {
+                view.postDelayed(new Runnable() {
                     @Override
                     public void run() {
                         refresh.setEnabled(true);
                     }
-                });
+                }, HOTP_COOLDOWN);
             }
         });
     }

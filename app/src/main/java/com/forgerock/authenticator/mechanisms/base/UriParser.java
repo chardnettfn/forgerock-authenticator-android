@@ -29,8 +29,8 @@ import java.util.Map;
 /**
  * Base class for converting mechanism URIs to useful data. Extracts common information (scheme, type,
  * version, issuer and account name). All information stored as parameters are converted to a map.
- * Subclasses on this class must implement validate(), which verifies that all required information
- * is present.
+ * Subclasses on this class must implement postProcess(), which verifies that all required information
+ * is present, and transforms it as required.
  */
 public abstract class UriParser {
     /** The protocol of the URI */
@@ -63,7 +63,7 @@ public abstract class UriParser {
      */
     public final Map<String, String> map(String uriScheme) throws URIMappingException {
         try {
-            return validate(map(new URI(uriScheme)));
+            return postProcess(map(new URI(uriScheme)));
         } catch (URISyntaxException e) {
             throw new URIMappingException("Failed to parse URI", e);
         }
@@ -119,7 +119,7 @@ public abstract class UriParser {
      * @return The same map of values, with a transform applied if required.
      * @throws URIMappingException If there were any validation errors.
      */
-    protected abstract Map<String, String> validate(Map<String, String> values) throws URIMappingException;
+    protected abstract Map<String, String> postProcess(Map<String, String> values) throws URIMappingException;
 
     protected final boolean containsNonEmpty(Map<String, String> values, String key) {
         return values.containsKey(key) && !values.get(key).isEmpty();

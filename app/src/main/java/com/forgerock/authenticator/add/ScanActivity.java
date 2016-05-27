@@ -18,8 +18,12 @@
 
 package com.forgerock.authenticator.add;
 
+import android.Manifest;
 import android.annotation.TargetApi;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.pm.PackageManager;
 import android.hardware.Camera;
 import android.hardware.Camera.CameraInfo;
 import android.hardware.Camera.Parameters;
@@ -27,6 +31,8 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -37,6 +43,7 @@ import android.widget.Toast;
 import com.forgerock.authenticator.R;
 import com.forgerock.authenticator.baseactivities.BaseActivity;
 import com.forgerock.authenticator.mechanisms.CoreMechanismFactory;
+import com.forgerock.authenticator.mechanisms.DuplicateMechanismException;
 import com.forgerock.authenticator.mechanisms.base.Mechanism;
 import com.forgerock.authenticator.mechanisms.MechanismCreationException;
 import com.forgerock.authenticator.mechanisms.URIMappingException;
@@ -247,6 +254,8 @@ public class ScanActivity extends BaseActivity implements SurfaceHolder.Callback
      */
     private class CreateMechanismFromUriTask extends AsyncTask<String, Void, Mechanism> {
         private Context context;
+        private Mechanism duplicate = null;
+        String[] uri;
 
         /**
          * Creates the task.
@@ -257,12 +266,17 @@ public class ScanActivity extends BaseActivity implements SurfaceHolder.Callback
 
         @Override
         protected Mechanism doInBackground(String... uri) {
+            this.uri = uri;
             if (uri.length != 1) {
                 return null;
             }
             try {
                 Mechanism mechanism = new CoreMechanismFactory(context, identityModel).createFromUri(uri[0]);
                 return mechanism;
+            } catch (DuplicateMechanismException e) {
+                logger.warn("Duplicate detected", e);
+
+                duplicate = e.getCausingMechanism();
             } catch (MechanismCreationException | URIMappingException e) {
                 runOnUiThread(new Runnable() {
                     @Override
@@ -277,33 +291,54 @@ public class ScanActivity extends BaseActivity implements SurfaceHolder.Callback
 
         @Override
         protected void onPostExecute(Mechanism mechanism) {
-            if (mechanism == null || mechanism.getOwner().getImageURL() == null) {
-                finish();
-                return;
-            }
-
-            final ImageView image = (ImageView) findViewById(R.id.image);
-            Picasso.with(ScanActivity.this)
-                    .load(mechanism.getOwner().getImageURL())
-                    .placeholder(R.drawable.scan)
-                    .into(image, new Callback() {
-                        @Override
-                        public void onSuccess() {
-                            findViewById(R.id.progress).setVisibility(View.INVISIBLE);
-                            image.setAlpha(0.9f);
-                            image.postDelayed(new Runnable() {
-                                @Override
-                                public void run() {
+            if (duplicate != null) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                    builder.setTitle("Duplicate detected")
+                            .setIcon(R.drawable.forgerock_placeholder)
+                            .setMessage("Warning! This will replace an existing login mechanism. This operation cannot be undone. You should only proceed if you were expecting to update a mechanism.")
+                            .setPositiveButton("Replace", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    duplicate.getOwner().removeMechanism(duplicate);
+                                    new CreateMechanismFromUriTask(context).execute(uri);
+                                }
+                            })
+                            .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
                                     finish();
                                 }
-                            }, 2000);
-                        }
+                            });
 
-                        @Override
-                        public void onError() {
-                            finish();
-                        }
-                    });
+                    builder.create().show();
+            } else {
+
+                if (mechanism == null || mechanism.getOwner().getImageURL() == null) {
+                    finish();
+                    return;
+                }
+
+                final ImageView image = (ImageView) findViewById(R.id.image);
+                Picasso.with(ScanActivity.this)
+                        .load(mechanism.getOwner().getImageURL())
+                        .placeholder(R.drawable.scan)
+                        .into(image, new Callback() {
+                            @Override
+                            public void onSuccess() {
+                                findViewById(R.id.progress).setVisibility(View.INVISIBLE);
+                                image.setAlpha(0.9f);
+                                image.postDelayed(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        finish();
+                                    }
+                                }, 2000);
+                            }
+
+                            @Override
+                            public void onError() {
+                                finish();
+                            }
+                        });
+            }
         }
     }
 }

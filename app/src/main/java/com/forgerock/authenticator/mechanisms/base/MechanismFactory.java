@@ -19,6 +19,7 @@ package com.forgerock.authenticator.mechanisms.base;
 import android.content.Context;
 
 import com.forgerock.authenticator.identity.Identity;
+import com.forgerock.authenticator.mechanisms.DuplicateMechanismException;
 import com.forgerock.authenticator.mechanisms.MechanismCreationException;
 import com.forgerock.authenticator.mechanisms.URIMappingException;
 import com.forgerock.authenticator.mechanisms.base.Mechanism.PartialMechanismBuilder;
@@ -34,10 +35,12 @@ public abstract class MechanismFactory {
 
     private Context context;
     private IdentityModel identityModel;
+    private String mechanismString;
 
-    protected MechanismFactory(Context context, IdentityModel model) {
+    protected MechanismFactory(Context context, IdentityModel model, MechanismInfo info) {
         this.context = context;
         identityModel = model;
+        mechanismString = info.getMechanismString();
     }
 
     /**
@@ -73,21 +76,35 @@ public abstract class MechanismFactory {
 
         Identity identity = identityModel.getIdentity(issuer, accountName);
 
-        if (identity == null) {
-            Identity.IdentityBuilder builder = Identity.builder()
-                    .setIssuer(issuer)
-                    .setAccountName(accountName)
-                    .setImageURL(imageURL)
-                    .setBackgroundColor(bgColor);
-            identity = identityModel.addIdentity(builder);
+        try {
+
+            if (identity == null) {
+                Identity.IdentityBuilder builder = Identity.builder()
+                        .setIssuer(issuer)
+                        .setAccountName(accountName)
+                        .setImageURL(imageURL)
+                        .setBackgroundColor(bgColor);
+                identity = identityModel.addIdentity(builder);
+            } else {
+                for (Mechanism mechanism : identity.getMechanisms()) {
+                    if (mechanism.getInfo().getMechanismString().equals(mechanismString)) {
+                        throw new DuplicateMechanismException("Matching mechanism already exists", mechanism);
+                    }
+                }
+            }
+
+            String mechanismUID = identityModel.getNewMechanismUID();
+
+            Mechanism.PartialMechanismBuilder builder = createFromUriParameters(version, mechanismUID, values)
+                    .setMechanismUID(mechanismUID);
+            return identity.addMechanism(builder);
+
+        } catch (MechanismCreationException e) {
+            if (identity.getMechanisms().isEmpty()) {
+                identityModel.removeIdentity(identity);
+            }
+            throw e;
         }
-
-        String mechanismUID = identityModel.getNewMechanismUID();
-
-        Mechanism.PartialMechanismBuilder builder = createFromUriParameters(version, mechanismUID, values)
-                .setMechanismUID(mechanismUID);
-        Mechanism mechanism = identity.addMechanism(builder);
-        return mechanism;
     }
 
     /**

@@ -17,7 +17,6 @@
 package com.forgerock.authenticator.mechanisms.push;
 
 import android.content.Context;
-import android.util.Base64;
 import android.widget.Toast;
 
 import com.forgerock.authenticator.R;
@@ -33,7 +32,6 @@ import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.google.android.gms.iid.InstanceID;
 
-import org.apache.http.impl.cookie.BasicClientCookie;
 import org.json.JSONException;
 
 import java.io.IOException;
@@ -51,7 +49,7 @@ public class PushFactory extends MechanismFactory {
     private InstanceID instanceID;
 
     protected PushFactory(Context context, IdentityModel model, InstanceID instanceID) {
-        super(context, model);
+        super(context, model, new PushInfo());
         this.instanceID = instanceID;
     }
 
@@ -59,13 +57,13 @@ public class PushFactory extends MechanismFactory {
     protected Mechanism.PartialMechanismBuilder createFromUriParameters(
             int version, String mechanismUID, Map<String, String> map) throws MechanismCreationException {
         if (version == 1) {
-            String registrationEndpoint = map.get(PushAuthMapper.REG_ENDPOINT);
-            String authenticationEndpoint = map.get(PushAuthMapper.AUTH_ENDPOINT);
-            String base64Secret = map.get(PushAuthMapper.SHARED_SECRET);
-            String base64Challenge = map.get(PushAuthMapper.CHALLENGE);
-            String amlbCookie = map.get(PushAuthMapper.AMLB_COOKIE);
+            String registrationEndpoint = map.get(PushAuthMapper.REG_ENDPOINT_KEY);
+            String authenticationEndpoint = map.get(PushAuthMapper.AUTH_ENDPOINT_KEY);
+            String base64Secret = map.get(PushAuthMapper.BASE_64_SHARED_SECRET_KEY);
+            String base64Challenge = map.get(PushAuthMapper.BASE_64_CHALLENGE_KEY);
+            String amlbCookie = map.get(PushAuthMapper.AM_LOAD_BALANCER_COOKIE_KEY);
 
-            String messageId = get(map, PushAuthMapper.MESSAGE_ID, null);
+            String messageId = get(map, PushAuthMapper.MESSAGE_ID_KEY, null);
 
 
             // TODO: AME-9928 check should be performed in on-resume as well.
@@ -80,7 +78,7 @@ public class PushFactory extends MechanismFactory {
                 throw new MechanismCreationException("Failed to retrieve GCM token.", e);
             }
 
-            Map<String, String> data = new HashMap<>();
+            Map<String, Object> data = new HashMap<>();
             data.put("deviceId", token);
             data.put("deviceType", "android");
             data.put("communicationType", "gcm");

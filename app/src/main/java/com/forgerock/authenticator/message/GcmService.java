@@ -24,6 +24,7 @@ import android.os.Bundle;
 import android.support.annotation.VisibleForTesting;
 
 import com.forgerock.authenticator.baseactivities.BaseNotificationActivity;
+import com.forgerock.authenticator.identity.Identity;
 import com.forgerock.authenticator.mechanisms.InvalidNotificationException;
 import com.forgerock.authenticator.mechanisms.base.Mechanism;
 import com.forgerock.authenticator.mechanisms.push.Push;
@@ -38,6 +39,7 @@ import org.forgerock.json.jose.jws.SignedJwt;
 import org.forgerock.json.jose.jws.SigningManager;
 import org.forgerock.json.jose.jws.handlers.SigningHandler;
 import org.forgerock.util.encode.Base64;
+import org.forgerock.util.encode.Base64url;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -94,8 +96,7 @@ public class GcmService extends RoboGcmListenerService {
     }
 
     private boolean verify(String base64Secret, SignedJwt signedJwt) {
-
-        byte[] secret = Base64.decode(base64Secret);
+        byte[] secret = Base64url.decode(base64Secret);
         SigningHandler signingHandler = new SigningManager().newHmacSigningHandler(secret);
         return signedJwt.verify(signingHandler);
     }
@@ -188,8 +189,11 @@ public class GcmService extends RoboGcmListenerService {
 
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
 
-        String title = "Login Detected";
-        Notification notification = notificationFactory.generatePending(this, id, title, "Login Detected", intent); //TODO: update the notification strings
+        Identity user = notificationData.getMechanism().getOwner();
+
+        String title = "Login attempt from " + user.getAccountName() + " at " + user.getIssuer();
+        String body = "Tap to log in";
+        Notification notification = notificationFactory.generatePending(this, id, title, body, intent);
 
         NotificationManager notificationManager = contextService.getService(this, Context.NOTIFICATION_SERVICE);
         notificationManager.notify(id, notification);

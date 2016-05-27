@@ -50,7 +50,7 @@ class OathAuthMapper extends UriParser {
 
 
     @Override
-    protected Map<String, String> validate(Map<String, String> values) throws URIMappingException {
+    protected Map<String, String> postProcess(Map<String, String> values) throws URIMappingException {
         // Validate Type
         String type = values.get(TYPE);
         boolean validType = false;

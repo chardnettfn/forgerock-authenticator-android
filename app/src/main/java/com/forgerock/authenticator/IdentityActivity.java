@@ -16,12 +16,18 @@
 
 package com.forgerock.authenticator;
 
+import android.Manifest;
 import android.app.ActionBar;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.DataSetObserver;
 import android.os.Bundle;
 import android.support.annotation.VisibleForTesting;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -136,8 +142,13 @@ public class IdentityActivity extends BaseActivity {
         final Context context = this;
         switch (item.getItemId()) {
             case R.id.action_scan:
-                startActivity(new Intent(context, ScanActivity.class));
-                overridePendingTransition(R.anim.fadein, R.anim.fadeout);
+                if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                        != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, 0);
+                } else {
+                    startActivity(new Intent(context, ScanActivity.class));
+                    overridePendingTransition(R.anim.fadein, R.anim.fadeout);
+                }
                 return true;
             case R.id.action_about:
                 startActivity(new Intent(context, AboutActivity.class));
