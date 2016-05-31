@@ -131,7 +131,7 @@ public abstract class Notification extends ModelObject<Notification> {
 
     @Override
     public boolean consumeOpaqueReference(ArrayList<String> reference) {
-        if (reference.size() > 0 && Long.toString(timeAdded.getTimeInMillis()).equals(reference.get(0))) {
+        if (reference != null && reference.size() > 0 && Long.toString(timeAdded.getTimeInMillis()).equals(reference.get(0))) {
             reference.remove(0);
             return true;
         }

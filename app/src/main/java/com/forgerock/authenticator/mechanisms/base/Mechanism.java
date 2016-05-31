@@ -193,7 +193,7 @@ public abstract class Mechanism extends ModelObject<Mechanism> {
 
     @Override
     public boolean consumeOpaqueReference(ArrayList<String> reference) {
-        if (reference.size() > 0 && mechanismUID.equals(reference.get(0))) {
+        if (reference != null && reference.size() > 0 && mechanismUID.equals(reference.get(0))) {
             reference.remove(0);
             return true;
         }

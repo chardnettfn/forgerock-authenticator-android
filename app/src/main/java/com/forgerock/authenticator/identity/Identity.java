@@ -19,6 +19,7 @@ package com.forgerock.authenticator.identity;
 import android.graphics.Color;
 import android.net.Uri;
 
+import com.forgerock.authenticator.mechanisms.DuplicateMechanismException;
 import com.forgerock.authenticator.mechanisms.MechanismCreationException;
 import com.forgerock.authenticator.mechanisms.base.Mechanism;
 import com.forgerock.authenticator.model.ModelObject;
@@ -31,7 +32,6 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * Identity is responsible for modelling the information that makes up part of a users identity in
@@ -65,11 +65,27 @@ public class Identity extends ModelObject<Identity> {
      */
     public Mechanism addMechanism(Mechanism.PartialMechanismBuilder builder) throws MechanismCreationException {
         Mechanism mechanism = builder.build(this);
-        if (!mechanism.isStored() && !mechanismList.contains(mechanism)) {
-            mechanism.save();
-            mechanismList.add(mechanism);
+        if (!mechanism.isStored()) {
+            Mechanism duplicate = findMatching(mechanism);
+            if (duplicate != null) {
+                throw new DuplicateMechanismException("Tried to add duplicate mechanism to identity", duplicate);
+            } else {
+                mechanism.save();
+                mechanismList.add(mechanism);
+            }
+        } else {
+            throw new MechanismCreationException("Tried to add previously saved mechanism to identity");
         }
         return mechanism;
+    }
+
+    private Mechanism findMatching(Mechanism other) {
+        for (Mechanism mechanism : mechanismList) {
+            if (mechanism.matches(other)) {
+                return mechanism;
+            }
+        }
+        return null;
     }
 
     /**
@@ -135,7 +151,7 @@ public class Identity extends ModelObject<Identity> {
 
     @Override
     public boolean consumeOpaqueReference(ArrayList<String> reference) {
-        if (reference.size() > 0 && reference.get(0) != null &&
+        if (reference != null && reference.size() > 0 && reference.get(0) != null &&
                 reference.get(0).equals(issuer + ":" + accountName)) {
             reference.remove(0);
             return true;

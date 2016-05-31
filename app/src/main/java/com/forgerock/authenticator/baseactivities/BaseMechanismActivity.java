@@ -53,6 +53,10 @@ public class BaseMechanismActivity extends BaseActivity {
 
         ArrayList<String> mechanismReference = getIntent().getStringArrayListExtra(MECHANISM_REFERENCE);
         mechanism = identityModel.getMechanism(mechanismReference);
+
+        if (mechanism == null) {
+            finish();
+        }
     }
 
     /**

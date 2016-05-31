@@ -53,7 +53,11 @@ public class NotificationActivity extends BaseMechanismActivity {
         setContentView(R.layout.notifications);
 
         mechanism = getMechanism();
-        assert mechanism != null;
+
+        if (mechanism == null) {
+            finish();
+            return;
+        }
 
         notificationAdapter = new NotificationAdapter(this, mechanism);
         final ExpandableListView list = (ExpandableListView) findViewById(R.id.notification_list);
@@ -124,7 +128,9 @@ public class NotificationActivity extends BaseMechanismActivity {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        notificationAdapter.unregisterDataSetObserver(dataSetObserver);
+        if (notificationAdapter != null) {
+            notificationAdapter.unregisterDataSetObserver(dataSetObserver);
+        }
         identityModel.removeListener(listener);
     }
 

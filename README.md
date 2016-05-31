@@ -14,3 +14,11 @@ The coverage report is located at:
 Note that the coverage report will not be generated if there are any test failures.
 
 The target is to have a large coverage for non android classes (e.g. non ui and database classes)
+
+# Instrumentation tests
+
+To run the instrumentation tests, first connect and unlock the test devices, or start emulators.
+Then, run: ./gradlew spoon
+The report for this should appear in : 
+{baseFolder}/app/build/spoon/debug/index.html
+

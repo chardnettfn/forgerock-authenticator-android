@@ -25,6 +25,7 @@ android {
         targetSdkVersion 23
         versionCode 2
         versionName "2.0"
+        testInstrumentationRunner 'android.support.test.runner.AndroidJUnitRunner'
     }
 
     buildTypes {
@@ -54,6 +55,13 @@ repositories {
 }
 
 dependencies {
+
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2') {
+        exclude module: 'support-annotations'
+    }
+    androidTestCompile 'com.squareup.spoon:spoon-client:1.5.0'
+    androidTestCompile 'com.jraska:falcon:1.0.1'
+    androidTestCompile 'com.jraska:falcon-spoon-compat:1.0.1'
 
     testCompile 'org.testng:testng:6.8.5'
     testCompile 'org.mockito:mockito-core:1.9.5'
@@ -93,3 +101,5 @@ task generateCoverage(type: JacocoReport, dependsOn: 'testDebugUnitTest') {
 }
 
 apply plugin: 'com.google.gms.google-services'
+
+apply plugin: 'spoon'

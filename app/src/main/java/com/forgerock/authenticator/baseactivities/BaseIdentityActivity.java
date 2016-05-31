@@ -52,6 +52,9 @@ public class BaseIdentityActivity extends BaseActivity {
 
         ArrayList<String> identityReference = getIntent().getStringArrayListExtra(IDENTITY_REFERENCE);
         identity = identityModel.getIdentity(identityReference);
+        if (identity == null) {
+            finish();
+        }
     }
 
     /**

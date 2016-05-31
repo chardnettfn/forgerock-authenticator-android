@@ -53,6 +53,10 @@ public class BaseNotificationActivity extends BaseActivity {
 
         ArrayList<String> notificationReference = getIntent().getStringArrayListExtra(NOTIFICATION_REFERENCE);
         notification = identityModel.getNotification(notificationReference);
+
+        if (notification == null) {
+            finish();
+        }
     }
 
     /**
