@@ -16,11 +16,10 @@
 
 package com.forgerock.authenticator.activities;
 
+import android.Manifest;
 import android.content.Intent;
-import android.view.MenuItem;
 
 import com.forgerock.authenticator.BuildConfig;
-import com.forgerock.authenticator.CustomRobolectricTestRunner;
 import com.forgerock.authenticator.IdentityActivity;
 import com.forgerock.authenticator.R;
 import com.forgerock.authenticator.TestGuiceModule;
@@ -30,20 +29,18 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RobolectricGradleTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
-import org.robolectric.fakes.RoboMenuItem;
 import org.robolectric.shadows.ShadowActivity;
-import org.robolectric.shadows.ShadowView;
 
 import roboguice.RoboGuice;
 
 import static org.junit.Assert.assertEquals;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(CustomRobolectricTestRunner.class)
+@RunWith(RobolectricGradleTestRunner.class)
 @Config(constants = BuildConfig.class, sdk = 21)
 public class IdentityActivityTest {
 
@@ -58,10 +55,15 @@ public class IdentityActivityTest {
         IdentityActivity activity = Robolectric.setupActivity(IdentityActivity.class);
 
         ShadowActivity shadowActivity = Shadows.shadowOf(activity);
+
+        shadowActivity.grantPermissions(Manifest.permission.CAMERA);
+
         shadowActivity.clickMenuItem(R.id.action_scan);
 
+
         Intent expectedIntent = new Intent(activity, ScanActivity.class);
-        assertEquals(shadowOf(activity).getNextStartedActivity(), expectedIntent);
+        Intent actualIntent = shadowOf(activity).getNextStartedActivity();
+        assertEquals(actualIntent, expectedIntent);
     }
 
 }

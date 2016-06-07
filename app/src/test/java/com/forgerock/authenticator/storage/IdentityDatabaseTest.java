@@ -17,7 +17,6 @@
 package com.forgerock.authenticator.storage;
 
 import com.forgerock.authenticator.BuildConfig;
-import com.forgerock.authenticator.CustomRobolectricTestRunner;
 import com.forgerock.authenticator.identity.Identity;
 import com.forgerock.authenticator.mechanisms.CoreMechanismFactory;
 import com.forgerock.authenticator.mechanisms.base.Mechanism;
@@ -29,6 +28,7 @@ import com.forgerock.authenticator.notifications.PushNotification;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.RobolectricGradleTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
@@ -54,7 +54,7 @@ import static org.junit.Assert.fail;
  * -can update saved // TODO: create this test for Identity when applicable
  * -can't update with invalid id
  */
-@RunWith(CustomRobolectricTestRunner.class)
+@RunWith(RobolectricGradleTestRunner.class)
 @Config(constants = BuildConfig.class, sdk = 21)
 public class IdentityDatabaseTest {
     IdentityModel model;

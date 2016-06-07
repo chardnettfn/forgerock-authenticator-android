@@ -20,7 +20,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 import com.forgerock.authenticator.BuildConfig;
-import com.forgerock.authenticator.CustomRobolectricTestRunner;
 import com.forgerock.authenticator.identity.Identity;
 import com.forgerock.authenticator.mechanisms.CoreMechanismFactory;
 import com.forgerock.authenticator.mechanisms.oath.Oath;
@@ -29,6 +28,7 @@ import com.forgerock.authenticator.mechanisms.push.Push;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.RobolectricGradleTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
@@ -53,7 +53,7 @@ import static junit.framework.Assert.assertTrue;
  * - load from old storage
  * - load from new storage and compare to old storage
  */
-@RunWith(CustomRobolectricTestRunner.class)
+@RunWith(RobolectricGradleTestRunner.class)
 @Config(constants = BuildConfig.class, sdk = 21)
 public class UpgradeTest {
 

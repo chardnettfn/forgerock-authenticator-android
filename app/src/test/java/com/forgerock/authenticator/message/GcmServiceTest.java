@@ -20,13 +20,15 @@ import android.content.Context;
 import android.os.Bundle;
 
 import com.forgerock.authenticator.BuildConfig;
-import com.forgerock.authenticator.CustomRobolectricTestRunner;
 import com.forgerock.authenticator.TestGuiceModule;
+import com.forgerock.authenticator.identity.Identity;
 import com.forgerock.authenticator.mechanisms.InvalidNotificationException;
 import com.forgerock.authenticator.mechanisms.base.Mechanism;
 import com.forgerock.authenticator.mechanisms.push.Push;
+import com.forgerock.authenticator.notifications.Notification;
 import com.forgerock.authenticator.storage.IdentityModel;
 
+import org.apache.tools.ant.taskdefs.condition.Not;
 import org.forgerock.json.jose.builders.JwtClaimsSetBuilder;
 import org.forgerock.json.jose.builders.SignedJwtBuilderImpl;
 import org.forgerock.json.jose.jws.JwsAlgorithm;
@@ -39,6 +41,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.RobolectricGradleTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.testng.Assert;
@@ -56,7 +59,6 @@ import static junit.framework.Assert.assertEquals;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.mock;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.verify;
 import static org.robolectric.Shadows.shadowOf;
 import static uk.org.lidalia.slf4jtest.LoggingEvent.error;
 
@@ -80,7 +82,7 @@ import static uk.org.lidalia.slf4jtest.LoggingEvent.error;
  *   }
  * }
  */
-@RunWith(CustomRobolectricTestRunner.class)
+@RunWith(RobolectricGradleTestRunner.class)
 @Config(constants = BuildConfig.class, sdk = 21)
 public class GcmServiceTest {
 
@@ -118,9 +120,12 @@ public class GcmServiceTest {
 
         // Given
         Push push = generateMockMechanism("0");
+        Notification notification = mock(com.forgerock.authenticator.notifications.Notification.class);
+        given(notification.getMechanism()).willReturn(push);
 
         given(push.addNotification(any(com.forgerock.authenticator.notifications.Notification.NotificationBuilder.class)))
-                .willReturn(mock(com.forgerock.authenticator.notifications.Notification.class));
+                .willReturn(notification);
+        given(push.getOwner()).willReturn(mock(Identity.class));
         setupIdentityModel(push);
 
         // When

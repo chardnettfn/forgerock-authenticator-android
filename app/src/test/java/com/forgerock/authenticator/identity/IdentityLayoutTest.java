@@ -20,7 +20,6 @@ import android.app.Activity;
 import android.content.Intent;
 import android.view.ActionMode;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -28,7 +27,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.forgerock.authenticator.BuildConfig;
-import com.forgerock.authenticator.CustomRobolectricTestRunner;
 import com.forgerock.authenticator.MechanismActivity;
 import com.forgerock.authenticator.R;
 import com.forgerock.authenticator.TestGuiceModule;
@@ -42,12 +40,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.RobolectricGradleTestRunner;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
-import org.robolectric.shadows.ShadowActivity;
 import org.robolectric.shadows.ShadowImageView;
-import org.robolectric.shadows.ShadowPopupMenu;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -62,7 +58,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(CustomRobolectricTestRunner.class)
+@RunWith(RobolectricGradleTestRunner.class)
 @Config(constants = BuildConfig.class, sdk = 21)
 public class IdentityLayoutTest {
     private final String ISSUER = "issuer";
