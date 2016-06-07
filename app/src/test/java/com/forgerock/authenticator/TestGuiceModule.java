@@ -23,6 +23,7 @@ import com.forgerock.authenticator.mechanisms.CoreMechanismFactory;
 import com.forgerock.authenticator.storage.IdentityDatabase;
 import com.forgerock.authenticator.storage.IdentityModel;
 import com.forgerock.authenticator.storage.Settings;
+import com.forgerock.authenticator.utils.MessageUtils;
 import com.google.inject.AbstractModule;
 
 import static org.mockito.Mockito.mock;
@@ -34,7 +35,10 @@ public class TestGuiceModule extends AbstractModule {
 
     @Override
     protected void configure() {
+        bind(MessageUtils.class).toInstance(mock(MessageUtils.class));
+
         bind(IdentityModel.class).toInstance(mock(IdentityModel.class));
         bind(Settings.class).toInstance(mock(Settings.class));
+
     }
 }

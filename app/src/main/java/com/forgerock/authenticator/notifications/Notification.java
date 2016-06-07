@@ -96,7 +96,7 @@ public abstract class Notification extends ModelObject<Notification> {
 
     @Override
     public void save() {
-        if (id == NOT_STORED) {
+        if (!isStored()) {
             id = getModel().getStorageSystem().addNotification(this);
         } else {
             getModel().getStorageSystem().updateNotification(id, this);
@@ -106,12 +106,12 @@ public abstract class Notification extends ModelObject<Notification> {
     @Override
     public boolean forceSave() {
         id = getModel().getStorageSystem().addNotification(this);
-        return id != NOT_STORED;
+        return isStored();
     }
 
     @Override
     public void delete() {
-        if (id != NOT_STORED) {
+        if (isStored()) {
             getModel().getStorageSystem().deleteNotification(id);
             id = NOT_STORED;
         }

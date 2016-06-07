@@ -24,6 +24,7 @@ import com.forgerock.authenticator.mechanisms.oath.Oath;
 import com.forgerock.authenticator.mechanisms.push.Push;
 import com.forgerock.authenticator.notifications.Notification;
 import com.forgerock.authenticator.notifications.PushNotification;
+import com.forgerock.authenticator.notifications.PushNotificationTest;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -71,7 +72,7 @@ public class IdentityDatabaseTest {
 
     @Before
     public void setup() throws Exception {
-        model = new IdentityModel();
+        model = new IdentityModel(RuntimeEnvironment.application);
         database = new IdentityDatabase(RuntimeEnvironment.application, new CoreMechanismFactory(RuntimeEnvironment.application, model));
 
         model.loadFromStorageSystem(database);
@@ -351,7 +352,7 @@ public class IdentityDatabaseTest {
     }
 
     private void reloadModel() {
-        model = new IdentityModel();
+        model = new IdentityModel(RuntimeEnvironment.application);
         database = new IdentityDatabase(RuntimeEnvironment.application, new CoreMechanismFactory(RuntimeEnvironment.application, model));
 
         model.loadFromStorageSystem(database);

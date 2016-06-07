@@ -38,6 +38,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import roboguice.RoboGuice;
+
 /**
  * Responsible for generating instances of {@link Push}.
  *
@@ -85,8 +87,10 @@ public class PushFactory extends MechanismFactory {
             data.put("mechanismUid", mechanismUID);
             data.put("response", PushNotification.generateChallengeResponse(base64Secret, base64Challenge));
 
+            MessageUtils messageUtils = RoboGuice.getInjector(getContext()).getInstance(MessageUtils.class);
+
             try {
-                int returnCode = MessageUtils.respond(registrationEndpoint, amlbCookie, base64Secret, messageId, data);
+                int returnCode = messageUtils.respond(registrationEndpoint, amlbCookie, base64Secret, messageId, data);
                 if (returnCode != 200) {
                     throw new MechanismCreationException("Communication with server returned " +
                             returnCode + " code.");

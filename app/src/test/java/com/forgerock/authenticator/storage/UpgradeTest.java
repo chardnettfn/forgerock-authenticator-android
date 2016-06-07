@@ -137,7 +137,7 @@ public class UpgradeTest {
     @Test
     public void dataFromUpgradeShouldNotOverwriteExistingData() throws Exception {
         //Setup database
-        IdentityModel model = new IdentityModel();
+        IdentityModel model = new IdentityModel(RuntimeEnvironment.application);
         CoreMechanismFactory mechanismFactory = new CoreMechanismFactory(RuntimeEnvironment.application, model);
         StorageSystem storageSystem = new IdentityDatabase(RuntimeEnvironment.application, mechanismFactory);
         model.loadFromStorageSystem(storageSystem);
@@ -158,7 +158,7 @@ public class UpgradeTest {
     @Test
     public void dataFromUpgradeShouldAddToIdentityWithExistingOtherMechanismType() throws Exception {
         //Setup database
-        IdentityModel model = new IdentityModel();
+        IdentityModel model = new IdentityModel(RuntimeEnvironment.application);
         CoreMechanismFactory mechanismFactory = new CoreMechanismFactory(RuntimeEnvironment.application, model);
         StorageSystem storageSystem = new IdentityDatabase(RuntimeEnvironment.application, mechanismFactory);
         model.loadFromStorageSystem(storageSystem);

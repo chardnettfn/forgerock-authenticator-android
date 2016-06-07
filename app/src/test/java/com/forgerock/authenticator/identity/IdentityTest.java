@@ -71,6 +71,7 @@ public class IdentityTest {
         assertEquals(identityA, identityB);
         assertEquals(identityA.compareTo(identityB), 0);
         assertEquals(identityB.compareTo(identityA), 0);
+        assertEquals(identityA.hashCode(), identityB.hashCode());
     }
 
     @Test

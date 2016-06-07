@@ -16,6 +16,7 @@
 
 package com.forgerock.authenticator.storage;
 
+import android.content.Context;
 import android.support.annotation.VisibleForTesting;
 
 import com.forgerock.authenticator.identity.Identity;
@@ -26,6 +27,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import roboguice.RoboGuice;
+import roboguice.inject.RoboInjector;
+
 /**
  * Class which represents the data model, and handles deciding when the database should be updated.
  * Loads the full data from the database on initialisation.
@@ -34,12 +38,21 @@ public class IdentityModel {
     private List<Identity> identities;
     private List<IdentityModelListener> listeners;
     private StorageSystem storageSystem;
+    private Context context;
 
     /**
      * Load the model from the database.
      */
-    public IdentityModel() {
+    public IdentityModel(Context context) {
+        this.context = context.getApplicationContext();
         listeners = new ArrayList<>();
+    }
+
+    /**
+     * Return an injector for this application.
+     */
+    public RoboInjector getInjector() {
+        return RoboGuice.getInjector(context);
     }
 
     /**

@@ -36,6 +36,8 @@ import javax.crypto.Mac;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
+import roboguice.RoboGuice;
+
 /**
  * Model class which represents a message that was received from an external source. Can provide a
  * generic map of relevant information for storage. Is intended for a given Mechanism.
@@ -48,6 +50,7 @@ public class PushNotification extends Notification {
     private static final String CHALLENGE_KEY = "challenge";
     private static final String AMLB_COOKIE = "amlbCookie";
     private final String amlbCookie;
+    private final MessageUtils messageUtils;
     private String messageId;
     private String base64Challenge;
 
@@ -56,6 +59,8 @@ public class PushNotification extends Notification {
         this.amlbCookie = amlbCookie;
         this.messageId = messageId;
         this.base64Challenge = base64Challenge;
+        messageUtils = mechanism.getModel().getInjector().getInstance(MessageUtils.class);
+
     }
 
     @Override
@@ -74,7 +79,7 @@ public class PushNotification extends Notification {
             Push push = (Push) getMechanism();
             Map<String, Object> data = new HashMap<>();
             data.put(RESPONSE_KEY, generateChallengeResponse(push.getSecret(), base64Challenge));
-            returnCode = MessageUtils.respond(push.getEndpoint(), amlbCookie, push.getSecret(), messageId, data);
+            returnCode = messageUtils.respond(push.getEndpoint(), amlbCookie, push.getSecret(), messageId, data);
         } catch (IOException | JSONException e) {
             logger.error("Response to server failed.", e);
         }
@@ -90,7 +95,7 @@ public class PushNotification extends Notification {
             Map<String, Object> data = new HashMap<>();
             data.put(RESPONSE_KEY, generateChallengeResponse(push.getSecret(), base64Challenge));
             data.put(DENY_KEY, true);
-            returnCode = MessageUtils.respond(push.getEndpoint(), amlbCookie, push.getSecret(), messageId, data);
+            returnCode = messageUtils.respond(push.getEndpoint(), amlbCookie, push.getSecret(), messageId, data);
         } catch (IOException | JSONException e) {
             logger.error("Response to server failed.", e);
         }

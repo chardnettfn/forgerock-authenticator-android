@@ -203,7 +203,7 @@ public class ModelOpenHelper {
     }
 
     private IdentityModel getModelFromSystem(Context context, int systemVersion) { //TODO: replace this with getStorageSystem where possible?
-        IdentityModel model = new IdentityModel();
+        IdentityModel model = new IdentityModel(context);
         CoreMechanismFactory mechanismFactory = new CoreMechanismFactory(context, model);
         model.loadFromStorageSystem(getStorageSystem(systemVersion, mechanismFactory));
         return model;

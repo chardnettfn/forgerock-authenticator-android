@@ -48,7 +48,10 @@ public class MechanismActivity extends BaseIdentityActivity {
         setContentView(R.layout.mechanism);
 
         final Identity identity = getIdentity();
-        assert identity != null;
+        if (identity == null) {
+            finish();
+            return;
+        }
 
         TextView issuerView = (TextView) findViewById(R.id.issuer);
         issuerView.setText(identity.getIssuer());

@@ -19,12 +19,10 @@ package com.forgerock.authenticator;
 import android.app.Application;
 import android.content.Context;
 
-import com.forgerock.authenticator.mechanisms.CoreMechanismFactory;
-import com.forgerock.authenticator.storage.IdentityDatabase;
 import com.forgerock.authenticator.storage.IdentityModel;
 import com.forgerock.authenticator.storage.ModelOpenHelper;
 import com.forgerock.authenticator.storage.Settings;
-import com.forgerock.authenticator.utils.TimeKeeper;
+import com.forgerock.authenticator.utils.MessageUtils;
 import com.google.inject.AbstractModule;
 
 /**
@@ -43,6 +41,7 @@ public class AuthGuiceModule extends AbstractModule {
 
     @Override
     protected void configure() {
+        bind(MessageUtils.class).toInstance(new MessageUtils());
         bind(IdentityModel.class).toInstance(new ModelOpenHelper(context).getModel());
         bind(Settings.class).toInstance(new Settings(context));
     }

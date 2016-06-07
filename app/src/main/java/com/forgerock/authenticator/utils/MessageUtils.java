@@ -16,6 +16,8 @@
 
 package com.forgerock.authenticator.utils;
 
+import com.forgerock.authenticator.FRAuthApplication;
+
 import org.forgerock.json.jose.builders.JwtClaimsSetBuilder;
 import org.forgerock.json.jose.builders.SignedJwtBuilderImpl;
 import org.forgerock.json.jose.jws.JwsAlgorithm;
@@ -46,7 +48,7 @@ public class MessageUtils {
      * @throws IOException If a network issue occurred.
      * @throws JSONException If an encoding issue occurred.
      */
-    public static int respond(String endpoint, String amlbCookie, String base64Secret,
+    public int respond(String endpoint, String amlbCookie, String base64Secret,
                               String messageId, Map<String, Object> data)
             throws IOException, JSONException {
         HttpURLConnection connection = null;
@@ -81,7 +83,7 @@ public class MessageUtils {
         return returnCode;
     }
 
-    private static String generateJwt(String base64Secret, Map<String, Object> data) {
+    private String generateJwt(String base64Secret, Map<String, Object> data) {
         JwtClaimsSetBuilder builder = new JwtClaimsSetBuilder();
         for (String key : data.keySet()) {
             builder.claim(key, data.get(key));
