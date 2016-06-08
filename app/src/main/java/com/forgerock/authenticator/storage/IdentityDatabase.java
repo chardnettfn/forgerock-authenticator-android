@@ -58,8 +58,6 @@ public class IdentityDatabase implements StorageSystem {
     static final String ISSUER = "issuer";
     /** The identity name column */
     static final String ACCOUNT_NAME = "accountName";
-    /** The IDP image column */
-    static final String IMAGE = "image";
     /** The IDP image url column */
     static final String IMAGE_URL = "imageURL";
     /** The IDP background color */
