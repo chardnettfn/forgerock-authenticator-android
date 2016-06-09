@@ -23,13 +23,13 @@ import android.os.Bundle;
 import android.widget.VideoView;
 
 import com.forgerock.authenticator.baseactivities.BaseActivity;
+import com.forgerock.authenticator.storage.IdentityModel;
 import com.forgerock.authenticator.storage.Settings;
 
 import roboguice.RoboGuice;
 
 /**
- * Activity for displaying an animated splash screen to the user. Skips itself if the splash has
- * been displayed in the past.
+ * Activity for displaying an animated splash screen to the user. Skips itself if any identities are present.
  */
 public class SplashActivity extends BaseActivity {
 
@@ -37,8 +37,8 @@ public class SplashActivity extends BaseActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        final Settings settings = RoboGuice.getInjector(this).getInstance(Settings.class);
-        if (!settings.isSplashEnabled()) {
+        IdentityModel model = RoboGuice.getInjector(this).getInstance(IdentityModel.class);
+        if (!model.getIdentities().isEmpty()) {
             proceed();
         }
 
@@ -56,7 +56,6 @@ public class SplashActivity extends BaseActivity {
         video.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
-                settings.setSplashEnabled(false);
                 proceed();
             }
         });

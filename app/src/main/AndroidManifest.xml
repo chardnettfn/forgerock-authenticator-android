@@ -68,8 +68,20 @@
         <activity
             android:name=".IdentityActivity"
             android:configChanges="orientation|screenSize"
-            android:label="@string/app_name">
+            android:label="My Accounts">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
 
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="totp"
+                    android:scheme="otpauth" />
+                <data
+                    android:host="hotp"
+                    android:scheme="otpauth" />
+            </intent-filter>
         </activity>
         <activity
             android:name=".mechanisms.push.PushAuthActivity"
@@ -96,7 +108,7 @@
             android:name=".SplashActivity"
             android:configChanges="orientation|screenSize"
             android:theme="@style/AppTheme.NoActionBar.Fullscreen"
-            android:label="Splash">
+            android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -104,31 +116,6 @@
             </intent-filter>
         </activity>
 
-        <activity
-            android:name=".MainActivity"
-            android:clearTaskOnLaunch="true"
-            android:configChanges="orientation|screenSize"
-            android:label="My Accounts"
-            android:launchMode="singleTask">
-            <intent-filter>
-                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
-            </intent-filter>
-
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-
-                <data
-                    android:host="totp"
-                    android:scheme="otpauth" />
-                <data
-                    android:host="hotp"
-                    android:scheme="otpauth" />
-            </intent-filter>
-        </activity>
-        >
         <receiver
             android:name="com.google.android.gms.gcm.GcmReceiver"
             android:exported="true"

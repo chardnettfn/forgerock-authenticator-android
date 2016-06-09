@@ -52,6 +52,7 @@ public class PushAuthMapper extends UriParser {
     private static final String BASE_64_URL_IMAGE = "image";
     private static final String BASE_64_URL_REG_ENDPOINT = "r";
     private static final String BASE_64_URL_AUTH_ENDPOINT = "a";
+    private static final String BASE_64_AM_LOAD_BALANCER_COOKIE_KEY = "l";
     
     @Override
     protected Map<String, String> postProcess(Map<String, String> values) throws URIMappingException {
@@ -65,6 +66,7 @@ public class PushAuthMapper extends UriParser {
         }
 
         values.put(REG_ENDPOINT_KEY, recodeBase64UrlValueToStringWithValidation(values, BASE_64_URL_REG_ENDPOINT));
+        values.put(AM_LOAD_BALANCER_COOKIE_KEY, recodeBase64UrlValueToStringWithValidation(values, BASE_64_AM_LOAD_BALANCER_COOKIE_KEY));
         values.put(AUTH_ENDPOINT_KEY, recodeBase64UrlValueToStringWithValidation(values, BASE_64_URL_AUTH_ENDPOINT));
         values.put(BASE_64_SHARED_SECRET_KEY, recodeBase64UrlValueToBase64WithValidation(values, BASE_64_URL_SHARED_SECRET));
         values.put(BASE_64_CHALLENGE_KEY, recodeBase64UrlValueToBase64WithValidation(values, BASE_64_URL_CHALLENGE));

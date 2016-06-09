@@ -20,6 +20,7 @@ package com.forgerock.authenticator.add;
 
 import android.Manifest;
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -79,12 +80,45 @@ public class ScanActivity extends BaseActivity implements SurfaceHolder.Callback
 
         final Context context = this;
 
+        final CreateMechanismFromUriTask.MechanismPostRunnable postScanRunnable = new CreateMechanismFromUriTask.MechanismPostRunnable() {
+            @Override
+            public void run(Mechanism mechanism) {
+                if (mechanism == null || mechanism.getOwner().getImageURL() == null) {
+                    finish();
+                    return;
+                }
+                final ImageView image = (ImageView) findViewById(R.id.image);
+                Picasso.with(context)
+                        .load(mechanism.getOwner().getImageURL())
+                        .placeholder(R.drawable.scan)
+                        .into(image, new Callback() {
+                            @Override
+                            public void onSuccess() {
+                                findViewById(R.id.progress).setVisibility(View.INVISIBLE);
+                                image.setAlpha(0.9f);
+                                image.postDelayed(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        finish();
+                                    }
+                                }, 2000);
+                            }
+
+                            @Override
+                            public void onError() {
+                                finish();
+                            }
+                        });
+            }
+        };
+        final Activity thisActivity = this;
+
         // Create the decoder thread
         mScanAsyncTask = new ScanAsyncTask() {
             @Override
             protected void onPostExecute(String result) {
                 super.onPostExecute(result);
-                new CreateMechanismFromUriTask(context).execute(result);
+                new CreateMechanismFromUriTask(thisActivity, postScanRunnable).execute(result);
 
             }
         };
@@ -249,96 +283,4 @@ public class ScanActivity extends BaseActivity implements SurfaceHolder.Callback
         }
     }
 
-    /**
-     * Class responsible for making a request to OpenAM to complete the authentication request.
-     */
-    private class CreateMechanismFromUriTask extends AsyncTask<String, Void, Mechanism> {
-        private Context context;
-        private Mechanism duplicate = null;
-        String[] uri;
-
-        /**
-         * Creates the task.
-         */
-        public CreateMechanismFromUriTask(Context context) {
-            this.context = context;
-        }
-
-        @Override
-        protected Mechanism doInBackground(String... uri) {
-            this.uri = uri;
-            if (uri.length != 1) {
-                return null;
-            }
-            try {
-                Mechanism mechanism = new CoreMechanismFactory(context, identityModel).createFromUri(uri[0]);
-                return mechanism;
-            } catch (DuplicateMechanismException e) {
-                logger.warn("Duplicate detected", e);
-
-                duplicate = e.getCausingMechanism();
-            } catch (MechanismCreationException | URIMappingException e) {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Toast.makeText(context, R.string.invalid_qr, Toast.LENGTH_SHORT).show();
-                        logger.error("Failed to create Mechanism from QR code", e);
-                    }
-                });
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Mechanism mechanism) {
-            if (duplicate != null) {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(context);
-                    builder.setTitle("Duplicate detected")
-                            .setIcon(R.drawable.forgerock_placeholder)
-                            .setMessage("Warning! This will replace an existing login mechanism. This operation cannot be undone. You should only proceed if you were expecting to update a mechanism.")
-                            .setPositiveButton("Replace", new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int id) {
-                                    duplicate.getOwner().removeMechanism(duplicate);
-                                    new CreateMechanismFromUriTask(context).execute(uri);
-                                }
-                            })
-                            .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int id) {
-                                    finish();
-                                }
-                            });
-
-                    builder.create().show();
-            } else {
-
-                if (mechanism == null || mechanism.getOwner().getImageURL() == null) {
-                    finish();
-                    return;
-                }
-
-                final ImageView image = (ImageView) findViewById(R.id.image);
-                Picasso.with(ScanActivity.this)
-                        .load(mechanism.getOwner().getImageURL())
-                        .placeholder(R.drawable.scan)
-                        .into(image, new Callback() {
-                            @Override
-                            public void onSuccess() {
-                                findViewById(R.id.progress).setVisibility(View.INVISIBLE);
-                                image.setAlpha(0.9f);
-                                image.postDelayed(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        finish();
-                                    }
-                                }, 2000);
-                            }
-
-                            @Override
-                            public void onError() {
-                                finish();
-                            }
-                        });
-            }
-        }
-    }
 }

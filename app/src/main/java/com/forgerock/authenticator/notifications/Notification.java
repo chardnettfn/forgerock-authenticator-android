@@ -252,7 +252,15 @@ public abstract class Notification extends ModelObject<Notification> {
 
     @Override
     public int compareTo(Notification another) {
-        return Long.compare(another.timeAdded.getTimeInMillis(), timeAdded.getTimeInMillis());
+        long thisTime = timeAdded.getTimeInMillis();
+        long otherTime = another.timeAdded.getTimeInMillis();
+        if (otherTime < thisTime) {
+            return -1;
+        }
+        if (otherTime == thisTime) {
+            return 0;
+        }
+        return 1;
     }
 
     /**

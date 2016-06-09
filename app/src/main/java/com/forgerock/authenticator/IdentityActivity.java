@@ -24,6 +24,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.DataSetObserver;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.VisibleForTesting;
 import android.support.v4.app.ActivityCompat;
@@ -33,12 +35,22 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager.LayoutParams;
 import android.widget.GridView;
+import android.widget.ImageView;
+import android.widget.Toast;
 
+import com.forgerock.authenticator.add.CreateMechanismFromUriTask;
 import com.forgerock.authenticator.add.ScanActivity;
 import com.forgerock.authenticator.baseactivities.BaseActivity;
 import com.forgerock.authenticator.identity.IdentityAdapter;
+import com.forgerock.authenticator.mechanisms.CoreMechanismFactory;
+import com.forgerock.authenticator.mechanisms.DuplicateMechanismException;
+import com.forgerock.authenticator.mechanisms.MechanismCreationException;
+import com.forgerock.authenticator.mechanisms.URIMappingException;
+import com.forgerock.authenticator.mechanisms.base.Mechanism;
 import com.forgerock.authenticator.storage.IdentityModel;
 import com.forgerock.authenticator.storage.IdentityModelListener;
+import com.squareup.picasso.Callback;
+import com.squareup.picasso.Picasso;
 
 import roboguice.RoboGuice;
 import roboguice.activity.RoboActivity;
@@ -156,4 +168,16 @@ public class IdentityActivity extends BaseActivity {
         }
         return false;
     }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+
+        Uri uri = intent.getData();
+        if (uri != null) {
+            new CreateMechanismFromUriTask(this, null).execute(uri.toString());
+        }
+    }
+
+
 }

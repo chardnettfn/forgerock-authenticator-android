@@ -24,6 +24,7 @@ import com.forgerock.authenticator.notifications.Notification;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Class which represents the data model, and handles deciding when the database should be updated.
@@ -172,11 +173,11 @@ public class IdentityModel {
      * @return The new mechanism UID.
      */
     public String getNewMechanismUID() {
-        int uid = 0; //TODO: Make UID larger, and random
-        while (isExistingMechanismUID(Integer.toString(uid))) {
-            uid++;
+        UUID uid = UUID.randomUUID();
+        while (isExistingMechanismUID(uid.toString())) {
+            uid = UUID.randomUUID();
         }
-        return Integer.toString(uid);
+        return uid.toString();
     }
 
     private boolean isExistingMechanismUID(String uid) {
