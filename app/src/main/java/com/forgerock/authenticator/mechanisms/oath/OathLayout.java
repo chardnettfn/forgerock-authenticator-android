@@ -156,7 +156,7 @@ public class OathLayout extends MechanismLayout<Oath> {
 
         StringBuilder placeholderBuilder = new StringBuilder();
         for (int i = 0; i < oath.getDigits(); i++) {
-            placeholderBuilder.append('●');
+            placeholderBuilder.append('•');
             if (i == oath.getDigits() / 2 - 1) {
                 placeholderBuilder.append(' ');
             }

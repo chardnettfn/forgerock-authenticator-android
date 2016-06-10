@@ -111,8 +111,8 @@ public class GcmService extends RoboGcmListenerService {
         }
         String mechanismUid = (String) signedJwt.getClaimsSet().getClaim(MECHANISM_UID);
         String base64Challenge = (String) signedJwt.getClaimsSet().getClaim(CHALLENGE);
-        String base64urlamlbCookie = (String) signedJwt.getClaimsSet().getClaim(AMLB_COOKIE);
-        String amlbCookie = new String(Base64.decode(base64urlamlbCookie));
+        String base64amlbCookie = (String) signedJwt.getClaimsSet().getClaim(AMLB_COOKIE);
+        String amlbCookie = new String(Base64.decode(base64amlbCookie));
 
         String ttlString = (String) signedJwt.getClaimsSet().getClaim(TTL);
         int ttl = DEFAULT_TTL_SECONDS;

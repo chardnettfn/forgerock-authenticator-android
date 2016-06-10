@@ -39,7 +39,7 @@ public class OathInfo implements MechanismInfo {
 
     @Override
     public int getLayoutType() {
-        return R.layout.tokencell;
+        return R.layout.oathcell;
     }
 
     @Override

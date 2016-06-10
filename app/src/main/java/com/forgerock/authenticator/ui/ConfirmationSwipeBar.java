@@ -72,9 +72,9 @@ public class ConfirmationSwipeBar extends SeekBar {
             public void onProgressChanged(SeekBar seekBar, int progress,
                                           boolean fromUser) {
                 if (seekBar.getProgress() == 100) {
-                    setThumb(getResources().getDrawable(R.drawable.forgerock_icon_switch_on));
+                    setThumb(getResources().getDrawable(R.drawable.confirmation_thumb_complete));
                 } else {
-                    setThumb(getResources().getDrawable(R.drawable.forgerock_icon_switch_off));
+                    setThumb(getResources().getDrawable(R.drawable.confirmation_thumb));
                 }
             }
         });

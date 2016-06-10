@@ -16,53 +16,49 @@
 
   Portions Copyright 2013 Nathaniel McCallum, Red Hat
 -->
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
-    <LinearLayout
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:src="@drawable/logo_large"
+        android:scaleX="3"
+        android:scaleY="3"
+        android:layout_marginLeft="200dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+
+        />
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp" >
-        <TextView
-            android:id="@+id/about_version"
+        android:layout_height="match_parent">
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:text="@string/about_version" />
+            android:orientation="vertical"
+            android:padding="16dp" >
+            <TextView
+                android:id="@+id/about_version"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:text="@string/about_version" />
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/about_copyright"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/about_copyright"/>
 
-        <TextView
-            android:id="@+id/about_license"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="@string/about_license" />
-
-        <TextView
-            android:id="@+id/about_website"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="@string/about_website" />
-
-        <TextView
-            android:id="@+id/about_feedback"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="@string/about_feedback" />
-
-        <TextView
-            android:id="@+id/about_icons"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="@string/about_icons" />
-    </LinearLayout>
-</ScrollView>
+            <TextView
+                android:id="@+id/about"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="@string/about" />
+        </LinearLayout>
+    </ScrollView>
+</RelativeLayout>

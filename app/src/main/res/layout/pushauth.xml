@@ -81,7 +81,7 @@
                     <Space
                         android:layout_width="1dp"
                         android:layout_height="1dp"
-                        android:layout_weight="0.25"/>
+                        android:layout_weight="0.15"/>
                     <com.forgerock.authenticator.ui.ConfirmationSwipeBar
                         android:id="@+id/slideToConfirm"
                         android:gravity="center_horizontal"
@@ -89,16 +89,17 @@
                         android:paddingRight="30dip"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_weight="0.5"
+                        android:maxHeight="5dp"
+                        android:layout_weight="0.7"
                         android:clickable="false"
                         android:max="100"
                         android:progress="0"
                         android:progressDrawable="@android:color/darker_gray"
-                        android:thumb="@drawable/forgerock_icon_switch_off" />
+                        android:thumb="@drawable/confirmation_thumb" />
                     <Space
                         android:layout_width="1dp"
                         android:layout_height="1dp"
-                        android:layout_weight="0.25"/>
+                        android:layout_weight="0.15"/>
             </LinearLayout>
         </RelativeLayout>
         <View

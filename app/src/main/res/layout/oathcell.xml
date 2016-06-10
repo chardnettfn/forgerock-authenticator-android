@@ -87,6 +87,7 @@
             android:gravity="left|bottom"
             android:text="123 456"
             android:textSize="34sp"
+            android:textColor="#4d4d4d"
             android:textStyle="bold"
             android:typeface="monospace"
             />
