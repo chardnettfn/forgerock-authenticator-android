@@ -41,7 +41,7 @@
             android:layout_centerVertical="true"
             android:layout_toLeftOf="@+id/menu"
             android:layout_toRightOf="@+id/icon"
-            android:text="Push Authentication"
+            android:text="Notifications"
             android:textSize="20sp"
             />
 

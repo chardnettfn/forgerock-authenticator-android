@@ -17,8 +17,6 @@ package com.forgerock.authenticator.mechanisms.oath;
 
 import com.forgerock.authenticator.mechanisms.URIMappingException;
 
-import junit.framework.Assert;
-
 import org.junit.Before;
 import org.junit.Test;
 
@@ -51,13 +49,13 @@ public class OathAuthMapperTest {
     @Test
     public void shouldParseIssuerFromPath() throws URIMappingException {
         Map<String, String> result = mapper.map("otpauth://totp/Badger:ferret?secret=ABC");
-        assertEquals(result.get(OathAuthMapper.ISSUER), "Badger");
+        assertEquals(result.get(OathAuthMapper.ISSUER_KEY), "Badger");
     }
 
     @Test
     public void shouldOverwriteIssuerFromParamters() throws URIMappingException {
         Map<String, String> result = mapper.map("otpauth://totp/Badger:ferret?issuer=Stoat&secret=ABC");
-        assertEquals(result.get(OathAuthMapper.ISSUER), "Stoat");
+        assertEquals(result.get(OathAuthMapper.ISSUER_KEY), "Stoat");
     }
 
     @Test

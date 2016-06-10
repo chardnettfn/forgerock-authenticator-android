@@ -115,7 +115,7 @@ public class NotificationLayout extends FrameLayout {
             statusText.setText("Pending");
         } else {
             statusImage.setImageDrawable(getResources().getDrawable(R.drawable.forgerock_icon_denied));
-            statusText.setText("Rejected");
+            statusText.setText("Denied");
         }
 
         TextView timeView = (TextView) findViewById(R.id.time);

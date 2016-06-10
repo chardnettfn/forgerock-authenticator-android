@@ -67,6 +67,7 @@ public class PushAuthMapper extends UriParser {
 
         values.put(REG_ENDPOINT_KEY, recodeBase64UrlValueToStringWithValidation(values, BASE_64_URL_REG_ENDPOINT));
         values.put(AM_LOAD_BALANCER_COOKIE_KEY, recodeBase64UrlValueToStringWithValidation(values, BASE_64_AM_LOAD_BALANCER_COOKIE_KEY));
+        values.put(ISSUER_KEY, recodeBase64UrlValueToStringWithValidation(values, ISSUER_KEY));
         values.put(AUTH_ENDPOINT_KEY, recodeBase64UrlValueToStringWithValidation(values, BASE_64_URL_AUTH_ENDPOINT));
         values.put(BASE_64_SHARED_SECRET_KEY, recodeBase64UrlValueToBase64WithValidation(values, BASE_64_URL_SHARED_SECRET));
         values.put(BASE_64_CHALLENGE_KEY, recodeBase64UrlValueToBase64WithValidation(values, BASE_64_URL_CHALLENGE));

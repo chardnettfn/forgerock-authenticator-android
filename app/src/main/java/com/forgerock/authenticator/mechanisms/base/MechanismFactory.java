@@ -61,7 +61,7 @@ public abstract class MechanismFactory {
      */
     public final Mechanism createFromUri(String uri) throws URIMappingException, MechanismCreationException {
         Map<String, String> values = getParser().map(uri);
-        String issuer = get(values, UriParser.ISSUER, "");
+        String issuer = get(values, UriParser.ISSUER_KEY, "");
         String accountName = get(values, UriParser.ACCOUNT_NAME, "");
         String imageURL = get(values, UriParser.IMAGE, null);
         String bgColor = get(values, UriParser.BG_COLOR, null);

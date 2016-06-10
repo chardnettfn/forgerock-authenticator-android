@@ -42,7 +42,7 @@ public abstract class UriParser {
     public static final String VERSION = "version";
 
     /** The IDP that issued the URI */
-    public static final String ISSUER = "issuer";
+    public static final String ISSUER_KEY = "issuer";
 
     /** The identity account name */
     public static final String ACCOUNT_NAME = "accountname";
@@ -90,7 +90,7 @@ public abstract class UriParser {
         if (pathParts == null) {
             r.put(ACCOUNT_NAME, path);
         } else {
-            r.put(ISSUER, pathParts[0]);
+            r.put(ISSUER_KEY, pathParts[0]);
             r.put(ACCOUNT_NAME, pathParts[1]);
         }
 

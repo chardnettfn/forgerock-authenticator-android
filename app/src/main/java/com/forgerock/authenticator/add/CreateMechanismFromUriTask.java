@@ -35,6 +35,9 @@ import com.forgerock.authenticator.storage.IdentityModel;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import roboguice.RoboGuice;
 
 /**
@@ -45,6 +48,7 @@ public class CreateMechanismFromUriTask extends AsyncTask<String, Void, Mechanis
     private MechanismPostRunnable onCompletion;
     private Mechanism duplicate = null;
     private String[] uri;
+    private Logger logger = LoggerFactory.getLogger(CreateMechanismFromUriTask.class);
 
     /**
      * Creates the task.
@@ -67,6 +71,7 @@ public class CreateMechanismFromUriTask extends AsyncTask<String, Void, Mechanis
         } catch (DuplicateMechanismException e) {
             duplicate = e.getCausingMechanism();
         } catch (MechanismCreationException | URIMappingException e) {
+            logger.error("Failed to create mechanism from URI", e);
             activity.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {

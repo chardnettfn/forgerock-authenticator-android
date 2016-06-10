@@ -19,8 +19,8 @@
     <item>
         <shape>
             <size
-                android:height="40dp"
-                android:width="40dp" />
+                android:height="80dp"
+                android:width="80dp" />
 
             <solid android:color="@android:color/transparent" />
         </shape>
