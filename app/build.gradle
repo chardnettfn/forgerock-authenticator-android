@@ -92,6 +92,10 @@ dependencies {
 
 apply plugin: 'jacoco'
 
+jacoco {
+    toolVersion = "0.7.6.201602180812"
+}
+
 task generateCoverage(type: JacocoReport, dependsOn: 'testDebugUnitTest') {
     sourceDirectories = files('src/main/java')
     classDirectories = fileTree('build/intermediates/classes/debug') {
