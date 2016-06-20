@@ -30,6 +30,5 @@
         android:background="@color/white"
         tools:layout_height="140dp"
         android:gravity="center"
-        android:layout_centerVertical="true"
-        />
+        android:layout_centerInParent="true"/>
 </RelativeLayout>
