@@ -57,7 +57,7 @@ public class PushAuthMapper extends UriParser {
     @Override
     protected Map<String, String> postProcess(Map<String, String> values) throws URIMappingException {
 
-        if (containsNonEmpty(values, MESSAGE_ID_KEY)) {
+        if (!containsNonEmpty(values, MESSAGE_ID_KEY)) {
             throw new URIMappingException("Message ID is required");
         }
 
@@ -75,10 +75,10 @@ public class PushAuthMapper extends UriParser {
     }
 
     byte[] decodeValueWithValidation(Map<String, String> data, String key) throws URIMappingException{
-        if (!containsNonEmpty(data, BASE_64_URL_REG_ENDPOINT)) {
+        if (!containsNonEmpty(data, key)) {
             throw new URIMappingException(key + " must not be empty");
         }
-        byte[] bytes = Base64url.decode(data.get(BASE_64_URL_REG_ENDPOINT));
+        byte[] bytes = Base64url.decode(data.get(key));
 
         if (bytes == null) {
             throw new URIMappingException("Failed to decode value in " + key);
