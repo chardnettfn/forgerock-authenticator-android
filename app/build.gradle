@@ -17,6 +17,14 @@ apply plugin: 'com.android.application'
 
 def buildNumber = System.getenv('BUILD_NUMBER') ?: "1"
 
+// The keystore.properties holds configuration for the release keystore
+def keystorePropertiesFile = rootProject.file("keystore.properties")
+def keystorePropertiesFileExists = keystorePropertiesFile.exists()
+if (keystorePropertiesFileExists) {
+    def keystoreProperties = new Properties()
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
 android {
     compileSdkVersion 23
     buildToolsVersion "23.0.2"
@@ -30,10 +38,24 @@ android {
         testInstrumentationRunner 'android.support.test.runner.AndroidJUnitRunner'
     }
 
+    signingConfigs {
+        if (keystorePropertiesFileExists) {
+            release {
+                keyAlias keystoreProperties['keyAlias']
+                keyPassword keystoreProperties['keyPassword']
+                storeFile file(keystoreProperties['storeFile'])
+                storePassword keystoreProperties['storePassword']
+            }
+        }
+    }
+
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+            if (keystorePropertiesFileExists) {
+                signingConfig signingConfigs.release
+            }
         }
         debug {
             debuggable true
