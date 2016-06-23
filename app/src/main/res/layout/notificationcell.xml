@@ -14,12 +14,11 @@
   ~
   ~ Copyright 2016 ForgeRock AS.
   -->
-<com.forgerock.authenticator.notifications.NotificationLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<com.forgerock.authenticator.notifications.NotificationLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="78dp"
-    android:background="@drawable/token"
-    >
+    xmlns:tools="http://schemas.android.com/tools"
+    android:background="@drawable/token">
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -43,13 +42,13 @@
             android:orientation="vertical">
             <TextView
                 android:id="@+id/info"
-                android:text="Authentication Request"
+                android:text="@string/authentication_request"
                 android:textStyle="bold"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
             <TextView
                 android:id="@+id/status"
-                android:text="Pending"
+                tools:text="Pending"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
 
@@ -57,7 +56,7 @@
 
         <TextView
             android:id="@+id/time"
-            android:text="10 minutes ago"
+            tools:text="10 minutes ago"
             android:gravity="end"
             android:layout_toRightOf="@+id/text"
             android:layout_width="wrap_content"

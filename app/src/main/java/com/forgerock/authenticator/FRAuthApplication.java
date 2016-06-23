@@ -42,7 +42,7 @@ public class FRAuthApplication extends Application {
         // Notify developer that they have included TestNG on classpath.
         // TODO: AME-9927 should update or resolve this check
         if (TestNGCheck.isTestNGOnClassPath()) {
-            Toast.makeText(getApplicationContext(), "Compiled with test libraries", Toast.LENGTH_LONG).show();
+            Toast.makeText(getApplicationContext(), R.string.compiled_with_test_libraries, Toast.LENGTH_LONG).show();
         }
     }
 

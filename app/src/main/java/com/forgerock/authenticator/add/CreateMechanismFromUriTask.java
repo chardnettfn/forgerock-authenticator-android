@@ -86,16 +86,16 @@ public class CreateMechanismFromUriTask extends AsyncTask<String, Void, Mechanis
     protected void onPostExecute(Mechanism mechanism) {
         if (duplicate != null) {
             AlertDialog.Builder builder = new AlertDialog.Builder(activity);
-            builder.setTitle("Duplicate detected")
+            builder.setTitle(R.string.duplicate_title)
                     .setIcon(R.drawable.forgerock_placeholder)
-                    .setMessage("Warning! This will replace an existing login mechanism. This operation cannot be undone. You should only proceed if you were expecting to update a mechanism.")
-                    .setPositiveButton("Replace", new DialogInterface.OnClickListener() {
+                    .setMessage(R.string.duplicate_message)
+                    .setPositiveButton(R.string.duplicate_yes, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
                             duplicate.getOwner().removeMechanism(duplicate);
                             new CreateMechanismFromUriTask(activity, onCompletion).execute(uri);
                         }
                     })
-                    .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    .setNegativeButton(R.string.duplicate_no, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
                             complete(null);
                         }

@@ -19,7 +19,7 @@
     <item
         android:id="@+id/action_clear_history"
         android:showAsAction="never"
-        android:title="Clear history" />
+        android:title="@string/title_menu_item_clear_history" />
 
 </menu>
 

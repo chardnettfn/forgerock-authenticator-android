@@ -15,16 +15,16 @@
   ~
   ~ Copyright 2016 ForgeRock AS.
   -->
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_height="40dp"
     android:layout_width="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
     android:background="@color/light_gray">
     <TextView
         android:id="@+id/heading_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Default"
+        tools:text="Default"
         android:padding="10dp"
         android:textColor="@color/dark_gray"
         android:layout_alignParentBottom="true" />

@@ -120,7 +120,7 @@
                 android:layout_height="match_parent"
                 android:layout_marginLeft="20dp"
                 android:layout_marginStart="20dp"
-                android:text="Swipe switch to authorize" />
+                android:text="@string/push_authorize" />
         </LinearLayout>
     </RelativeLayout>
 </LinearLayout>

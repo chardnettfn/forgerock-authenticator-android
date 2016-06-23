@@ -28,7 +28,7 @@
         android:layout_height="match_parent"
         android:padding="8dp"
         android:gravity="center"
-        android:text="No notifications received"
+        android:text="@string/empty_notifications"
         />
 
     <ExpandableListView

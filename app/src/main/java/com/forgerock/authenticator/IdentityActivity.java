@@ -71,7 +71,7 @@ public class IdentityActivity extends BaseActivity {
 
         ActionBar actionBar = getActionBar();
         if (actionBar != null) {
-            actionBar.setTitle("My Accounts");
+            actionBar.setTitle(R.string.identity_title);
             actionBar.setDisplayUseLogoEnabled(false);
         }
 

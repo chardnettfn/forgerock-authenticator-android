@@ -17,9 +17,6 @@
 package com.forgerock.authenticator;
 
 import android.app.ActionBar;
-import android.app.AlertDialog;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.database.DataSetObserver;
 import android.os.Bundle;
 import android.view.Menu;
@@ -27,12 +24,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ExpandableListView;
 
-import com.forgerock.authenticator.baseactivities.BaseIdentityActivity;
 import com.forgerock.authenticator.baseactivities.BaseMechanismActivity;
-import com.forgerock.authenticator.identity.Identity;
 import com.forgerock.authenticator.mechanisms.base.Mechanism;
 import com.forgerock.authenticator.notifications.NotificationAdapter;
-import com.forgerock.authenticator.notifications.NotificationLayout;
 import com.forgerock.authenticator.storage.IdentityModelListener;
 
 /**
@@ -107,7 +101,7 @@ public class NotificationActivity extends BaseMechanismActivity {
 
         ActionBar actionBar = getActionBar();
         if (actionBar != null) {
-            actionBar.setTitle("Push Authentication");
+            actionBar.setTitle(R.string.title_activity_notification);
             actionBar.setDisplayUseLogoEnabled(false);
             actionBar.setDisplayHomeAsUpEnabled(true);
         }

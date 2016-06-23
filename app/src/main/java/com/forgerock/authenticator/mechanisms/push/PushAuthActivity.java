@@ -17,7 +17,6 @@
 package com.forgerock.authenticator.mechanisms.push;
 
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.AsyncTask;
@@ -59,7 +58,7 @@ public class PushAuthActivity extends BaseNotificationActivity {
         }
 
         TextView questionView = (TextView) findViewById(R.id.question);
-        questionView.setText("Log into " + notification.getMechanism().getOwner().getIssuer() + "?");
+        questionView.setText(String.format(getString(R.string.pushauth_login_title), notification.getMechanism().getOwner().getIssuer()));
 
         ImageButton cancelButton = (ImageButton) findViewById(R.id.cancel);
         cancelButton.setOnClickListener(new View.OnClickListener() {
@@ -113,8 +112,8 @@ public class PushAuthActivity extends BaseNotificationActivity {
         protected void onPostExecute(Boolean success) {
             if (!success) {
                 new AlertDialog.Builder(PushAuthActivity.this)
-                        .setTitle("Error")
-                        .setMessage("Failed to connect to server")
+                        .setTitle(R.string.pushauth_fail_title)
+                        .setMessage(R.string.notification_error_network_failure_message)
                         .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {

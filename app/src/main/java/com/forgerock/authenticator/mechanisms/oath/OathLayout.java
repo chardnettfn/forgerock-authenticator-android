@@ -110,7 +110,7 @@ public class OathLayout extends MechanismLayout<Oath> {
             case R.id.action_copy:
                 if (code != null) {
                     ClipboardManager manager = (ClipboardManager) getContext().getSystemService(Context.CLIPBOARD_SERVICE);
-                    ClipData data = ClipData.newPlainText("Oath code", code);
+                    ClipData data = ClipData.newPlainText(getContext().getString(R.string.copy_oath_label), code);
                     manager.setPrimaryClip(data);
                 }
         }

@@ -106,16 +106,16 @@ public class NotificationLayout extends FrameLayout {
         TextView statusText = (TextView) findViewById(R.id.status);
         if (notification.wasApproved()) {
             statusImage.setImageDrawable(getResources().getDrawable(R.drawable.forgerock_icon_approved));
-            statusText.setText("Approved");
+            statusText.setText(R.string.notification_status_approved);
         } else if (notification.isExpired() && notification.isPending()){
             statusImage.setImageDrawable(getResources().getDrawable(R.drawable.forgerock_icon_denied));
-            statusText.setText("Expired");
+            statusText.setText(R.string.notification_status_expired);
         } else if (notification.isPending()) {
             statusImage.setImageDrawable(getResources().getDrawable(R.drawable.forgerock_icon_pending));
-            statusText.setText("Pending");
+            statusText.setText(R.string.notification_status_pending);
         } else {
             statusImage.setImageDrawable(getResources().getDrawable(R.drawable.forgerock_icon_denied));
-            statusText.setText("Denied");
+            statusText.setText(R.string.notification_status_rejected);
         }
 
         TextView timeView = (TextView) findViewById(R.id.time);
@@ -128,18 +128,17 @@ public class NotificationLayout extends FrameLayout {
         long timeDiffMillis = currentTimeUTCMillis - calendar.getTimeInMillis();
 
         if (TimeUnit.MILLISECONDS.toSeconds(timeDiffMillis) < 60) {
-            return "Less than 1 minute ago";
-        }
-        else if (TimeUnit.MILLISECONDS.toMinutes(timeDiffMillis) == 1) {
-            return "1 minute ago";
+            return getContext().getString(R.string.notification_time_less_one_minute);
+        } else if (TimeUnit.MILLISECONDS.toMinutes(timeDiffMillis) == 1) {
+            return getContext().getString(R.string.notification_time_one_minute);
         } else if (TimeUnit.MILLISECONDS.toMinutes(timeDiffMillis) < 60) {
-            return TimeUnit.MILLISECONDS.toMinutes(timeDiffMillis) + " minutes ago";
+            return  String.format(getContext().getString(R.string.notification_time_minutes_ago), TimeUnit.MILLISECONDS.toMinutes(timeDiffMillis));
         } else if (TimeUnit.MILLISECONDS.toHours(timeDiffMillis) < 24) {
-            return TimeUnit.MILLISECONDS.toHours(timeDiffMillis) + " hours ago";
+            return String.format(getContext().getString(R.string.notification_time_hours_ago), TimeUnit.MILLISECONDS.toHours(timeDiffMillis));
         } else if (TimeUnit.MILLISECONDS.toDays(timeDiffMillis) == 1) {
-            return "Yesterday";
+            return getContext().getString(R.string.notification_time_yesterday);
         } else if (TimeUnit.MILLISECONDS.toDays(timeDiffMillis) < 7) {
-            return TimeUnit.MILLISECONDS.toDays(timeDiffMillis) + " days ago";
+            return String.format(getContext().getString(R.string.notification_time_days_ago), TimeUnit.MILLISECONDS.toDays(timeDiffMillis));
         }
 
         return format.format(calendar.getTime());

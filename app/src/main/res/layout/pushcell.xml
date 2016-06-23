@@ -39,9 +39,8 @@
             android:paddingLeft="8dp"
             android:paddingRight="8dp"
             android:layout_centerVertical="true"
-            android:layout_toLeftOf="@+id/menu"
             android:layout_toRightOf="@+id/icon"
-            android:text="Notifications"
+            android:text="@string/push_mechanism_title"
             android:textSize="20sp"
             />
 

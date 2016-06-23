@@ -93,7 +93,7 @@ public class MechanismActivity extends BaseIdentityActivity {
 
         ActionBar actionBar = getActionBar();
         if (actionBar != null) {
-            actionBar.setTitle("Account");
+            actionBar.setTitle(R.string.mechanism_title);
             actionBar.setDisplayUseLogoEnabled(false);
             actionBar.setDisplayHomeAsUpEnabled(true);
         }

@@ -16,13 +16,12 @@
 
   Portions Copyright 2013 Nathaniel McCallum, Red Hat
 -->
-<com.forgerock.authenticator.mechanisms.oath.OathLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<com.forgerock.authenticator.mechanisms.oath.OathLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:freeotp="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="96dp"
-    android:background="@drawable/token"
-    >
+    xmlns:tools="http://schemas.android.com/tools"
+    android:background="@drawable/token">
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -74,7 +73,7 @@
             android:paddingLeft="8dp"
             android:paddingRight="8dp"
             android:gravity="left|center"
-            android:text="One-time Password"
+            android:text="@string/oath_mechanism_title"
             android:textSize="20sp"
             />
 
@@ -85,7 +84,7 @@
             android:paddingLeft="8dp"
             android:paddingRight="8dp"
             android:gravity="left|bottom"
-            android:text="123 456"
+            tools:text="123 456"
             android:textSize="34sp"
             android:textColor="#4d4d4d"
             android:textStyle="bold"

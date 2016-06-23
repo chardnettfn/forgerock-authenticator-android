@@ -15,47 +15,87 @@
   Copyright 2015-2016 ForgeRock AS.
 -->
 <resources>
-    <string name="app_name">ForgeRock</string>
-    <string name="add">Add</string>
-    <string name="invalid_token">The token specified was invalid!</string>
-    <string name="invalid_qr">The scanned QR code was invalid!</string>
-    <string name="delete">Delete</string>
-    <string name="edit">Edit</string>
-    <string name="restore_defaults">Restore Defaults</string>
-    <string name="no_keys">No OTP keys installed.</string>
-    <string name="no_mechanisms">No mechanisms registered.</string>
-    <string name="no_identities">No identities registered.</string>
-    <string name="add_token">Add Token</string>
-    <string name="scan_qr_code">Scan QR Code</string>
-    <string name="interval">Interval</string>
-    <string name="counter">Counter</string>
-    <string name="issuer">Issuer</string>
-    <string name="id">ID</string>
-    <string name="secret">Secret</string>
-    <string name="type">Type</string>
-    <string name="algorithm">Algorithm</string>
-    <string name="digits">Digits</string>
-    <string name="save">Save</string>
+    <string name="app_title">ForgeRock</string>
 
-    <string name="about_freeotp">About FreeOTP</string>
+    <!-- Menu entries -->
+    <string name="title_menu_item_clear_history">Clear history</string>
+    <string name="title_menu_item_about">About</string>
+    <string name="title_menu_item_delete">Delete</string>
+    <string name="title_menu_item_copy">Copy</string>
+    <string name="title_menu_item_scan_qr_code">Scan QR code</string>
+
+    <!-- Activity titles -->
+    <string name="title_activity_notification">Push Authentication</string>
+    <string name="title_activity_settings">Settings</string>
+    <string name="identity_title">My Accounts</string>
+    <string name="mechanism_title">Account</string>
+    <string name="title_activity_delete_account">Delete this account?</string>
+    <string name="title_activity_delete_mechanism">Delete this authentication method?</string>
+
+    <!-- Duplicate entry scanned-->
+    <string name="duplicate_title">Replace this authentication method?</string>
+    <string name="duplicate_message">This authentication method is already registered. Do you want to replace this authentication method?</string>
+    <string name="duplicate_yes">Replace</string>
+    <string name="duplicate_no">Cancel</string>
+
+    <!-- Delete message -->
+    <string name="delete_confirmation_message">Removing this entry may prevent you from logging into your %@ account. Confirm you have already disabled this authentication method online.</string>
+
+    <!-- Accounts activity (IdentityActivity) -->
+    <string name="no_identities">No accounts registered</string>
+
+    <!-- Account activity (MechanismActivity) -->
+    <string name="oath_mechanism_title">One-time Password</string>
+    <string name="push_mechanism_title">Push Authentication</string>
+
+    <!-- Notification list activity -->
+    <string name="authentication_request">Authentication Request</string>
+    <string name="empty_notifications">No notifications received</string>
+    <string name="notification_list_history">History</string>
+    <string name="notification_list_pending">Pending</string>
+    <string name="notification_status_approved">Approved</string>
+    <string name="notification_status_expired">Expired</string>
+    <string name="notification_status_pending">Pending</string>
+    <string name="notification_status_rejected">Denied</string>
+    <string name="notification_time_less_one_minute">Less than 1 minute ago</string>
+    <string name="notification_time_one_minute">1 minute ago</string>
+    <string name="notification_time_minutes_ago">%1$d minutes ago</string>
+    <string name="notification_time_hours_ago">%1$d hours ago</string>
+    <string name="notification_time_yesterday">Yesterday</string>
+    <string name="notification_time_days_ago">%1$d days ago</string>
+
+    <!-- Push authentication approval activity -->
+    <string name="pushauth_login_title">Log into %1$s?</string>
+    <string name="push_authorize">Swipe switch to authorize</string>
+    <string name="pushauth_fail_title">Error</string>
+    <string name="notification_error_network_failure_message">Unable to contact the server.\nEnsure you are connected to the internet, and try again.</string>
+
+    <!-- About activity -->
     <string name="about_version">ForgeRock Authenticator Version %1$s (%2$d)</string>
     <string name="about_copyright">© 2016 ForgeRock AS.</string>
-    <string name="about_license">%1$s</string>
-    <string name="about_website">For more information, see our %s.</string>
-    <string name="about_feedback">We welcome your feedback:&lt;br/&gt;• %1$s&lt;br/&gt;• %2$s</string>
-    <string name="about_icons">Some icons used by this application are reproduced from work created and shared by the Android Open Source Project and used according to terms described in the Creative Commons 2.5 Attribution License.</string>
     <string name="about"> </string>
 
-    <string name="link_website">&lt;a href=&quot;http://freeotp.fedorahosted.org&quot;&gt;website&lt;/a&gt;</string>
-    <string name="link_report_a_problem">&lt;a href=&quot;https://fedorahosted.org/freeotp/wiki/ProblemReport&quot;&gt;Report a Problem&lt;/a&gt;</string>
-    <string name="link_ask_for_help">&lt;a href=&quot;http://lists.fedorahosted.org/mailman/listinfo/freeotp-devel&quot;&gt;Ask for Help&lt;/a&gt;</string>
-    <string name="link_apache2">&lt;a href=&quot;http://www.apache.org/licenses/LICENSE-2.0.html&quot;&gt;Apache 2.0&lt;/a&gt;</string>
+    <!-- Settings page (Not in use, translation disabled) -->
+    <string name="settings_history_cleared_title" translatable="false">History cleared</string>
+    <string name="settings_history_cleared_body" translatable="false">All Notifications have been deleted</string>
+    <string name="settings_history_cleared_confirm" translatable="false">Ok</string>
+    <string name="settings_other_title" translatable="false">Other</string>
+    <string name="settings_clear_notification_history" translatable="false">Clear notification history</string>
+    <string name="settings_about" translatable="false">About this app</string>
+    <string name="enable_camera" translatable="false">Enable camera</string>
 
-    <string name="error_camera_open">Error while opening camera!</string>
+    <!-- System notifications-->
+    <string name="system_notification_title">Login attempt from %1$s at %2$s</string>
+    <string name="system_notification_body">Tap to log in</string>
 
-    <string name="delete_summary">This is your last chance: if you delete this token, it will be gone forever. It will not be disabled on the server.</string>
-    <string name="delete_question">Delete this token?</string>
+    <!-- Error messages -->
+    <string name="googleplay_load_error_message">Error: Google Play Services failed to load.</string>
+    <string name="invalid_qr">The scanned QR code was invalid!</string>
+    <string name="error_camera_open">Unable to open camera</string>
 
+    <!-- Miscellaneous values -->
+    <string name="copy_oath_label" translatable="false">OATH code</string>
+    <string name="compiled_with_test_libraries">Compiled with test libraries</string>
     <string-array name="algorithms">
         <item>MD5</item>
         <item>SHA1</item>
@@ -63,5 +103,4 @@
         <item>SHA512</item>
     </string-array>
 
-    <string name="title_activity_new_message">Message</string>
 </resources>

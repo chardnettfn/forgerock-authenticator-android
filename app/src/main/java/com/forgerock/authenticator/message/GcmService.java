@@ -23,6 +23,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.VisibleForTesting;
 
+import com.forgerock.authenticator.R;
 import com.forgerock.authenticator.baseactivities.BaseNotificationActivity;
 import com.forgerock.authenticator.identity.Identity;
 import com.forgerock.authenticator.mechanisms.InvalidNotificationException;
@@ -192,8 +193,9 @@ public class GcmService extends RoboGcmListenerService {
 
         Identity user = notificationData.getMechanism().getOwner();
 
-        String title = "Login attempt from " + user.getAccountName() + " at " + user.getIssuer();
-        String body = "Tap to log in";
+        String title = String.format(getString(R.string.system_notification_title), user.getAccountName(), user.getIssuer());
+        String body = getString(R.string.system_notification_body);
+
         Notification notification = notificationFactory.generatePending(this, id, title, body, intent);
 
         NotificationManager notificationManager = contextService.getService(this, Context.NOTIFICATION_SERVICE);

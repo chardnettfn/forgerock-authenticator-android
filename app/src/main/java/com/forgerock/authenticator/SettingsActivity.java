@@ -68,9 +68,9 @@ public class SettingsActivity extends BaseActivity {
                     mechanism.clearInactiveNotifications();
                     new AlertDialog.Builder(context)
                             .setIcon(android.R.drawable.ic_dialog_alert)
-                            .setTitle("History cleared")
-                            .setMessage("All Notifications have been deleted")
-                            .setPositiveButton("Ok", new DialogInterface.OnClickListener()
+                            .setTitle(R.string.settings_history_cleared_title)
+                            .setMessage(R.string.settings_history_cleared_body)
+                            .setPositiveButton(R.string.settings_history_cleared_confirm, new DialogInterface.OnClickListener()
                             {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {

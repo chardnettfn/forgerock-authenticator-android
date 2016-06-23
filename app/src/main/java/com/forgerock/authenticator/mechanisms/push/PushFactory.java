@@ -132,7 +132,7 @@ public class PushFactory extends MechanismFactory {
                 apiAvailability.showErrorNotification(context, resultCode);
             } else {
                 Toast.makeText(context.getApplicationContext(),
-                        "Error: Google Play Services failed to load.", Toast.LENGTH_LONG).show();
+                        R.string.googleplay_load_error_message, Toast.LENGTH_LONG).show();
             }
             return false;
         }

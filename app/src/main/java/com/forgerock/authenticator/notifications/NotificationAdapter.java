@@ -44,6 +44,8 @@ public class NotificationAdapter extends BaseExpandableListAdapter {
     private List<Notification> pendingList;
     private List<Notification> historyList;
     private List<NotificationLayout> layoutList;
+    private String historyTitle;
+    private String pendingTitle;
 
     /**
      * Creates the adapter, and finds the data model.
@@ -110,15 +112,15 @@ public class NotificationAdapter extends BaseExpandableListAdapter {
             convertView = mLayoutInflater.inflate(R.layout.notificationtitle, parent, false);
         }
 
-        String title = "History";
+        int titleId = R.string.notification_list_history;
         if (groupPosition == 0) {
             if (pendingList.isEmpty()) {
-                title = "History";
+                titleId = R.string.notification_list_history;
             } else {
-                title = "Pending";
+                titleId = R.string.notification_list_pending;
             }
         }
-        ((TextView) convertView.findViewById(R.id.heading_title)).setText(title);
+        ((TextView) convertView.findViewById(R.id.heading_title)).setText(titleId);
         convertView.bringToFront();
         return convertView;
     }

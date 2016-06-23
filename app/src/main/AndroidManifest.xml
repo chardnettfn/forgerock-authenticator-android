@@ -47,7 +47,7 @@
     <application
         android:allowBackup="true"
         android:icon="@drawable/forgerock_logo"
-        android:label="@string/app_name"
+        android:label="@string/app_title"
         android:theme="@style/AppTheme"
         android:name=".FRAuthApplication">
         <meta-data android:name="roboguice.modules" android:value="com.forgerock.authenticator.AuthGuiceModule"/>
@@ -61,14 +61,14 @@
             android:screenOrientation="portrait" />
         <activity
             android:name=".delete.DeleteMechanismActivity"
-            android:label="@string/delete_question"
+            android:label="@string/title_activity_delete_mechanism"
             android:theme="@android:style/Theme.Holo.Light.Dialog"
             android:screenOrientation="portrait" />
         <activity
             android:name=".delete.DeleteIdentityActivity"
-            android:label="@string/delete_question"
-            android:theme="@android:style/Theme.Holo.Light.Dialog"
-            android:screenOrientation="portrait" />
+            android:label="@string/title_activity_delete_account"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.Light.Dialog" />
         <activity
             android:name=".IdentityActivity"
             android:configChanges="orientation|screenSize"
@@ -91,9 +91,9 @@
         <activity
             android:name=".mechanisms.push.PushAuthActivity"
             android:configChanges="orientation|screenSize"
-            android:label="@string/app_name"
-            android:theme="@android:style/Theme.Holo.Light.NoActionBar"
-            android:screenOrientation="portrait">
+            android:screenOrientation="portrait"
+            android:label="@string/app_title"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar">
         </activity>
         <activity
             android:name=".MechanismActivity"
@@ -117,8 +117,8 @@
             android:name=".SplashActivity"
             android:configChanges="orientation|screenSize"
             android:theme="@style/AppTheme.NoActionBar.Fullscreen"
-            android:label="@string/app_name"
-            android:screenOrientation="portrait">
+            android:screenOrientation="portrait"
+            android:label="@string/app_title">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

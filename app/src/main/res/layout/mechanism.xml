@@ -46,8 +46,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:text="ForgeRock"
-            android:textSize="20dp"
+            tools:text="ForgeRock"
+            android:textSize="20sp"
             android:layout_weight="1"
             />
         <TextView
@@ -56,9 +56,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:text="joe.bloggs"
-            android:textSize="15dp"
-
+            tools:text="joe.bloggs"
+            android:textSize="15sp"
             android:layout_weight="1"
             />
         <Space
