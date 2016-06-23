@@ -20,8 +20,9 @@ def buildNumber = System.getenv('BUILD_NUMBER') ?: "1"
 // The keystore.properties holds configuration for the release keystore
 def keystorePropertiesFile = rootProject.file("keystore.properties")
 def keystorePropertiesFileExists = keystorePropertiesFile.exists()
+def keystoreProperties
 if (keystorePropertiesFileExists) {
-    def keystoreProperties = new Properties()
+    keystoreProperties = new Properties()
     keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 }
 
