@@ -51,7 +51,6 @@ public class SplashActivity extends BaseActivity {
 
         video.setVideoURI(uri);
         video.setZOrderOnTop(true);
-        video.start();
 
         video.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
@@ -59,7 +58,17 @@ public class SplashActivity extends BaseActivity {
                 proceed();
             }
         });
+        
+        // In the event of an error we have decided the best course of action is to skip the video
+        video.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+            @Override
+            public boolean onError(MediaPlayer mp, int what, int extra) {
+                proceed();
+                return true;
+            }
+        });
 
+        video.start();
     }
 
     private void proceed() {

@@ -53,22 +53,27 @@
         <meta-data android:name="roboguice.modules" android:value="com.forgerock.authenticator.AuthGuiceModule"/>
         <activity
             android:name=".AboutActivity"
-            android:theme="@android:style/Theme.Holo.Light.Dialog.NoActionBar" />
+            android:theme="@android:style/Theme.Holo.Light.Dialog.NoActionBar"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".add.ScanActivity"
-            android:theme="@style/AppTheme.NoActionBar.Fullscreen" />
+            android:theme="@style/AppTheme.NoActionBar.Fullscreen"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".delete.DeleteMechanismActivity"
             android:label="@string/delete_question"
-            android:theme="@android:style/Theme.Holo.Light.Dialog" />
+            android:theme="@android:style/Theme.Holo.Light.Dialog"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".delete.DeleteIdentityActivity"
             android:label="@string/delete_question"
-            android:theme="@android:style/Theme.Holo.Light.Dialog" />
+            android:theme="@android:style/Theme.Holo.Light.Dialog"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".IdentityActivity"
             android:configChanges="orientation|screenSize"
-            android:label="My Accounts">
+            android:label="My Accounts"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
@@ -87,28 +92,33 @@
             android:name=".mechanisms.push.PushAuthActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/app_name"
-            android:theme="@android:style/Theme.Holo.Light.NoActionBar">
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar"
+            android:screenOrientation="portrait">
         </activity>
         <activity
             android:name=".MechanismActivity"
             android:configChanges="orientation|screenSize"
-            android:label="Account">
+            android:label="Account"
+            android:screenOrientation="portrait">
         </activity>
         <activity
             android:name=".NotificationActivity"
             android:configChanges="orientation|screenSize"
-            android:label="Notifications" />
+            android:label="Notifications"
+            android:screenOrientation="portrait" />
 
         <activity
             android:name=".SettingsActivity"
             android:configChanges="orientation|screenSize"
-            android:label="Settings" />
+            android:label="Settings"
+            android:screenOrientation="portrait" />
 
         <activity
             android:name=".SplashActivity"
             android:configChanges="orientation|screenSize"
             android:theme="@style/AppTheme.NoActionBar.Fullscreen"
-            android:label="@string/app_name">
+            android:label="@string/app_name"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
