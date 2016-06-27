@@ -80,9 +80,6 @@ public class IdentityActivity extends BaseActivity implements ActivityCompat.OnR
         onNewIntent(getIntent());
         setContentView(R.layout.identity);
 
-        // Don't permit screenshots since these might contain secret information.
-        getWindow().setFlags(LayoutParams.FLAG_SECURE, LayoutParams.FLAG_SECURE);
-
         identityAdapter = new IdentityAdapter(this);
         final GridView identityView = ((GridView) findViewById(R.id.grid));
         identityView.setAdapter(identityAdapter);

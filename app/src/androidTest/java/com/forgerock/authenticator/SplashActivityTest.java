@@ -22,6 +22,8 @@ import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
 import android.test.suitebuilder.annotation.LargeTest;
 
+import com.forgerock.authenticator.identity.Identity;
+import com.forgerock.authenticator.storage.IdentityModel;
 import com.forgerock.authenticator.storage.Settings;
 
 import org.junit.Before;
@@ -42,16 +44,21 @@ public class SplashActivityTest {
 
     @Rule
     public ActivityTestRule<SplashActivity> mActivityRule = new ActivityTestRule<>(SplashActivity.class, false, false);
-    private Settings settings;
+    private IdentityModel model;
+    private Identity identity;
 
     @Before
     public void setup() {
-        settings = RoboGuice.getInjector(InstrumentationRegistry.getTargetContext().getApplicationContext()).getInstance(Settings.class);
+        model = RoboGuice.getInjector(InstrumentationRegistry.getTargetContext().getApplicationContext()).getInstance(IdentityModel.class);
+        if (identity != null) {
+            model.removeIdentity(identity);
+            identity = null;
+        }
     }
 
     @Test
     public void splashSeries() throws Exception {
-        settings.setSplashEnabled(true);
+        identity = model.addIdentity(Identity.builder());
         mActivityRule.launchActivity(new Intent());
 
         for (int i = 0; i < 10; i++) {
@@ -66,7 +73,6 @@ public class SplashActivityTest {
 
     @Test
     public void splashDisabled() throws Exception {
-        settings.setSplashEnabled(false);
         mActivityRule.launchActivity(new Intent());
 
         assertTrue(mActivityRule.getActivity().isFinishing());
