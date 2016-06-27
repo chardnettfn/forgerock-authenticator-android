@@ -60,6 +60,7 @@ public class MessageUtils {
             connection.setDoInput(true);
             connection.setRequestMethod("POST");
             connection.setRequestProperty("Content-Type", "application/json");
+            connection.setRequestProperty("Accept-API-Version", "resource=1.0, protocol=1.0");
             if (amlbCookie != null) {
                 connection.setRequestProperty("Cookie", amlbCookie);
             }

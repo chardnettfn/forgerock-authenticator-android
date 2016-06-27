@@ -50,7 +50,7 @@ public class PushNotification extends Notification {
     private static final String CHALLENGE_KEY = "challenge";
     private static final String AMLB_COOKIE = "amlbCookie";
     private final String amlbCookie;
-    private final MessageUtils messageUtils;
+    private MessageUtils messageUtils;
     private String messageId;
     private String base64Challenge;
 
@@ -59,8 +59,13 @@ public class PushNotification extends Notification {
         this.amlbCookie = amlbCookie;
         this.messageId = messageId;
         this.base64Challenge = base64Challenge;
-        messageUtils = mechanism.getModel().getInjector().getInstance(MessageUtils.class);
+    }
 
+    private MessageUtils getMessageUtils() {
+        if (messageUtils == null) {
+            messageUtils = getMechanism().getModel().getInjector().getInstance(MessageUtils.class);
+        }
+        return messageUtils;
     }
 
     @Override
@@ -79,7 +84,7 @@ public class PushNotification extends Notification {
             Push push = (Push) getMechanism();
             Map<String, Object> data = new HashMap<>();
             data.put(RESPONSE_KEY, generateChallengeResponse(push.getSecret(), base64Challenge));
-            returnCode = messageUtils.respond(push.getEndpoint(), amlbCookie, push.getSecret(), messageId, data);
+            returnCode = getMessageUtils().respond(push.getEndpoint(), amlbCookie, push.getSecret(), messageId, data);
         } catch (IOException | JSONException e) {
             logger.error("Response to server failed.", e);
         }
@@ -95,7 +100,7 @@ public class PushNotification extends Notification {
             Map<String, Object> data = new HashMap<>();
             data.put(RESPONSE_KEY, generateChallengeResponse(push.getSecret(), base64Challenge));
             data.put(DENY_KEY, true);
-            returnCode = messageUtils.respond(push.getEndpoint(), amlbCookie, push.getSecret(), messageId, data);
+            returnCode = getMessageUtils().respond(push.getEndpoint(), amlbCookie, push.getSecret(), messageId, data);
         } catch (IOException | JSONException e) {
             logger.error("Response to server failed.", e);
         }
