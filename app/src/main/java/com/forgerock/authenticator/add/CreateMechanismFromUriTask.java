@@ -102,8 +102,9 @@ public class CreateMechanismFromUriTask extends AsyncTask<String, Void, Mechanis
                     });
 
             builder.create().show();
+        } else {
+            complete(mechanism);
         }
-        complete(mechanism);
     }
 
     private void complete(Mechanism mechanism) {

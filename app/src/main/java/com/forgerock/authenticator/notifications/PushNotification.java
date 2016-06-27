@@ -62,6 +62,7 @@ public class PushNotification extends Notification {
     }
 
     private MessageUtils getMessageUtils() {
+        // Lazy injection used to avoid a loading loop due to an issue with the Roboguice setup.
         if (messageUtils == null) {
             messageUtils = getMechanism().getModel().getInjector().getInstance(MessageUtils.class);
         }

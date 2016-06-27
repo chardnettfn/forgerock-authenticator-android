@@ -53,11 +53,11 @@
             android:id="@+id/question"
             android:textColor="@color/white"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="30dp"
             android:layout_gravity="center_horizontal"
             tools:text="Log into placeholder?"
             android:textSize="15sp"
-            android:layout_weight="1"
+            android:layout_weight="2"
             />
         <Space
             android:layout_width="match_parent"
