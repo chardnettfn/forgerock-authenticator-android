@@ -85,7 +85,6 @@ dependencies {
         exclude module: 'support-annotations'
     }
     androidTestCompile 'com.squareup.spoon:spoon-client:1.5.0'
-    androidTestCompile 'com.jraska:falcon:1.0.1'
     androidTestCompile 'com.jraska:falcon-spoon-compat:1.0.1'
 
     testCompile 'org.testng:testng:6.8.5'

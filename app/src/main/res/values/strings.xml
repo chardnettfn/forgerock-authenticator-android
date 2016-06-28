@@ -73,7 +73,20 @@
     <!-- About activity -->
     <string name="about_version">ForgeRock Authenticator Version %1$s (%2$d)</string>
     <string name="about_copyright">© 2016 ForgeRock AS.</string>
-    <string name="about"> </string>
+    <string name="about_licenses_title"><![CDATA[<h3>Licenses</h3>]]></string>
+    <string name="about_text_website">Website</string>
+    <string name="about"><![CDATA[
+        <h3>About</h3>
+        ForgeRock Authenticator works in conjunction with the ForgeRock Identity Platform to deliver secure, yet easy access to apps and services.
+        Users can register their phones, using QR codes, to receive notifications or generate One-Time Passwords which can be used to securely log in.
+        <br /><br />
+        Features include:<br />
+        - Automatic setup via QR codes<br />
+        - Support for multiple accounts<br />
+        - Support for Time and Counter based One-Time Password generation<br /><br />
+        ForgeRock Authenticator works with OpenAM\'s \"ForgeRock Authenticator (OATH)\" or \"ForgeRock Authenticator (Push)\" authentication modules.
+        ]]>
+    </string>
 
     <!-- Settings page (Not in use, translation disabled) -->
     <string name="settings_history_cleared_title" translatable="false">History cleared</string>
