@@ -27,6 +27,7 @@ import android.database.DataSetObserver;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.VisibleForTesting;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -58,12 +59,13 @@ import roboguice.activity.RoboActivity;
 /**
  * Page for viewing a list of all Identities. Currently the start page for the app.
  */
-public class IdentityActivity extends BaseActivity {
+public class IdentityActivity extends BaseActivity implements ActivityCompat.OnRequestPermissionsResultCallback{
 
     private IdentityAdapter identityAdapter;
     private DataSetObserver dataSetObserver;
     private IdentityModelListener listener;
     private Menu menu;
+    private final int PERMISSION_REQUEST_SCAN = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -110,6 +112,7 @@ public class IdentityActivity extends BaseActivity {
             }
         };
         identityModel.addListener(listener);
+
     }
 
     @Override
@@ -151,19 +154,18 @@ public class IdentityActivity extends BaseActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        final Context context = this;
         switch (item.getItemId()) {
             case R.id.action_scan:
                 if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
                         != PackageManager.PERMISSION_GRANTED) {
-                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, 0);
+                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, PERMISSION_REQUEST_SCAN);
                 } else {
-                    startActivity(new Intent(context, ScanActivity.class));
+                    startActivity(new Intent(this, ScanActivity.class));
                     overridePendingTransition(R.anim.fadein, R.anim.fadeout);
                 }
                 return true;
             case R.id.action_about:
-                startActivity(new Intent(context, AboutActivity.class));
+                startActivity(new Intent(this, AboutActivity.class));
                 return true;
         }
         return false;
@@ -179,5 +181,15 @@ public class IdentityActivity extends BaseActivity {
         }
     }
 
-
+    @Override
+    public void onRequestPermissionsResult (int requestCode,
+                                            @NonNull String[] permissions,
+                                            @NonNull int[] grantResults) {
+        if (requestCode == PERMISSION_REQUEST_SCAN && permissions.length > 0 && Manifest.permission.CAMERA.equals(permissions[0])) {
+            if (PackageManager.PERMISSION_GRANTED == grantResults[0]) {
+                startActivity(new Intent(this, ScanActivity.class));
+                overridePendingTransition(R.anim.fadein, R.anim.fadeout);
+            }
+        }
+    }
 }
