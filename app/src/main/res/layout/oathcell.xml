@@ -51,7 +51,7 @@
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:padding="5dp"
-        android:background="@color/white"
+        android:background="@android:color/transparent"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
         android:layout_marginRight="16dp"
