@@ -86,12 +86,18 @@
                 <data
                     android:host="hotp"
                     android:scheme="otpauth" />
+
+                <data
+                    android:scheme="pushauth"
+                    android:host="push" />
             </intent-filter>
         </activity>
         <activity
             android:name=".mechanisms.push.PushAuthActivity"
             android:configChanges="orientation|screenSize"
             android:screenOrientation="portrait"
+            android:launchMode="singleInstance"
+            android:excludeFromRecents="true"
             android:label="@string/app_title"
             android:theme="@android:style/Theme.Holo.Light.NoActionBar">
         </activity>

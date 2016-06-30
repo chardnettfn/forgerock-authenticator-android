@@ -84,7 +84,7 @@ public class MessageUtils {
         return returnCode;
     }
 
-    private String generateJwt(String base64Secret, Map<String, Object> data) {
+    private String generateJwt(String base64Secret, Map<String, Object> data) throws IOException {
         JwtClaimsSetBuilder builder = new JwtClaimsSetBuilder();
         for (String key : data.keySet()) {
             builder.claim(key, data.get(key));
@@ -96,6 +96,10 @@ public class MessageUtils {
         SignedJwtBuilderImpl jwtBuilder = new SignedJwtBuilderImpl(signingHandler);
         jwtBuilder.claims(builder.build());
         jwtBuilder.headers().alg(JwsAlgorithm.HS256);
-        return jwtBuilder.build();
+        try {
+            return jwtBuilder.build();
+        } catch (IllegalArgumentException e) {
+            throw new IOException("Passed empty secret", e);
+        }
     }
 }

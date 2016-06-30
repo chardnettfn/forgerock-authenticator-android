@@ -53,6 +53,8 @@ public class DeleteMechanismActivity extends BaseMechanismActivity {
         final Identity owner = mechanism.getOwner();
         ((TextView) findViewById(R.id.issuer)).setText(mechanism.getOwner().getIssuer());
         ((TextView) findViewById(R.id.label)).setText(mechanism.getOwner().getAccountName());
+        ((TextView) findViewById(R.id.confirmation_message)).setText(String.format(getString(R.string.delete_confirmation_message), getString(R.string.delete_type_mechanism)));
+
         Picasso.with(this)
                 .load(mechanism.getOwner().getImageURL())
                 .placeholder(R.drawable.forgerock_placeholder)

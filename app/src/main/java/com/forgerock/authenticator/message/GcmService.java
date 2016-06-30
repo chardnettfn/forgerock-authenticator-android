@@ -189,8 +189,6 @@ public class GcmService extends RoboGcmListenerService {
          */
         Intent intent = BaseNotificationActivity.setupIntent(this, PushAuthActivity.class, notificationData);
 
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
-
         Identity user = notificationData.getMechanism().getOwner();
 
         String title = String.format(getString(R.string.system_notification_title), user.getAccountName(), user.getIssuer());

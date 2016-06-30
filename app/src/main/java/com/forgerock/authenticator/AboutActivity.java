@@ -57,7 +57,7 @@ public class AboutActivity extends Activity {
             StringBuilder aboutBuilder = new StringBuilder(getString(R.string.about_licenses_title));
 
             for (String[] values : credits) {
-                aboutBuilder.append(String.format("%1$s - %2$s (<a href = \"\" + %3$s + \"\">%4$s</a>)", values[0], values[1], values[2], getString(R.string.about_text_website)));
+                aboutBuilder.append(String.format("%1$s - %2$s (<a href = \"%3$s\">%4$s</a>)", values[0], values[1], values[2], getString(R.string.about_text_website)));
                 aboutBuilder.append("<br />");
             }
 

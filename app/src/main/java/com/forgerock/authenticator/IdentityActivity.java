@@ -173,8 +173,16 @@ public class IdentityActivity extends BaseActivity implements ActivityCompat.OnR
         super.onNewIntent(intent);
 
         Uri uri = intent.getData();
+
+        CreateMechanismFromUriTask.MechanismPostRunnable callback = new CreateMechanismFromUriTask.MechanismPostRunnable() {
+            @Override
+            public void run(Mechanism mechanism) {
+                identityAdapter.notifyDataSetChanged();
+            }
+        };
+
         if (uri != null) {
-            new CreateMechanismFromUriTask(this, null).execute(uri.toString());
+            new CreateMechanismFromUriTask(this, callback).execute(uri.toString());
         }
     }
 

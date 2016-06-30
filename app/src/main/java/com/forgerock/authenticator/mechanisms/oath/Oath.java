@@ -297,13 +297,16 @@ public class Oath extends Mechanism {
          * Sets the frequency with which the OTP changes.
          * @param periodStr Non null period in seconds.
          * @return The current builder.
-         * @throws MechanismCreationException If the value was not a number.
+         * @throws MechanismCreationException If the value was not a number greater than zero.
          */
         public OathBuilder setPeriod(String periodStr) throws MechanismCreationException {
             try {
                 this.period = Integer.parseInt(periodStr);
+                if (this.period <= 0) {
+                    throw new MechanismCreationException("Oath refresh period was not a positive integer");
+                }
             } catch (NumberFormatException e) {
-                throw new MechanismCreationException("Period was not a number: " + periodStr);
+                throw new MechanismCreationException("Oath refresh period was not a number: " + periodStr);
             }
             return this;
         }

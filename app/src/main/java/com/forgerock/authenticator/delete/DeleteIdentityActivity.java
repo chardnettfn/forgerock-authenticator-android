@@ -51,6 +51,7 @@ public class DeleteIdentityActivity extends BaseIdentityActivity {
         }
         ((TextView) findViewById(R.id.issuer)).setText(identity.getIssuer());
         ((TextView) findViewById(R.id.label)).setText(identity.getAccountName());
+        ((TextView) findViewById(R.id.confirmation_message)).setText(String.format(getString(R.string.delete_confirmation_message), getString(R.string.delete_type_account)));
         Picasso.with(this)
                 .load(identity.getImageURL())
                 .placeholder(R.drawable.forgerock_placeholder)

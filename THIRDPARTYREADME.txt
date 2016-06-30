@@ -88,3 +88,11 @@ project: http://projects.lidalia.org.uk/slf4j-test/
 license: MIT X11 License
 
 Used for testing the logging aspects of the project.
+
+Mock Web Server
+---------------------
+project: http://square.github.io/okhttp
+github: https://github.com/square/okhttp/tree/master/mockwebserver
+license: Apache License 2.0
+
+Used for testing http requests.

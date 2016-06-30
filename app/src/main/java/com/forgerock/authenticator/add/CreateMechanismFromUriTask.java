@@ -87,7 +87,6 @@ public class CreateMechanismFromUriTask extends AsyncTask<String, Void, Mechanis
         if (duplicate != null) {
             AlertDialog.Builder builder = new AlertDialog.Builder(activity);
             builder.setTitle(R.string.duplicate_title)
-                    .setIcon(R.drawable.forgerock_placeholder)
                     .setMessage(R.string.duplicate_message)
                     .setPositiveButton(R.string.duplicate_yes, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
