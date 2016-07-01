@@ -113,6 +113,8 @@ dependencies {
     provided 'org.roboguice:roboblender:3.+'
     // JWT
     compile 'org.forgerock.commons:json-web-token:3.0.3'
+    // Joda Time
+    compile group: 'joda-time', name: 'joda-time', version: '2.2'
 }
 
 apply plugin: 'jacoco'

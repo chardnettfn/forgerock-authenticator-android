@@ -108,6 +108,16 @@
     <string name="invalid_qr">The scanned QR code was invalid!</string>
     <string name="error_camera_open">Unable to open camera</string>
 
+    <!-- Time values -->
+    <string name="time_yesterday">Yesterday</string>
+    <string name="time_monday">Monday</string>
+    <string name="time_tuesday">Tuesday</string>
+    <string name="time_wednesday">Wednesday</string>
+    <string name="time_thursday">Thursday</string>
+    <string name="time_friday">Friday</string>
+    <string name="time_saturday">Saturday</string>
+    <string name="time_sunday">Sunday</string>
+
     <!-- Miscellaneous values -->
     <string name="copy_oath_label" translatable="false">OATH code</string>
     <string name="compiled_with_test_libraries">Compiled with test libraries</string>

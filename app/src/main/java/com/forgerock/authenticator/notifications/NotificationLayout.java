@@ -17,7 +17,7 @@
 package com.forgerock.authenticator.notifications;
 
 import android.content.Context;
-import android.content.Intent;
+import android.text.format.DateFormat;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -28,10 +28,10 @@ import com.forgerock.authenticator.R;
 import com.forgerock.authenticator.baseactivities.BaseNotificationActivity;
 import com.forgerock.authenticator.mechanisms.push.PushAuthActivity;
 
-import java.text.SimpleDateFormat;
+import org.joda.time.DateTime;
+
 import java.util.Calendar;
 import java.util.TimeZone;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Individual entry which displays information about a given Notification.
@@ -39,7 +39,8 @@ import java.util.concurrent.TimeUnit;
 public class NotificationLayout extends FrameLayout {
 
     private Notification notification;
-    private static final SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy");;
+    private java.text.DateFormat dateFormat;
+    private java.text.DateFormat timeFormat;
     private boolean isActive;
 
     /**
@@ -48,6 +49,7 @@ public class NotificationLayout extends FrameLayout {
      */
     public NotificationLayout(Context context) {
         super(context);
+        setup(context);
     }
 
     /**
@@ -57,6 +59,7 @@ public class NotificationLayout extends FrameLayout {
      */
     public NotificationLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
+        setup(context);
     }
 
     /**
@@ -67,6 +70,12 @@ public class NotificationLayout extends FrameLayout {
      */
     public NotificationLayout(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+        setup(context);
+    }
+
+    private void setup(Context context) {
+        dateFormat = DateFormat.getMediumDateFormat(context);
+        timeFormat = DateFormat.getTimeFormat(context);
     }
 
     /**
@@ -86,7 +95,7 @@ public class NotificationLayout extends FrameLayout {
 
         setClickable(notification.isActive());
 
-        refresh(Calendar.getInstance(TimeZone.getTimeZone("UTC")).getTimeInMillis());
+        refresh();
     }
 
     /**
@@ -99,9 +108,8 @@ public class NotificationLayout extends FrameLayout {
 
     /**
      * Update the current time and status, based on a millisecond value passed in.
-     * @param currentTimeUTCMillis The current UTC time in ms.
      */
-    public void refresh(long currentTimeUTCMillis) {
+    public void refresh() {
         ImageView statusImage = (ImageView) findViewById(R.id.image);
         TextView statusText = (TextView) findViewById(R.id.status);
         if (notification.wasApproved()) {
@@ -119,28 +127,32 @@ public class NotificationLayout extends FrameLayout {
         }
 
         TextView timeView = (TextView) findViewById(R.id.time);
-        timeView.setText(calendarToTimeString(currentTimeUTCMillis, notification.getTimeAdded()));
+        timeView.setText(calendarToTimeString(notification.getTimeAdded()));
 
         this.isActive = notification.isActive();
     }
 
-    private String calendarToTimeString(long currentTimeUTCMillis, Calendar calendar) { //TODO: use String resources
-        long timeDiffMillis = currentTimeUTCMillis - calendar.getTimeInMillis();
+    private String calendarToTimeString(Calendar calendar) { //TODO: use String resources
+        DateTime notificationTime = new DateTime(calendar.getTimeInMillis());
 
-        if (TimeUnit.MILLISECONDS.toSeconds(timeDiffMillis) < 60) {
-            return getContext().getString(R.string.notification_time_less_one_minute);
-        } else if (TimeUnit.MILLISECONDS.toMinutes(timeDiffMillis) == 1) {
-            return getContext().getString(R.string.notification_time_one_minute);
-        } else if (TimeUnit.MILLISECONDS.toMinutes(timeDiffMillis) < 60) {
-            return  String.format(getContext().getString(R.string.notification_time_minutes_ago), TimeUnit.MILLISECONDS.toMinutes(timeDiffMillis));
-        } else if (TimeUnit.MILLISECONDS.toHours(timeDiffMillis) < 24) {
-            return String.format(getContext().getString(R.string.notification_time_hours_ago), TimeUnit.MILLISECONDS.toHours(timeDiffMillis));
-        } else if (TimeUnit.MILLISECONDS.toDays(timeDiffMillis) == 1) {
-            return getContext().getString(R.string.notification_time_yesterday);
-        } else if (TimeUnit.MILLISECONDS.toDays(timeDiffMillis) < 7) {
-            return String.format(getContext().getString(R.string.notification_time_days_ago), TimeUnit.MILLISECONDS.toDays(timeDiffMillis));
+        DateTime midnight = DateTime.now().withTimeAtStartOfDay();
+
+        if (notificationTime.isAfter(midnight)) {
+            return timeFormat.format(notificationTime.getMillis());
         }
-
-        return format.format(calendar.getTime());
+        else if (notificationTime.isAfter(midnight.minusDays(1))) {
+            return getContext().getString(R.string.time_yesterday);
+        } else if (notificationTime.isAfter(midnight.minusDays(7))) {
+            switch (notificationTime.getDayOfWeek()) {
+                case 1: return getContext().getString(R.string.time_monday);
+                case 2: return getContext().getString(R.string.time_tuesday);
+                case 3: return getContext().getString(R.string.time_wednesday);
+                case 4: return getContext().getString(R.string.time_thursday);
+                case 5: return getContext().getString(R.string.time_friday);
+                case 6: return getContext().getString(R.string.time_saturday);
+                case 7: return getContext().getString(R.string.time_sunday);
+            }
+        }
+        return dateFormat.format(notificationTime.getMillis());
     }
 }

@@ -166,11 +166,10 @@ public class NotificationAdapter extends BaseExpandableListAdapter {
      * Causes the adapter to update the current times on all Notifications it contains.
      */
     public void updateTimes() {
-        long currentTimeUTCMillis = Calendar.getInstance(TimeZone.getTimeZone("UTC")).getTimeInMillis();
         boolean dataChanged = false;
         for (NotificationLayout layout : layoutList) {
             boolean wasActive = layout.isActive();
-            layout.refresh(currentTimeUTCMillis);
+            layout.refresh();
             if (wasActive != layout.isActive()) {
                 dataChanged = true;
             }

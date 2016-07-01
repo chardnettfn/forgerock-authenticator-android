@@ -33,7 +33,8 @@ public class AboutActivity extends Activity {
             { "ZXing Core", "Apache License 2.0", "https://github.com/zxing/zxing/"},
             { "Gson", "Apache License 2.0", "https://github.com/google/gson"},
             { "Picasso", "Apache License 2.0", "https://github.com/square/picasso"},
-            { "Roboguice", "Apache License 2.0", "https://github.com/roboguice/roboguice"}
+            { "Roboguice", "Apache License 2.0", "https://github.com/roboguice/roboguice"},
+            { "Joda Time", "Apache License 2.0", "http://www.joda.org/joda-time/"}
     };
 
     @Override

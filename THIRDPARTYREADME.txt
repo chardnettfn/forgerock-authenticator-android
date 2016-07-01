@@ -32,6 +32,12 @@ license: Apache License 2.0
 
 Guice library for Android.
 
+Joda Time
+------------------------------
+project: http://www.joda.org/joda-time/
+license: Apache License 2.0
+
+Joda-Time provides a quality replacement for the Java date and time classes.
 
 ----------------------------------------------------------------------------------------------------
 
