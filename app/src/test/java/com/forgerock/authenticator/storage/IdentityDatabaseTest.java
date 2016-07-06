@@ -26,6 +26,7 @@ import com.forgerock.authenticator.notifications.Notification;
 import com.forgerock.authenticator.notifications.PushNotification;
 import com.forgerock.authenticator.notifications.PushNotificationTest;
 
+import org.forgerock.util.encode.Base64;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -34,6 +35,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 import java.util.Calendar;
+import java.util.Random;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -69,6 +71,7 @@ public class IdentityDatabaseTest {
     private Mechanism SAVED_MECHANISM;
     private Notification BASIC_NOTIFICATION;
     private Notification PREREQUISITE_NOTIFICATION;
+    private String base64value;
 
     @Before
     public void setup() throws Exception {
@@ -84,9 +87,13 @@ public class IdentityDatabaseTest {
         SAVED_IDENTITY = Identity.builder().setAccountName("uniquesavedidentity").build(model);
         database.addIdentity(SAVED_IDENTITY);
 
-        BASIC_MECHANISM = Push.builder().setMechanismUID("9999").build(BASIC_IDENTITY);
-        PREREQUISITE_MECHANISM = Push.builder().setMechanismUID("9998").build(SAVED_IDENTITY);
-        SAVED_MECHANISM = Push.builder().setMechanismUID("9997").build(internalSavedIdentity);
+        byte[] random = new byte[32];
+        new Random().nextBytes(random);
+        base64value = Base64.encode(random);
+
+        BASIC_MECHANISM = Push.builder().setMechanismUID("9999").setBase64Secret(base64value).build(BASIC_IDENTITY);
+        PREREQUISITE_MECHANISM = Push.builder().setMechanismUID("9998").setBase64Secret(base64value).build(SAVED_IDENTITY);
+        SAVED_MECHANISM = Push.builder().setMechanismUID("9997").setBase64Secret(base64value).build(internalSavedIdentity);
         database.addMechanism(SAVED_MECHANISM);
 
         BASIC_NOTIFICATION = PushNotification.builder().build(PREREQUISITE_MECHANISM);
@@ -177,7 +184,7 @@ public class IdentityDatabaseTest {
     @Test
     public void savingDifferentMechanismsResultsInDifferentIds() throws Exception {
         Mechanism mechanism = Oath.builder().setMechanismUID("1").setType("hotp").setSecret("JMEZ2W7D462P3JYBDG2HV7PFBM").build(SAVED_IDENTITY);
-        Mechanism otherMechanism = Push.builder().setMechanismUID("2").build(SAVED_IDENTITY);
+        Mechanism otherMechanism = Push.builder().setMechanismUID("2").setBase64Secret(base64value).build(SAVED_IDENTITY);
 
         long id = database.addMechanism(mechanism);
         long otherId = database.addMechanism(otherMechanism);
@@ -189,7 +196,7 @@ public class IdentityDatabaseTest {
     @Test
     public void cannotDuplicateMechanismUIDs() throws Exception {
         Mechanism mechanism = Oath.builder().setMechanismUID("1").setType("hotp").setSecret("JMEZ2W7D462P3JYBDG2HV7PFBM").build(SAVED_IDENTITY);
-        Mechanism otherMechanism = Push.builder().setMechanismUID("1").build(SAVED_IDENTITY);
+        Mechanism otherMechanism = Push.builder().setMechanismUID("1").setBase64Secret(base64value).build(SAVED_IDENTITY);
 
         long id = database.addMechanism(mechanism);
         long otherId = database.addMechanism(otherMechanism);

@@ -25,6 +25,7 @@ import com.forgerock.authenticator.mechanisms.CoreMechanismFactory;
 import com.forgerock.authenticator.mechanisms.oath.Oath;
 import com.forgerock.authenticator.mechanisms.push.Push;
 
+import org.forgerock.util.encode.Base64;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,6 +34,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 import static com.forgerock.authenticator.storage.IdentityDatabaseTest.assertNotEquals;
 import static junit.framework.Assert.assertEquals;
@@ -163,7 +165,12 @@ public class UpgradeTest {
         StorageSystem storageSystem = new IdentityDatabase(RuntimeEnvironment.application, mechanismFactory);
         model.loadFromStorageSystem(storageSystem);
         Identity identity = model.addIdentity(Identity.builder().setIssuer("ForgeRock").setAccountName("alice"));
-        identity.addMechanism(Push.builder().setMechanismUID("999"));
+
+        byte[] random = new byte[32];
+        new Random().nextBytes(random);
+        String base64value = Base64.encode(random);
+
+        identity.addMechanism(Push.builder().setMechanismUID("999").setBase64Secret(base64value));
 
         //Run test
         IdentityModel newModel = modelOpenHelper.getModel();

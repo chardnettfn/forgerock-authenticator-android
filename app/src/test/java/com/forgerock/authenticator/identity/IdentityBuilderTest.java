@@ -24,6 +24,7 @@ import com.forgerock.authenticator.mechanisms.push.Push;
 import com.forgerock.authenticator.storage.IdentityDatabase;
 import com.forgerock.authenticator.storage.IdentityModel;
 
+import org.forgerock.util.encode.Base64;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -34,6 +35,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import uk.org.lidalia.slf4jtest.TestLogger;
 import uk.org.lidalia.slf4jtest.TestLoggerFactory;
@@ -91,7 +93,12 @@ public class IdentityBuilderTest {
     public void createsMechanismsCorrectly() throws Exception {
         List<Mechanism.PartialMechanismBuilder> builderList = new ArrayList<>();
         builderList.add(Oath.builder().setType("totp").setSecret("JMEZ2W7D462P3JYBDG2HV7PFBM").setId(0).setMechanismUID("0"));
-        builderList.add(Push.builder().setId(1).setMechanismUID("1"));
+
+        byte[] random = new byte[32];
+        new Random().nextBytes(random);
+        String base64value = Base64.encode(random);
+
+        builderList.add(Push.builder().setId(1).setMechanismUID("1").setBase64Secret(base64value));
         Identity identity = Identity.builder()
                 .setMechanisms(builderList)
                 .build(model);

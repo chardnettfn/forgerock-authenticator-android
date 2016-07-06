@@ -24,6 +24,8 @@ import com.forgerock.authenticator.mechanisms.base.MechanismInfo;
 import java.util.HashMap;
 import java.util.Map;
 
+import roboguice.util.Strings;
+
 /**
  * Represents an instance of a Push authentication mechanism. Associated with an owner.
  *
@@ -133,6 +135,9 @@ public class Push extends Mechanism {
          * @throws MechanismCreationException If an owner was not provided.
          */
         protected Push buildImpl(Identity owner) throws MechanismCreationException {
+            if (Strings.isEmpty(secret)) {
+                throw new MechanismCreationException("Secret was null or empty");
+            }
             return new Push(owner, id, mechanismUID, secret, endpoint);
         }
 
