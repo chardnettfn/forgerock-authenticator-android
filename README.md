@@ -1,3 +1,7 @@
+#Building the app
+Note that this app requires a google-services.json file in order to be built. The file should be placed in the app folder.
+If the file has not yet been generated, go to https://developers.google.com/cloud-messaging/android/start and follow the second step.
+
 #Running tests
 In order to run the tests, run the following command:
 
